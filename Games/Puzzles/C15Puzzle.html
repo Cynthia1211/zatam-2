@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Classic 15 Puzzle</title>
+    <link rel="icon" href="data:,">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+
+    <script src="https://zimjs.org/cdn/1.5/createjs.js"></script>
+    <script src="https://zimjs.org/cdn/019/zim_min.js"></script>
+
+    <style>
+        .auth-bar {
+            position: fixed;
+            top: 22px;
+            right: 28px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #puzzleLoginBtn,
+        #puzzleLogoutBtn {
+            background: #0b2b2b;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 10px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,.2);
+        }
+
+        #puzzleLogoutBtn {
+            background: #f2b300;
+            padding: 8px 12px;
+        }
+
+        #puzzleUserProfile {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 2px solid #0b2b2b;
+            border-radius: 18px;
+            padding: 5px 8px;
+        }
+
+        #puzzleUserAvatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #f2b300;
+        }
+
+        #puzzleUserName {
+            max-width: 120px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0b2b2b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="auth-bar">
+    <button id="puzzleLoginBtn">↪ Login</button>
+
+    <div id="puzzleUserProfile">
+        <img id="puzzleUserAvatar" src="" alt="User Avatar">
+        <span id="puzzleUserName"></span>
+        <button id="puzzleLogoutBtn">Logout</button>
+    </div>
+</div>
+
+<script type="module">
+
+import {
+    auth,
+    db,
+    provider,
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged,
+    collection,
+    addDoc,
+    serverTimestamp,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc
+} from "../../firebase-config.js";
+
+new Frame(FIT, 1024, 768, "#f5f5f5", "#102b2b", ready);
+
+function ready() {
+
+    const puzzleLoginBtn = document.getElementById("puzzleLoginBtn");
+    const puzzleUserProfile = document.getElementById("puzzleUserProfile");
+    const puzzleUserAvatar = document.getElementById("puzzleUserAvatar");
+    const puzzleUserName = document.getElementById("puzzleUserName");
+    const puzzleLogoutBtn = document.getElementById("puzzleLogoutBtn");
+
+    puzzleLoginBtn.addEventListener("click", async () => {
+        try {
+            await signInWithPopup(auth, provider);
+        } catch (error) {
+            console.error("Puzzle login error:", error);
+            alert("Login failed. Please try again.");
+        }
+    });
+
+    puzzleLogoutBtn.addEventListener("click", async () => {
+        await signOut(auth);
+    });
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            puzzleLoginBtn.style.display = "none";
+            puzzleUserProfile.style.display = "flex";
+
+            puzzleUserAvatar.src = user.photoURL || "";
+            puzzleUserName.textContent = user.displayName || "Player";
+
+            localStorage.setItem("zatamUserId", user.uid);
+            localStorage.setItem("zatamUserName", user.displayName || "Player");
+            localStorage.setItem("zatamUserEmail", user.email || "");
+            localStorage.setItem("zatamUserPhoto", user.photoURL || "");
+        } else {
+            puzzleLoginBtn.style.display = "block";
+            puzzleUserProfile.style.display = "none";
+
+            puzzleUserAvatar.src = "";
+            puzzleUserName.textContent = "";
+
+            localStorage.removeItem("zatamUserId");
+            localStorage.removeItem("zatamUserName");
+            localStorage.removeItem("zatamUserEmail");
+            localStorage.removeItem("zatamUserPhoto");
+        }
+    });
+
+    const tileSize = 110;
+    const gap = 4;
+    const rows = 4;
+    const cols = 4;
+
+    const boardX = 360;
+    const boardY = 155;
+    const boardW = cols * tileSize;
+    const boardH = rows * tileSize;
+    const boardCenterX = boardX + boardW / 2;
+
+    const sanskritFont = "Noto Sans Devanagari";
+    const englishFont = "Arial";
+
+    let emptyRow = 3;
+    let emptyCol = 3;
+    let tiles = [];
+    let moveCount = 0;
+
+    let seconds = 0;
+    let timerInterval = null;
+    let gameStarted = false;
+    let gameSolved = false;
+    let isSanskrit = false;
+    let scoreUploaded = false;
+
+    const sanskritNumbers = [
+        "१","२","३","४","५",
+        "६","७","८","९","१०",
+        "११","१२","१३","१४","१५"
+    ];
+
+    const text = {
+        en: {
+            title:"CLASSIC 15 PUZZLE",
+            moves:"Moves",
+            time:"Time",
+            score:"Score",
+            solve:"SOLVE",
+            scramble:"SCRAMBLE",
+            scrambled:"Puzzle Scrambled",
+            solved:"PUZZLE SOLVED!",
+            close:"CLOSE",
+            playAgain:"PLAY AGAIN",
+            toggle:"EN / संस्कृत",
+            back:"← HOME",
+            instructionTitle:"GAME INSTRUCTIONS",
+            instruction1:"Move numbered tiles into the empty space.",
+            instruction2:"Arrange the tiles from 1 to 15.",
+            instruction3:"The empty space should end at the bottom right.",
+            instruction4:"Try to solve it as fast as possible."
+        },
+        sa: {
+            title:"१५ पहेली",
+            moves:"चालें",
+            time:"समय",
+            score:"अंक",
+            solve:"हल",
+            scramble:"मिलाएँ",
+            scrambled:"पहेली मिलाई गई",
+            solved:"पहेली हल हुई!",
+            close:"बंद",
+            playAgain:"फिर खेलें",
+            toggle:"संस्कृत / EN",
+            back:"← गृहपृष्ठम्",
+            instructionTitle:"खेल निर्देश",
+            instruction1:"टाइल्स को खाली स्थान में ले जाएँ।",
+            instruction2:"टाइल्स को १ से १५ तक क्रम में लगाएँ।",
+            instruction3:"खाली स्थान नीचे दाईं ओर होना चाहिए।",
+            instruction4:"जितनी जल्दी हो सके हल करें।"
+        }
+    };
+
+    function currentText() {
+        return isSanskrit ? text.sa : text.en;
+    }
+
+    function currentFont() {
+        return isSanskrit ? sanskritFont : englishFont;
+    }
+
+    const homeBtn = new Button({
+        label:new Label({
+            text:currentText().back,
+            size:16,
+            font:currentFont(),
+            color:"white",
+            bold:true
+        }),
+        width:120,
+        height:40,
+        backgroundColor:"#0b2b2b",
+        rollBackgroundColor:"#ef6945"
+    }).addTo().pos(35, 25);
+
+    homeBtn.tap(() => {
+        window.location.href = "../../index.html";
+    });
+
+    const languageBtn = new Button({
+        label:new Label({
+            text:currentText().toggle,
+            size:18,
+            font:sanskritFont,
+            color:"white",
+            bold:true
+        }),
+        width:170,
+        height:42,
+        backgroundColor:"#0b2b2b",
+        rollBackgroundColor:"#ef6945"
+    }).addTo().pos(85, 75);
+
+    languageBtn.tap(() => {
+        isSanskrit = !isSanskrit;
+        updateLanguage();
+    });
+
+    const instructionPanel = new Container(270, 520)
+        .addTo()
+        .pos(35, 140);
+
+    new Rectangle(270, 520, "white", "#0b2b2b", 2, 18)
+        .addTo(instructionPanel);
+
+    const instructionTitle = new Label({
+        text:currentText().instructionTitle,
+        size:22,
+        font:currentFont(),
+        color:"#0b2b2b",
+        bold:true
+    }).addTo(instructionPanel).pos(22, 35);
+
+    const instructionLines = [];
+
+    function createInstructionLine(textValue, y) {
+        const label = new Label({
+            text:textValue,
+            size:17,
+            font:currentFont(),
+            color:"#0b2b2b",
+            lineWidth:220,
+            lineHeight:28
+        }).addTo(instructionPanel).pos(25, y);
+
+        instructionLines.push(label);
+    }
+
+    createInstructionLine("1. " + currentText().instruction1, 100);
+    createInstructionLine("2. " + currentText().instruction2, 190);
+    createInstructionLine("3. " + currentText().instruction3, 280);
+    createInstructionLine("4. " + currentText().instruction4, 370);
+
+    const message = new Label({
+        text:currentText().title,
+        size:32,
+        font:currentFont(),
+        color:"#0b2b2b",
+        bold:true
+    }).addTo().centerReg().loc(boardCenterX, 62);
+
+    const moveLabel = new Label({
+        text:"Moves: 0",
+        size:22,
+        font:currentFont(),
+        color:"#0b2b2b",
+        bold:true
+    }).addTo().centerReg().loc(boardCenterX - 95, 112);
+
+    const timeLabel = new Label({
+        text:"Time: 00:00",
+        size:22,
+        font:currentFont(),
+        color:"#0b2b2b",
+        bold:true
+    }).addTo().centerReg().loc(boardCenterX + 130, 112);
+
+    const board = new Container(boardW, boardH)
+        .addTo()
+        .pos(boardX, boardY);
+
+    new Rectangle(boardW + 12, boardH + 12, "#0b2b2b")
+        .addTo(board)
+        .pos(-6, -6);
+
+    function formatTime(totalSeconds) {
+        const min = Math.floor(totalSeconds / 60);
+        const sec = totalSeconds % 60;
+
+        return (min < 10 ? "0" + min : min) + ":" +
+               (sec < 10 ? "0" + sec : sec);
+    }
+
+    function calculatePuzzleScore() {
+        return Math.round(
+            10000 * Math.exp(-seconds / 300)
+        );
+    }
+
+    function getTodayDateString() {
+        const today = new Date();
+        return today.toISOString().split("T")[0];
+    }
+
+    async function uploadPuzzleScore() {
+    if (scoreUploaded) return;
+
+    const user = auth.currentUser;
+
+    if (!user) {
+        alert("Please login before saving your score.");
+        return;
+    }
+
+    scoreUploaded = true;
+
+    const today = getTodayDateString();
+    const finalScore = calculatePuzzleScore();
+
+    const gameId = "classic15";
+    const recordId = `${user.uid}_${gameId}_${today}`;
+    const scoreRef = doc(db, "leaderboard", recordId);
+
+    try {
+        const existingScore = await getDoc(scoreRef);
+
+        if (!existingScore.exists()) {
+            await setDoc(scoreRef, {
+                userId: user.uid,
+                playerName: user.displayName || "Player",
+                email: user.email || "",
+                photoURL: user.photoURL || "",
+
+                gameId: gameId,
+                gameName: "Classic 15 Puzzle",
+
+                score: finalScore,
+                scoreDate: today,
+
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            });
+
+            console.log("New daily puzzle score created:", finalScore);
+        } else {
+            const oldScore = existingScore.data().score || 0;
+
+            if (finalScore > oldScore) {
+                await updateDoc(scoreRef, {
+                    score: finalScore,
+                    playerName: user.displayName || "Player",
+                    email: user.email || "",
+                    photoURL: user.photoURL || "",
+                    updatedAt: serverTimestamp()
+                });
+
+                console.log("Daily puzzle score updated:", finalScore);
+            } else {
+                console.log("New score is lower. Existing daily best kept:", oldScore);
+            }
+        }
+    } catch (error) {
+        scoreUploaded = false;
+        console.error("Score upload failed:", error);
+        alert("Score upload failed. Please try again.");
+    }
+}
+
+    function startTimer() {
+        if (timerInterval !== null) return;
+
+        timerInterval = setInterval(() => {
+            seconds++;
+            updateStats();
+            S.update();
+        }, 1000);
+    }
+
+    function stopTimer() {
+        if (timerInterval !== null) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    function resetTimer() {
+        stopTimer();
+        seconds = 0;
+        updateStats();
+    }
+
+    function updateStats() {
+        moveLabel.text = currentText().moves + ": " + moveCount;
+        timeLabel.text = currentText().time + ": " + formatTime(seconds);
+
+        moveLabel.font = currentFont();
+        timeLabel.font = currentFont();
+    }
+
+    function updateLanguage() {
+        message.text = gameSolved ? currentText().solved : currentText().title;
+        message.font = currentFont();
+
+        updateStats();
+
+        instructionTitle.text = currentText().instructionTitle;
+        instructionTitle.font = currentFont();
+
+        instructionLines[0].text = "1. " + currentText().instruction1;
+        instructionLines[1].text = "2. " + currentText().instruction2;
+        instructionLines[2].text = "3. " + currentText().instruction3;
+        instructionLines[3].text = "4. " + currentText().instruction4;
+
+        instructionLines.forEach(label => {
+            label.font = currentFont();
+        });
+
+        languageBtn.label.text = currentText().toggle;
+        languageBtn.label.font = sanskritFont;
+
+        homeBtn.label.text = currentText().back;
+        homeBtn.label.font = currentFont();
+
+        solveBtn.label.text = currentText().solve;
+        solveBtn.label.font = currentFont();
+
+        scrambleBtn.label.text = currentText().scramble;
+        scrambleBtn.label.font = currentFont();
+
+        tiles.forEach(tile => {
+            tile.numLabel.text = isSanskrit
+                ? sanskritNumbers[tile.num - 1]
+                : tile.num.toString();
+
+            tile.numLabel.font = currentFont();
+        });
+
+        S.update();
+    }
+
+    function createTile(num, row, col) {
+
+        const tile = new Container(tileSize, tileSize)
+            .addTo(board)
+            .pos(col * tileSize, row * tileSize);
+
+        tile.num = num;
+        tile.row = row;
+        tile.col = col;
+
+        const color = num % 2 === 0 ? "#ef6945" : "#f2b300";
+
+        new Rectangle(tileSize - gap, tileSize - gap, color, null, null, 8)
+            .addTo(tile)
+            .pos(gap / 2, gap / 2);
+
+        tile.numLabel = new Label({
+            text:isSanskrit ? sanskritNumbers[num - 1] : num.toString(),
+            size:42,
+            font:currentFont(),
+            color:"white",
+            bold:true
+        }).addTo(tile).centerReg().loc(tileSize / 2, tileSize / 2);
+
+        tile.tap(() => moveTile(tile));
+        tiles.push(tile);
+    }
+
+    function moveTile(tile) {
+
+        if (gameSolved) return;
+
+        const distance =
+            Math.abs(tile.row - emptyRow) + Math.abs(tile.col - emptyCol);
+
+        if (distance !== 1) {
+            playErrorSound();
+            return;
+        }
+
+        if (!gameStarted) {
+            gameStarted = true;
+            startTimer();
+        }
+
+        moveCount++;
+        updateStats();
+
+        const oldRow = tile.row;
+        const oldCol = tile.col;
+
+        tile.row = emptyRow;
+        tile.col = emptyCol;
+
+        emptyRow = oldRow;
+        emptyCol = oldCol;
+
+        tile.animate({
+            props: {
+                x: tile.col * tileSize,
+                y: tile.row * tileSize
+            },
+            time: .15
+        });
+
+        checkWin();
+        S.update();
+    }
+
+    function makeSolvedBoard() {
+
+        tiles.forEach(tile => tile.removeFrom());
+        tiles = [];
+
+        let num = 1;
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (r === 3 && c === 3) continue;
+                createTile(num, r, c);
+                num++;
+            }
+        }
+
+        emptyRow = 3;
+        emptyCol = 3;
+        moveCount = 0;
+        gameStarted = false;
+        gameSolved = false;
+        scoreUploaded = false;
+
+        resetTimer();
+
+        message.text = currentText().title;
+        message.font = currentFont();
+
+        updateStats();
+        S.update();
+    }
+
+    function scrambleBoard() {
+
+        gameSolved = false;
+        gameStarted = false;
+        scoreUploaded = false;
+
+        loop(200, () => {
+
+            const movableTiles = tiles.filter(tile => {
+                return Math.abs(tile.row - emptyRow) +
+                       Math.abs(tile.col - emptyCol) === 1;
+            });
+
+            const randomTile = shuffle(movableTiles)[0];
+
+            const oldRow = randomTile.row;
+            const oldCol = randomTile.col;
+
+            randomTile.row = emptyRow;
+            randomTile.col = emptyCol;
+
+            emptyRow = oldRow;
+            emptyCol = oldCol;
+
+            randomTile.x = randomTile.col * tileSize;
+            randomTile.y = randomTile.row * tileSize;
+        });
+
+        moveCount = 0;
+        resetTimer();
+
+        message.text = currentText().scrambled;
+        message.font = currentFont();
+
+        updateStats();
+        S.update();
+    }
+
+    function checkWin() {
+
+        for (let tile of tiles) {
+
+            const correctRow = Math.floor((tile.num - 1) / cols);
+            const correctCol = (tile.num - 1) % cols;
+
+            if (tile.row !== correctRow || tile.col !== correctCol) {
+                return false;
+            }
+        }
+
+        if (emptyRow === 3 && emptyCol === 3) {
+
+            gameSolved = true;
+            gameStarted = false;
+            stopTimer();
+
+            message.text = currentText().solved;
+            message.font = currentFont();
+
+            playWinSound();
+            uploadPuzzleScore();
+            showWinPopup();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    function playWinSound() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [523.25, 659.25, 783.99];
+
+            notes.forEach((freq, index) => {
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.type = "sine";
+                oscillator.frequency.setValueAtTime(
+                    freq,
+                    audioCtx.currentTime + index * 0.15
+                );
+
+                gainNode.gain.setValueAtTime(
+                    0.15,
+                    audioCtx.currentTime + index * 0.15
+                );
+
+                gainNode.gain.exponentialRampToValueAtTime(
+                    0.001,
+                    audioCtx.currentTime + index * 0.15 + 0.3
+                );
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.start(audioCtx.currentTime + index * 0.15);
+                oscillator.stop(audioCtx.currentTime + index * 0.15 + 0.3);
+            });
+        } catch (error) {
+            console.log("Audio not supported.");
+        }
+    }
+
+    function playErrorSound() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = "square";
+            oscillator.frequency.setValueAtTime(180, audioCtx.currentTime);
+
+            gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(
+                0.001,
+                audioCtx.currentTime + 0.18
+            );
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.18);
+        } catch (error) {
+            console.log("Audio not supported.");
+        }
+    }
+
+    function showWinPopup() {
+
+        const overlay = new Container(W, H)
+            .addTo()
+            .alp(0);
+
+        new Rectangle(W, H, "rgba(0,0,0,.35)")
+            .addTo(overlay);
+
+        const popup = new Container(430, 330)
+            .addTo(overlay)
+            .centerReg()
+            .loc(W / 2, H / 2)
+            .sca(0);
+
+        new Rectangle(430, 330, "white", null, null, 20)
+            .addTo(popup);
+
+        new Label({
+            text:currentText().solved,
+            size:28,
+            font:currentFont(),
+            color:"#0b2b2b",
+            bold:true
+        }).addTo(popup).centerReg().loc(215, 55);
+
+        new Label({
+            text:currentText().moves + ": " + moveCount,
+            size:22,
+            font:currentFont(),
+            color:"#666",
+            bold:true
+        }).addTo(popup).centerReg().loc(215, 110);
+
+        new Label({
+            text:currentText().time + ": " + formatTime(seconds),
+            size:22,
+            font:currentFont(),
+            color:"#666",
+            bold:true
+        }).addTo(popup).centerReg().loc(215, 145);
+
+        new Label({
+            text:currentText().score + ": " + calculatePuzzleScore(),
+            size:24,
+            font:currentFont(),
+            color:"#0b2b2b",
+            bold:true
+        }).addTo(popup).centerReg().loc(215, 185);
+
+        const playAgainBtn = new Button({
+            label:new Label({
+                text:currentText().playAgain,
+                size:18,
+                font:currentFont(),
+                color:"white",
+                bold:true
+            }),
+            width:160,
+            height:42,
+            backgroundColor:"#f2b300",
+            rollBackgroundColor:"#ef6945"
+        }).addTo(popup).centerReg().loc(215, 245);
+
+        playAgainBtn.tap(() => {
+            overlay.removeFrom();
+            scrambleBoard();
+            S.update();
+        });
+
+        const closeBtn = new Button({
+            label:new Label({
+                text:currentText().close,
+                size:16,
+                font:currentFont(),
+                color:"white",
+                bold:true
+            }),
+            width:120,
+            height:38,
+            backgroundColor:"#0b2b2b",
+            rollBackgroundColor:"#ef6945"
+        }).addTo(popup).centerReg().loc(215, 295);
+
+        closeBtn.tap(() => {
+            overlay.removeFrom();
+            S.update();
+        });
+
+        overlay.animate({
+            props:{alpha:1},
+            time:.25
+        });
+
+        popup.animate({
+            props:{scale:1},
+            time:.35,
+            ease:"backOut"
+        });
+
+        S.update();
+    }
+
+    const solveBtn = new Button({
+        label:new Label({
+            text:currentText().solve,
+            size:22,
+            font:currentFont(),
+            color:"white",
+            bold:true
+        }),
+        width:120,
+        height:50,
+        backgroundColor:"#f2b300",
+        rollBackgroundColor:"#ef6945"
+    }).addTo().pos(boardCenterX - 145, 690);
+
+    solveBtn.tap(() => makeSolvedBoard());
+
+    const scrambleBtn = new Button({
+        label:new Label({
+            text:currentText().scramble,
+            size:20,
+            font:currentFont(),
+            color:"white",
+            bold:true
+        }),
+        width:160,
+        height:50,
+        backgroundColor:"#f2b300",
+        rollBackgroundColor:"#ef6945"
+    }).addTo().pos(boardCenterX + 55, 690);
+
+    scrambleBtn.tap(() => scrambleBoard());
+
+    makeSolvedBoard();
+    updateLanguage();
+    S.update();
+}
+
+</script>
+</body>
+</html>

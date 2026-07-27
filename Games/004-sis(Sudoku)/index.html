@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sudoku - Zat.am</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="sudoku.js"></script>
+  </head>
+  <body>
+    <div class="game-shell">
+      <aside class="nav-sidebar" aria-label="Navigation">
+        <button class="icon-button" id="backBtn" type="button" aria-label="Back to homepage">‹</button>
+      </aside>
+
+      <main class="main-shell">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow" data-i18n="eyebrow">Number Logic</p>
+            <h1 data-i18n="title">Sudoku</h1>
+          </div>
+
+          <div class="top-actions">
+            <button class="soft-button" id="languageBtn" type="button">EN / SA</button>
+            <button class="soft-button" id="loginBtn" type="button" data-i18n="login">Login</button>
+            <div class="profile" id="profileCard" hidden>
+              <img id="userAvatar" alt="Player avatar" />
+              <span id="userName">Player</span>
+              <button id="logoutBtn" type="button" data-i18n="logout">Logout</button>
+            </div>
+          </div>
+        </header>
+
+        <section class="game-layout">
+          <aside class="rules-panel">
+            <h2 data-i18n="rulesTitle">How to play</h2>
+            <ol>
+              <li data-i18n="rule1">Fill every row with 1-9.</li>
+              <li data-i18n="rule2">Fill every column with 1-9.</li>
+              <li data-i18n="rule3">Each 3x3 box also needs 1-9.</li>
+              <li data-i18n="rule4">Wrong entries turn red. Correct entries settle back into the board.</li>
+            </ol>
+
+            <div class="stats-card">
+              <div>
+                <span data-i18n="time">Time</span>
+                <strong id="timer">00:00</strong>
+              </div>
+              <div>
+                <span data-i18n="mistakes">Mistakes</span>
+                <strong id="mistakeCount">0</strong>
+              </div>
+              <div>
+                <span data-i18n="score">Score</span>
+                <strong id="scoreValue">0</strong>
+              </div>
+            </div>
+
+            <p class="save-status" id="saveStatus" data-i18n="saveHint">Sign in to save your result to the leaderboard.</p>
+          </aside>
+
+          <section class="play-panel">
+            <div class="board-toolbar">
+              <div class="mode-copy">
+                <h2 id="boardTitle" data-i18n="boardTitle">Complete the grid</h2>
+                <p id="boardMessage" data-i18n="boardMessage">Choose an empty tile, then pick a symbol.</p>
+              </div>
+
+              <div class="toolbar-actions">
+                <button class="soft-button" id="hintBtn" type="button" data-i18n="hint">Hint</button>
+                <button class="soft-button danger-button" id="showAnswersBtn" type="button" data-i18n="showAnswers">Show Answers</button>
+                <button class="soft-button" id="newGameBtn" type="button" data-i18n="newGame">New Game</button>
+                <button class="soft-button" id="displayBtn" type="button" data-i18n="displayMode">Use Sanskrit</button>
+              </div>
+            </div>
+
+            <div class="board-wrap">
+              <div class="sudoku-board" id="board" aria-label="Sudoku board"></div>
+            </div>
+
+            <div class="number-pad" id="numberPad" aria-label="Number choices"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="winModal" hidden>
+      <div class="modal">
+        <h2 data-i18n="winTitle">Puzzle complete!</h2>
+        <p id="winSummary">Great work.</p>
+        <div class="modal-actions">
+          <button class="primary-button" id="playAgainBtn" type="button" data-i18n="playAgain">Play Again</button>
+          <a class="soft-link" href="../../leaderboard.html" data-i18n="viewLeaderboard">Leaderboard</a>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import {
+        auth,
+        db,
+        provider,
+        signInWithPopup,
+        signOut,
+        onAuthStateChanged,
+        doc,
+        getDoc,
+        setDoc,
+        serverTimestamp
+      } from "../../firebase-config.js";
+
+      const boardEl = document.getElementById("board");
+      const numberPad = document.getElementById("numberPad");
+      const timerEl = document.getElementById("timer");
+      const mistakeCountEl = document.getElementById("mistakeCount");
+      const scoreValueEl = document.getElementById("scoreValue");
+      const boardMessage = document.getElementById("boardMessage");
+      const saveStatus = document.getElementById("saveStatus");
+      const winModal = document.getElementById("winModal");
+      const winSummary = document.getElementById("winSummary");
+      const languageBtn = document.getElementById("languageBtn");
+      const displayBtn = document.getElementById("displayBtn");
+      const hintBtn = document.getElementById("hintBtn");
+      const showAnswersBtn = document.getElementById("showAnswersBtn");
+      const newGameBtn = document.getElementById("newGameBtn");
+      const playAgainBtn = document.getElementById("playAgainBtn");
+      const backBtn = document.getElementById("backBtn");
+      const loginBtn = document.getElementById("loginBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const profileCard = document.getElementById("profileCard");
+      const userAvatar = document.getElementById("userAvatar");
+      const userName = document.getElementById("userName");
+
+      const latinSymbols = ["", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+      const devanagariSymbols = ["", "१", "२", "३", "४", "५", "६", "७", "८", "९"];
+      const letterSymbols = ["", "क", "ख", "ग", "घ", "ङ", "च", "छ", "ज", "झ"];
+
+      const translations = {
+        en: {
+          eyebrow: "Number Logic",
+          title: "Sudoku",
+          login: "Login",
+          logout: "Logout",
+          rulesTitle: "How to play",
+          rule1: "Fill every row with 1-9.",
+          rule2: "Fill every column with 1-9.",
+          rule3: "Each 3x3 box also needs 1-9.",
+          rule4: "Wrong entries turn red. Correct entries settle back into the board.",
+          time: "Time",
+          mistakes: "Mistakes",
+          score: "Score",
+          saveHint: "Sign in to save your result to the leaderboard.",
+          boardTitle: "Complete the grid",
+          boardMessage: "Choose an empty tile, then pick a symbol.",
+          newGame: "New Game",
+          hint: "Hint",
+          hintReady: "Hint",
+          showAnswers: "Show Answers",
+          displayMode: "Use Devanagari",
+          latinMode: "Use English",
+          letterMode: "Use Sanskrit letters",
+          winTitle: "Congratulations!",
+          playAgain: "Play Again",
+          viewLeaderboard: "Leaderboard",
+          correct: "Correct. Keep going.",
+          wrong: "That conflicts with the row, column, or box.",
+          invalidBoard: "Some tiles conflict with Sudoku rules.",
+          hintUsed: "Hint added for this tile.",
+          revealed: "Answers revealed. Starting a new game.",
+          complete: "Congratulations! You solved the Sudoku.",
+          saved: "Saved to leaderboard.",
+          saveFailed: "Score could not be saved.",
+          loginToSave: "Sign in to save your result to the leaderboard.",
+          guest: "Guest"
+        },
+        sa: {
+          eyebrow: "संख्या-युक्तिः",
+          title: "सुडोकू",
+          login: "प्रवेशः",
+          logout: "निर्गमः",
+          rulesTitle: "क्रीडाविधिः",
+          rule1: "प्रत्येके पङ्क्तौ १-९ पूरय।",
+          rule2: "प्रत्येके स्तम्भे १-९ पूरय।",
+          rule3: "प्रत्येक ३x३ खण्डे अपि १-९ आवश्यकम्।",
+          rule4: "अशुद्धं रक्तवर्णं भवति। शुद्धं पुनः सामान्यवर्णं भवति।",
+          time: "समयः",
+          mistakes: "दोषाः",
+          score: "अङ्काः",
+          saveHint: "श्रेष्ठसूच्यां परिणामं रक्षितुं प्रवेशं कुरु।",
+          boardTitle: "जालकं पूरय",
+          boardMessage: "रिक्तस्थानं चिनुत, ततः चिह्नं चिनुत।",
+          newGame: "नूतना क्रीडा",
+          hint: "Hint",
+          hintReady: "Hint",
+          showAnswers: "उत्तराणि दर्शय",
+          displayMode: "देवनागरी",
+          latinMode: "English",
+          letterMode: "संस्कृताक्षराणि",
+          winTitle: "अभिनन्दनम्!",
+          playAgain: "पुनः क्रीड",
+          viewLeaderboard: "श्रेष्ठसूची",
+          correct: "शुद्धम्। अग्रे गच्छ।",
+          wrong: "पङ्क्ति-स्तम्भ-खण्डेषु विरोधः अस्ति।",
+          invalidBoard: "केषुचित् स्थानेषु नियमविरोधः अस्ति।",
+          hintUsed: "अस्य स्थानस्य संकेतः स्थापितः।",
+          revealed: "उत्तराणि दर्शितानि। नूतना क्रीडा आरभ्यते।",
+          complete: "अभिनन्दनम्! त्वया सुडोकू समाधानं कृतम्।",
+          saved: "श्रेष्ठसूच्यां रक्षितम्।",
+          saveFailed: "अङ्काः रक्षितुं न शक्यन्ते।",
+          loginToSave: "श्रेष्ठसूच्यां परिणामं रक्षितुं प्रवेशं कुरु।",
+          guest: "अतिथिः"
+        }
+      };
+
+      let currentLanguage = localStorage.getItem("zatamLanguage") || "en";
+      let symbolMode = localStorage.getItem("sudokuSymbolMode") || "latin";
+      if (!["latin", "devanagari", "letters"].includes(symbolMode)) {
+        symbolMode = "latin";
+      }
+      let puzzle = null;
+      let selectedCell = null;
+      let selectedRow = null;
+      let selectedCol = null;
+      let mistakeCount = 0;
+      let seconds = 0;
+      let timerId = null;
+      let finished = false;
+      let scoreUploaded = false;
+      let currentUser = null;
+      let hintsUsed = 0;
+      let revealRestartId = null;
+
+      function todayString() {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      function symbols() {
+        if (symbolMode === "latin") return latinSymbols;
+        if (symbolMode === "devanagari") return devanagariSymbols;
+        return letterSymbols;
+      }
+
+      function displayValue(value) {
+        return symbols()[value] || "";
+      }
+
+      function nextSymbolMode() {
+        if (symbolMode === "latin") return "devanagari";
+        if (symbolMode === "devanagari") return "letters";
+        return "latin";
+      }
+
+      function updateDisplayButton() {
+        const t = translations[currentLanguage];
+        const nextMode = nextSymbolMode();
+        if (nextMode === "latin") displayBtn.textContent = t.latinMode;
+        if (nextMode === "devanagari") displayBtn.textContent = t.displayMode;
+        if (nextMode === "letters") displayBtn.textContent = t.letterMode;
+      }
+
+      function hintButtonText() {
+        const t = translations[currentLanguage];
+        return t.hintReady;
+      }
+
+      function updateHintButton() {
+        hintBtn.textContent = hintButtonText();
+        hintBtn.disabled = finished;
+      }
+
+      function updateLanguage() {
+        const t = translations[currentLanguage];
+        document.documentElement.lang = currentLanguage;
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.dataset.i18n;
+          if (t[key]) el.textContent = t[key];
+        });
+        languageBtn.textContent = currentLanguage === "en" ? "EN / SA" : "SA / EN";
+        updateDisplayButton();
+        updateHintButton();
+        if (!currentUser) saveStatus.textContent = t.loginToSave;
+        localStorage.setItem("zatamLanguage", currentLanguage);
+      }
+
+      function updateTimer() {
+        const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
+        const secs = String(seconds % 60).padStart(2, "0");
+        timerEl.textContent = `${mins}:${secs}`;
+      }
+
+      function startTimer() {
+        window.clearInterval(timerId);
+        timerId = window.setInterval(() => {
+          if (!finished) {
+            seconds += 1;
+            updateTimer();
+          }
+        }, 1000);
+      }
+
+      function calculateScore(isFinal = false) {
+        const filled = [...boardEl.querySelectorAll(".cell.user")].filter((cell) => cell.dataset.value).length;
+        if (!isFinal) {
+          return Math.max(0, filled * 15 - mistakeCount * 20 - hintsUsed * 30);
+        }
+
+        const timeBonus = Math.max(0, 900 - seconds) * 2;
+        return Math.max(100, 1000 + timeBonus - mistakeCount * 50 - hintsUsed * 75);
+      }
+
+      function updateScore() {
+        scoreValueEl.textContent = calculateScore().toLocaleString();
+      }
+
+      function drawPad() {
+        numberPad.innerHTML = "";
+        for (let n = 1; n <= 9; n += 1) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "pad-number";
+          btn.textContent = displayValue(n);
+          btn.draggable = true;
+          btn.dataset.value = String(n);
+          btn.addEventListener("click", () => placeValue(n));
+          btn.addEventListener("dragstart", (event) => {
+            event.dataTransfer.setData("text/plain", String(n));
+            event.dataTransfer.effectAllowed = "copy";
+          });
+          numberPad.appendChild(btn);
+        }
+        const clear = document.createElement("button");
+        clear.type = "button";
+        clear.className = "pad-number clear";
+        clear.textContent = "×";
+        clear.addEventListener("click", () => clearSelected());
+        numberPad.appendChild(clear);
+      }
+
+      function renderBoard() {
+        boardEl.innerHTML = "";
+        for (let row = 0; row < 9; row += 1) {
+          for (let col = 0; col < 9; col += 1) {
+            const value = puzzle.getTileNumber(row, col);
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = value ? "cell given" : "cell empty";
+            button.dataset.row = row;
+            button.dataset.col = col;
+            button.dataset.value = value || "";
+            button.dataset.given = value ? "true" : "false";
+            button.textContent = displayValue(value);
+            button.addEventListener("click", () => selectCell(button, row, col));
+            button.addEventListener("dragover", (event) => {
+              if (!finished && button.dataset.given !== "true") {
+                event.preventDefault();
+                button.classList.add("drag-over");
+              }
+            });
+            button.addEventListener("dragleave", () => {
+              button.classList.remove("drag-over");
+            });
+            button.addEventListener("drop", (event) => {
+              event.preventDefault();
+              button.classList.remove("drag-over");
+              const valueToPlace = Number(event.dataTransfer.getData("text/plain"));
+              if (valueToPlace >= 1 && valueToPlace <= 9) {
+                placeValueInCell(button, row, col, valueToPlace);
+              }
+            });
+            boardEl.appendChild(button);
+          }
+        }
+        drawPad();
+      }
+
+      function refreshSymbols() {
+        boardEl.querySelectorAll(".cell").forEach((cell) => {
+          const value = Number(cell.dataset.value || "0");
+          cell.textContent = displayValue(value);
+        });
+        drawPad();
+      }
+
+      function selectCell(cell, row, col) {
+        if (finished || !cell) return;
+        if (selectedCell) selectedCell.classList.remove("selected");
+        selectedCell = cell;
+        selectedRow = row;
+        selectedCol = col;
+        selectedCell.classList.add("selected");
+        selectedCell.focus({ preventScroll: true });
+        if (cell.dataset.given === "true") {
+          boardMessage.textContent = translations[currentLanguage].boardMessage;
+        }
+      }
+
+      function clearSelection() {
+        if (selectedCell) selectedCell.classList.remove("selected");
+        selectedCell = null;
+        selectedRow = null;
+        selectedCol = null;
+      }
+
+      function cellsConflict(a, b) {
+        const rowA = Number(a.dataset.row);
+        const colA = Number(a.dataset.col);
+        const rowB = Number(b.dataset.row);
+        const colB = Number(b.dataset.col);
+        const sameRow = rowA === rowB;
+        const sameCol = colA === colB;
+        const sameBox = Math.floor(rowA / 3) === Math.floor(rowB / 3) && Math.floor(colA / 3) === Math.floor(colB / 3);
+        return sameRow || sameCol || sameBox;
+      }
+
+      function validateBoardState() {
+        const cells = [...boardEl.querySelectorAll(".cell")];
+        let hasConflict = false;
+
+        cells.forEach((cell) => {
+          cell.classList.remove("wrong", "correct");
+        });
+
+        const markConflict = (cell) => {
+          const row = Number(cell.dataset.row);
+          const col = Number(cell.dataset.col);
+          const value = Number(cell.dataset.value || "0");
+          const isProtected = cell.dataset.given === "true" || cell.classList.contains("hinted");
+
+          if (!value || isProtected) return;
+          if (value !== puzzle.getSolution(row, col)) {
+            cell.classList.add("wrong");
+            hasConflict = true;
+          }
+        };
+
+        for (let i = 0; i < cells.length; i += 1) {
+          const currentValue = cells[i].dataset.value;
+          if (!currentValue) continue;
+
+          for (let j = i + 1; j < cells.length; j += 1) {
+            if (cells[j].dataset.value !== currentValue) continue;
+            if (!cellsConflict(cells[i], cells[j])) continue;
+            markConflict(cells[i]);
+            markConflict(cells[j]);
+            if (cells[i].classList.contains("wrong") || cells[j].classList.contains("wrong")) {
+              hasConflict = true;
+            }
+          }
+        }
+
+        return !hasConflict;
+      }
+
+      function placeValueInCell(cell, row, col, value) {
+        if (!cell || finished || cell.dataset.given === "true") return;
+        if (selectedCell && selectedCell !== cell) selectedCell.classList.remove("selected");
+
+        selectedCell = cell;
+        selectedRow = row;
+        selectedCol = col;
+        selectedCell.classList.add("selected");
+        cell.dataset.value = String(value);
+        cell.textContent = displayValue(value);
+        cell.classList.add("user");
+        cell.classList.remove("hinted");
+
+        const wasValid = validateBoardState();
+        if (wasValid) {
+          boardMessage.textContent = translations[currentLanguage].correct;
+        } else {
+          mistakeCount += 1;
+          mistakeCountEl.textContent = String(mistakeCount);
+          boardMessage.textContent = translations[currentLanguage].wrong;
+        }
+
+        updateScore();
+        checkWin();
+      }
+
+      function placeValue(value) {
+        if (!selectedCell || finished) return;
+        placeValueInCell(selectedCell, selectedRow, selectedCol, value);
+      }
+
+      function clearSelected() {
+        if (!selectedCell || finished || selectedCell.dataset.given === "true") return;
+        selectedCell.dataset.value = "";
+        selectedCell.textContent = "";
+        selectedCell.classList.remove("wrong", "correct", "user", "hinted");
+        validateBoardState();
+        boardMessage.textContent = translations[currentLanguage].boardMessage;
+        updateScore();
+      }
+
+      function checkWin() {
+        const cells = [...boardEl.querySelectorAll(".cell")];
+        const complete = cells.every((cell) => {
+          const row = Number(cell.dataset.row);
+          const col = Number(cell.dataset.col);
+          return Number(cell.dataset.value || "0") === puzzle.getSolution(row, col);
+        });
+        if (!complete) {
+          if (cells.every((cell) => cell.dataset.value)) {
+            boardMessage.textContent = translations[currentLanguage].invalidBoard;
+          }
+          return;
+        }
+        finished = true;
+        window.clearInterval(timerId);
+        const finalScore = calculateScore(true);
+        scoreValueEl.textContent = finalScore.toLocaleString();
+        boardMessage.textContent = translations[currentLanguage].complete;
+        winSummary.textContent = `${translations[currentLanguage].score}: ${finalScore.toLocaleString()} | ${translations[currentLanguage].time}: ${timerEl.textContent}`;
+        winModal.hidden = false;
+        uploadScore(finalScore);
+      }
+
+      async function uploadScore(finalScore) {
+        if (scoreUploaded) return;
+        if (!currentUser) {
+          saveStatus.textContent = translations[currentLanguage].loginToSave;
+          return;
+        }
+        scoreUploaded = true;
+        try {
+          const scoreRef = doc(db, "leaderboard", `sudoku_${currentUser.uid}`);
+          const existingScore = await getDoc(scoreRef);
+          const previousBest = existingScore.exists() ? Number(existingScore.data().score || 0) : 0;
+          const isNewBest = finalScore >= previousBest;
+          const scoreData = {
+            userId: currentUser.uid,
+            playerName: currentUser.displayName || "Player",
+            email: currentUser.email || "",
+            photoURL: currentUser.photoURL || "",
+            gameId: "sudoku",
+            gameName: "Sudoku",
+            score: isNewBest ? finalScore : previousBest,
+            lastScore: finalScore,
+            updatedAt: serverTimestamp(),
+            scoreDate: todayString()
+          };
+
+          if (!existingScore.exists()) {
+            scoreData.createdAt = serverTimestamp();
+          }
+
+          await setDoc(scoreRef, scoreData, { merge: true });
+          saveStatus.textContent = translations[currentLanguage].saved;
+        } catch (error) {
+          scoreUploaded = false;
+          saveStatus.textContent = translations[currentLanguage].saveFailed;
+          console.error("Sudoku score save failed:", error);
+        }
+      }
+
+      function newGame() {
+        window.clearTimeout(revealRestartId);
+        puzzle = new generateSudoku();
+        selectedCell = null;
+        selectedRow = null;
+        selectedCol = null;
+        mistakeCount = 0;
+        seconds = 0;
+        finished = false;
+        scoreUploaded = false;
+        hintsUsed = 0;
+        mistakeCountEl.textContent = "0";
+        winModal.hidden = true;
+        boardMessage.textContent = translations[currentLanguage].boardMessage;
+        updateTimer();
+        renderBoard();
+        updateScore();
+        updateHintButton();
+        startTimer();
+      }
+
+      function getHintTarget() {
+        if (selectedCell && selectedCell.dataset.given !== "true") {
+          const selectedRowValue = Number(selectedCell.dataset.row);
+          const selectedColValue = Number(selectedCell.dataset.col);
+          const selectedValue = Number(selectedCell.dataset.value || "0");
+          if (selectedValue !== puzzle.getSolution(selectedRowValue, selectedColValue)) {
+            return selectedCell;
+          }
+        }
+        const candidates = [...boardEl.querySelectorAll(".cell.empty")].filter((cell) => {
+          const row = Number(cell.dataset.row);
+          const col = Number(cell.dataset.col);
+          return Number(cell.dataset.value || "0") !== puzzle.getSolution(row, col);
+        });
+        return candidates[Math.floor(Math.random() * candidates.length)];
+      }
+
+      function useHint() {
+        if (finished) return;
+        const target = getHintTarget();
+        if (!target) return;
+
+        const row = Number(target.dataset.row);
+        const col = Number(target.dataset.col);
+        const solution = puzzle.getSolution(row, col);
+
+        target.dataset.value = String(solution);
+        target.textContent = displayValue(solution);
+        target.classList.add("user", "hinted");
+        target.classList.remove("wrong");
+        selectCell(target, row, col);
+
+        hintsUsed += 1;
+
+        validateBoardState();
+        boardMessage.textContent = translations[currentLanguage].hintUsed;
+        updateHintButton();
+        updateScore();
+        checkWin();
+      }
+
+      function showAnswersAndRestart() {
+        if (finished) return;
+        finished = true;
+        scoreUploaded = true;
+        window.clearInterval(timerId);
+        clearSelection();
+
+        boardEl.querySelectorAll(".cell").forEach((cell) => {
+          const row = Number(cell.dataset.row);
+          const col = Number(cell.dataset.col);
+          const solution = puzzle.getSolution(row, col);
+          cell.dataset.value = String(solution);
+          cell.textContent = displayValue(solution);
+          cell.classList.remove("wrong", "selected");
+          if (cell.dataset.given !== "true") cell.classList.add("revealed");
+        });
+
+        boardMessage.textContent = translations[currentLanguage].revealed;
+        updateHintButton();
+        revealRestartId = window.setTimeout(newGame, 3500);
+      }
+
+      function avatarFor(name) {
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "Player")}&background=ffe1a5&color=09264a`;
+      }
+
+      onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        if (user) {
+          loginBtn.hidden = true;
+          profileCard.hidden = false;
+          userName.textContent = user.displayName || "Player";
+          userAvatar.src = user.photoURL || avatarFor(user.displayName);
+          saveStatus.textContent = translations[currentLanguage].saveHint;
+          localStorage.setItem("zatamUserId", user.uid);
+          localStorage.setItem("zatamUserName", user.displayName || "Player");
+          localStorage.setItem("zatamUserEmail", user.email || "");
+          localStorage.setItem("zatamUserPhoto", user.photoURL || "");
+        } else {
+          loginBtn.hidden = false;
+          profileCard.hidden = true;
+          saveStatus.textContent = translations[currentLanguage].loginToSave;
+        }
+      });
+
+      loginBtn.addEventListener("click", async () => {
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (error) {
+          console.error("Login failed:", error);
+        }
+      });
+
+      logoutBtn.addEventListener("click", async () => {
+        await signOut(auth);
+      });
+
+      languageBtn.addEventListener("click", () => {
+        currentLanguage = currentLanguage === "en" ? "sa" : "en";
+        updateLanguage();
+      });
+
+      displayBtn.addEventListener("click", () => {
+        symbolMode = nextSymbolMode();
+        localStorage.setItem("sudokuSymbolMode", symbolMode);
+        refreshSymbols();
+        updateLanguage();
+      });
+
+      hintBtn.addEventListener("click", useHint);
+      showAnswersBtn.addEventListener("click", showAnswersAndRestart);
+      newGameBtn.addEventListener("click", newGame);
+      playAgainBtn.addEventListener("click", newGame);
+      backBtn.addEventListener("click", () => {
+        window.location.href = "../../index.html";
+      });
+
+      function getCell(row, col) {
+        return boardEl.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+      }
+
+      function moveSelection(rowDelta, colDelta) {
+        if (!selectedCell) {
+          selectCell(getCell(0, 0), 0, 0);
+          return;
+        }
+        const startRow = selectedRow ?? 0;
+        const startCol = selectedCol ?? 0;
+        const nextRow = Math.max(0, Math.min(8, startRow + rowDelta));
+        const nextCol = Math.max(0, Math.min(8, startCol + colDelta));
+        selectCell(getCell(nextRow, nextCol), nextRow, nextCol);
+      }
+
+      document.addEventListener("keydown", (event) => {
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Backspace", "Delete"].includes(event.key)) {
+          event.preventDefault();
+        }
+
+        if (event.key === "ArrowUp") moveSelection(-1, 0);
+        if (event.key === "ArrowDown") moveSelection(1, 0);
+        if (event.key === "ArrowLeft") moveSelection(0, -1);
+        if (event.key === "ArrowRight") moveSelection(0, 1);
+
+        if (!selectedCell) return;
+        const value = Number(event.key);
+        if (value >= 1 && value <= 9) placeValue(value);
+        if (event.key === "Backspace" || event.key === "Delete" || event.key === "0") clearSelected();
+      });
+
+      updateLanguage();
+      newGame();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="sa">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>शिला-पत्र-कर्तरी — Sanskrit Rock Paper Scissors</title>
+    <link rel="shortcut icon" href="./zipaka.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Asap:wght@400;500;600;700&family=Bitcount+Grid+Double:wght@100..900&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="./assets/index-DyhdSQeD.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DEYMzX0G.css">
+    <style>
+      /* Pin profile icon to the very top-right and keep it clear of the heading. */
+      .page-header {
+        position: relative !important;
+        /* Extra right padding so the centered title can't slide under the icon. */
+        padding-right: 96px !important;
+      }
+      .profile-icon {
+        position: absolute !important;
+        top: 12px !important;
+        right: 16px !important;
+        transform: none !important;
+        width: 44px !important;
+        height: 44px !important;
+        z-index: 30 !important;
+      }
+      .profile-icon-btn:hover { transform: scale(1.05) !important; }
+      .profile-icon-btn:active { transform: scale(0.97) !important; }
+    </style>
+  </head>
+  <body>
+    <a
+      href="../../index.html"
+      aria-label="Back to Home"
+      style="
+        position: fixed;
+        top: 10px;
+        left: 0px;
+        z-index: 9999;
+        width: 56px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        padding: 0;
+        border-radius: 10px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        color: #1a5c4a;
+        text-decoration: none;
+        font-family: Asap, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+        font-weight: 600;
+      "
+    >
+      <span aria-hidden="true">←</span>
+    </a>
+    <div id="root"></div>
+
+    <script type="module">
+      import {
+        auth,
+        db,
+        onAuthStateChanged,
+        collection,
+        addDoc,
+        getDocs,
+        query,
+        orderBy,
+        limit,
+        serverTimestamp
+      } from "../../firebase-config.js";
+
+      const PROFILE_SECTION_ID = "rps-profile-section";
+      const PROFILE_LB_ID = "rps-profile-leaderboard";
+      let currentUser = null;
+      let profileWired = false;
+      let scoreUploaded = false;
+
+      function escapeHTML(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function renderAvatarInto(el, photoURL, fallbackText) {
+        if (!el) return;
+        el.innerHTML = "";
+        if (photoURL) {
+          const img = document.createElement("img");
+          img.src = photoURL;
+          img.alt = "Profile";
+          img.referrerPolicy = "no-referrer";
+          img.style.width = "100%";
+          img.style.height = "100%";
+          img.style.objectFit = "cover";
+          img.style.borderRadius = "999px";
+          el.appendChild(img);
+          return;
+        }
+        const initials = (fallbackText || "P")
+          .trim()
+          .split(/\s+/)
+          .slice(0, 2)
+          .map((w) => w[0]?.toUpperCase())
+          .join("");
+        const pill = document.createElement("div");
+        pill.textContent = initials || "P";
+        pill.style.width = "32px";
+        pill.style.height = "32px";
+        pill.style.display = "flex";
+        pill.style.alignItems = "center";
+        pill.style.justifyContent = "center";
+        pill.style.fontWeight = "800";
+        pill.style.color = "#1a5c4a";
+        pill.style.background = "#1a5c4a14";
+        pill.style.borderRadius = "999px";
+        el.appendChild(pill);
+      }
+
+      // Note: we intentionally do NOT write to "userStats" here.
+      // Your Firestore rules currently reject it ("Missing or insufficient permissions").
+
+      function getTodayDateString() {
+        const today = new Date();
+        return today.toISOString().split("T")[0];
+      }
+
+      function parseScoreFromNode(node) {
+        if (!node) return 0;
+        let text = String(node.textContent || "").trim();
+
+        // RPS UI displays digits in Devanagari (०१२३४५६७८९).
+        const devDigits = "०१२३४५६७८९";
+        const asciiDigits = "0123456789";
+        for (let i = 0; i < devDigits.length; i++) {
+          text = text.replaceAll(devDigits[i], asciiDigits[i]);
+        }
+
+        const cleaned = text.replace(/[^\d]/g, "");
+        if (!cleaned) return 0;
+        const n = Number(cleaned);
+        return Number.isFinite(n) ? n : 0;
+      }
+
+      function getPlayerWins() {
+        const display = document.querySelector(".score-display");
+        if (!display) return 0;
+        const nums = display.querySelectorAll(".score-num");
+        if (!nums.length) return 0;
+        return parseScoreFromNode(nums[0]);
+      }
+
+      function calculateRpsScore(wins) {
+        // Same pattern as Memory Match: meaningful points, not raw win count.
+        return Math.max(100, wins * 1000);
+      }
+
+      async function uploadScore(finalScore) {
+        if (scoreUploaded) return;
+
+        const user = auth.currentUser;
+        if (!user) {
+          alert("Please login before saving your score.");
+          return;
+        }
+
+        if (!Number.isFinite(finalScore) || finalScore <= 0) return;
+
+        scoreUploaded = true;
+
+        const scoreData = {
+          userId: user.uid,
+          playerName: user.displayName || "Player",
+          email: user.email || "",
+          photoURL: user.photoURL || "",
+
+          gameId: "rps",
+          gameName: "Rock Paper Scissors",
+
+          score: finalScore,
+
+          createdAt: serverTimestamp(),
+          scoreDate: getTodayDateString()
+        };
+
+        try {
+          await addDoc(collection(db, "leaderboard"), scoreData);
+          console.log("RPS score uploaded successfully:", scoreData);
+          const status = document.getElementById("rps-save-status");
+          if (status) {
+            status.textContent = `Saved: ${Number(finalScore).toLocaleString()} ⭐`;
+          }
+        } catch (error) {
+          scoreUploaded = false;
+          console.error("RPS score upload failed:", error);
+          const status = document.getElementById("rps-save-status");
+          if (status) {
+            status.textContent = `Save failed: ${error?.code || error?.message || "unknown error"}`;
+          }
+          alert("Score upload failed. Please try again.");
+        }
+      }
+
+      function finishSession() {
+        const wins = getPlayerWins();
+        if (wins <= 0) return;
+        uploadScore(calculateRpsScore(wins));
+      }
+
+      function setupSessionScoreUpload() {
+        // Upload once when the player ends a session (Reset), like Memory Match finishGame().
+        document.addEventListener(
+          "click",
+          (event) => {
+            if (event.target.closest(".reset-btn")) {
+              finishSession();
+            }
+          },
+          true
+        );
+
+        // Upload when leaving the game via the back link.
+        const backLink = document.querySelector('a[aria-label="Back to Home"]');
+        backLink?.addEventListener("click", () => {
+          finishSession();
+        });
+
+        // Allow a new upload after scores are reset to 0.
+        let lastWins = 0;
+        setInterval(() => {
+          const wins = getPlayerWins();
+          if (lastWins > 0 && wins === 0) {
+            scoreUploaded = false;
+          }
+          lastWins = wins;
+        }, 500);
+      }
+
+      async function loadRpsLeaderboard(intoEl) {
+        if (!intoEl) return;
+        intoEl.innerHTML = `<div style="color:var(--text-muted,#555555);">Loading…</div>`;
+        try {
+          const q = query(
+            collection(db, "leaderboard"),
+            orderBy("score", "desc"),
+            limit(50)
+          );
+          const snap = await getDocs(q);
+          const all = [];
+          snap.forEach((d) => all.push({ id: d.id, ...d.data() }));
+
+          const rpsOnly = all.filter((item) => {
+            const g = String(item.gameName || "");
+            return g.toLowerCase().includes("rock") || g.toLowerCase().includes("rps");
+          });
+
+          const top = rpsOnly.slice(0, 5);
+          if (top.length === 0) {
+            intoEl.innerHTML = `<div style="color:var(--text-muted,#555555);">No scores yet.</div>`;
+            return;
+          }
+
+          intoEl.innerHTML = top
+            .map((row, idx) => {
+              const rank = idx + 1;
+              const name = escapeHTML(row.playerName || row.name || "Player");
+              const score = Number(row.score || row.points || 0);
+              return `
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid rgba(0,0,0,.06);">
+                  <div style="min-width:0;">
+                    <span style="display:inline-block; width:22px; font-weight:800; color:#2c3e5a;">${rank}</span>
+                    <span style="font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${name}</span>
+                  </div>
+                  <div style="font-weight:800; color:#1a5c4a;">${Number(score).toLocaleString()} ⭐</div>
+                </div>
+              `;
+            })
+            .join("");
+        } catch (e) {
+          console.error("RPS leaderboard load failed:", e);
+          intoEl.innerHTML =
+            `<div style="color:var(--text-muted,#555555);">Failed to load leaderboard.</div>`;
+        }
+      }
+
+      function ensureProfileSection() {
+        const host =
+          document.querySelector(".zim-body") ||
+          document.querySelector(".main-shell") ||
+          document.getElementById("root");
+        if (!host) return null;
+
+        let section = document.getElementById(PROFILE_SECTION_ID);
+        if (section) return section;
+
+        section = document.createElement("section");
+        section.id = PROFILE_SECTION_ID;
+        section.style.display = "none";
+        section.style.margin = "0 0 18px";
+        section.style.padding = "16px 18px";
+        section.style.background = "var(--rules-bg, #fff)";
+        section.style.border = "2px solid var(--rules-border, #1a5c4a)";
+        section.style.borderRadius = "12px";
+        section.style.boxShadow = "var(--shadow, 0 4px 14px rgba(0,0,0,.1))";
+
+        section.innerHTML = `
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+              <div id="rps-profile-avatar" style="width:34px; height:34px; border-radius:999px; overflow:hidden; flex:0 0 auto;"></div>
+              <div style="min-width:0;">
+                <div id="rps-profile-name" style="font-weight:800; color:var(--title-teal,#1a5c4a); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Profile</div>
+                <div id="rps-profile-sub" style="font-size:12px; color:var(--text-muted,#555555); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+              </div>
+            </div>
+            <button id="rps-profile-close" style="border:none; background:transparent; cursor:pointer; font-size:18px; padding:6px 10px; border-radius:10px;">✕</button>
+          </div>
+          <div id="rps-save-status" style="font-size:12px; color:var(--text-muted,#555555); margin:-4px 0 10px;">
+            Score not saved yet.
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin:8px 0 6px;">
+            <div style="font-weight:800;">Leaderboard (RPS)</div>
+            <a href="../../leaderboard.html" style="font-size:12px; color:#2c3e5a; text-decoration:none;">View all</a>
+          </div>
+          <div id="${PROFILE_LB_ID}" style="display:flex; flex-direction:column;"></div>
+        `;
+
+        host.prepend(section);
+        section.querySelector("#rps-profile-close")?.addEventListener("click", () => {
+          section.style.display = "none";
+        });
+
+        return section;
+      }
+
+      function toggleProfileSection() {
+        const section = ensureProfileSection();
+        if (!section) return;
+        const nextVisible = section.style.display === "none";
+        section.style.display = nextVisible ? "block" : "none";
+        if (nextVisible) {
+          const lb = section.querySelector(`#${PROFILE_LB_ID}`);
+          loadRpsLeaderboard(lb);
+          wireProfileButton.syncSection?.();
+        }
+      }
+
+      let lastProfileBtn = null;
+
+      function wireProfileButton() {
+        const btn = document.querySelector(".profile-icon-btn");
+        if (!btn) return false;
+
+        // If React replaced the node, re-wire.
+        if (btn !== lastProfileBtn) {
+          profileWired = false;
+          lastProfileBtn = btn;
+        }
+        if (profileWired) return true;
+
+        const iconHost =
+          btn.querySelector("[data-rps-profile-icon]") ||
+          (() => {
+            const span = document.createElement("span");
+            span.setAttribute("data-rps-profile-icon", "1");
+            span.style.display = "inline-flex";
+            span.style.alignItems = "center";
+            span.style.justifyContent = "center";
+            span.style.width = "32px";
+            span.style.height = "32px";
+            // Don't erase React's contents; overlay our avatar.
+            btn.style.position = "relative";
+            span.style.position = "absolute";
+            span.style.inset = "8px";
+            span.style.pointerEvents = "none";
+            btn.appendChild(span);
+            return span;
+          })();
+
+        const applyUserToUI = () => {
+          if (!currentUser) {
+            renderAvatarInto(iconHost, "", "P");
+            return;
+          }
+          renderAvatarInto(iconHost, currentUser.photoURL || "", currentUser.displayName || "Player");
+        };
+
+        const syncSection = () => {
+          const section = document.getElementById(PROFILE_SECTION_ID);
+          if (!section) return;
+          const nameEl = section.querySelector("#rps-profile-name");
+          const subEl = section.querySelector("#rps-profile-sub");
+          const avEl = section.querySelector("#rps-profile-avatar");
+          if (!currentUser) {
+            if (nameEl) nameEl.textContent = "Not logged in";
+            if (subEl) subEl.textContent = "Log in from Home to track stats.";
+            renderAvatarInto(avEl, "", "P");
+            return;
+          }
+          if (nameEl) nameEl.textContent = currentUser.displayName || "Player";
+          if (subEl) subEl.textContent = currentUser.email || "Logged in";
+          renderAvatarInto(avEl, currentUser.photoURL || "", currentUser.displayName || "Player");
+        };
+
+        btn.addEventListener("click", (e) => {
+          toggleProfileSection();
+        });
+
+        wireProfileButton.applyUserToUI = applyUserToUI;
+        wireProfileButton.syncSection = syncSection;
+
+        applyUserToUI();
+        profileWired = true;
+        return true;
+      }
+
+      (function waitForProfileBtn() {
+        if (!wireProfileButton()) requestAnimationFrame(waitForProfileBtn);
+      })();
+
+      // Upload score once per session when the player resets or leaves (like Memory Match).
+      setupSessionScoreUpload();
+
+      onAuthStateChanged(auth, async (user) => {
+        currentUser = user || null;
+
+        if (!user) {
+          wireProfileButton.applyUserToUI?.();
+          wireProfileButton.syncSection?.();
+          return;
+        }
+
+        wireProfileButton.applyUserToUI?.();
+        wireProfileButton.syncSection?.();
+
+        // Persist keys used elsewhere in the site (HomePage.html).
+        localStorage.setItem("zatamUserId", user.uid);
+        localStorage.setItem("zatamUserName", user.displayName || "Player");
+        localStorage.setItem("zatamUserEmail", user.email || "");
+        localStorage.setItem("zatamUserPhoto", user.photoURL || "");
+
+        // No userStats tracking writes (blocked by Firestore rules).
+      });
+    </script>
+  </body>
+</html>

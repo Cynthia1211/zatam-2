@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="sa" translate="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="google" content="notranslate" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>कः समयः ? — Sanskrit Analog Clock Game</title>
+  <meta name="description" content="Interactive Sanskrit analog clock game — guess the time or set the clock hands to learn telling time in Sanskrit." />
+
+  <!-- Google Font: Asap (matching RPS / TicTacToe theme) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Asap:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Sanscript for Devanagari transliteration -->
+  <script src="https://cdn.jsdelivr.net/npm/@sanskrit-coders/sanscript@1.1.0/sanscript.min.js"></script>
+
+  <!-- ZimJS -->
+  <script src="https://zimjs.org/cdn/1.5/createjs.js"></script>
+  <script src="https://zimjs.com/cdn/019/zim_min.js"></script>
+
+  <!-- Game styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="game-page">
+
+    <header class="page-header">
+      <a href="../../index.html" class="back-btn" aria-label="Back to Home">
+        <span aria-hidden="true">←</span>
+      </a>
+      <h1 class="page-title">
+        कः समयः ?
+        <small class="trans-en">kaH samayaH — What time is it?</small>
+      </h1>
+      <button id="langToggleBtn" class="lang-btn" aria-label="Toggle English Translation">
+        🌐 EN / SA
+      </button>
+    </header>
+
+    <!-- ── Main content ───────────────────────────────────── -->
+    <div class="main-content">
+
+      <!-- Rules panel -->
+      <aside class="rules-panel">
+        <div class="rules-title">
+          नियमाः<br />
+          <span class="trans-en" style="font-size:12px; font-weight:500; color:var(--text-muted);">GAME RULES</span>
+        </div>
+        <ol class="rules-list">
+          <!-- Populated dynamically by game.js -->
+        </ol>
+      </aside>
+
+      <!-- Play area -->
+      <main class="play-area">
+
+        <!-- Mode tabs -->
+        <div class="mode-tabs">
+          <button class="mode-tab active" data-mode="guess" id="tab-guess">
+            <span class="tab-icon">🔍</span>
+            कः समयः?<span class="trans-en"> — Guess</span>
+          </button>
+          <button class="mode-tab" data-mode="set" id="tab-set">
+            <span class="tab-icon">🕐</span>
+            समयं स्थापय<span class="trans-en"> — Set Clock</span>
+          </button>
+        </div>
+
+        <!-- Sanskrit prompt (Mode 2) -->
+        <div class="sanskrit-prompt" id="sanskritPrompt">
+          <div class="prompt-label trans-en">Set the clock to this time:</div>
+          <div class="prompt-label trans-sa">घटिकायाम् एषः समयः स्थाप्यताम्:</div>
+          <div class="prompt-text"></div>
+          <div class="prompt-english trans-en"></div>
+        </div>
+
+        <!-- ZimJS Canvas (ZIM creates its own canvas in tag mode) -->
+        <div class="canvas-container" id="gameCanvasWrap"></div>
+
+        <!-- Drag hint (Mode 2) -->
+        <div class="drag-hint" id="dragHint">
+          <span class="trans-en">↻ Drag the hour (teal) and minute (gold) hands to match the time</span>
+          <span class="trans-sa">↻ सूचीद्वयं चालयित्वा समयं योजयतु</span>
+        </div>
+
+        <!-- Answer options (Mode 1) -->
+        <div class="answer-area visible" id="answerArea">
+          <div class="answer-grid" id="answerGrid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Check / Skip (Mode 2) -->
+        <div class="check-row" id="checkRow">
+          <button class="check-btn" id="checkBtn">✓ परीक्ष्यताम्<span class="trans-en"> — Check</span></button>
+          <button class="skip-btn" id="skipBtn">⟳ <span class="trans-en">Skip</span><span class="trans-sa">त्यज्यताम्</span></button>
+        </div>
+
+        <!-- Score bar -->
+        <div class="score-bar">
+          <div class="score-item">
+            <span class="score-icon">✅</span>
+            <span class="score-value" id="scoreValue">०</span>
+            <span class="score-label">/ <span id="totalValue">०</span></span>
+          </div>
+          <div class="score-item">
+            <span class="score-icon">🔥</span>
+            <span class="score-value" id="streakValue">०</span>
+            <span class="score-label"><span class="trans-en">streak</span><span class="trans-sa">अङ्काः</span></span>
+          </div>
+          <div class="score-item">
+            <span class="score-icon">⭐</span>
+            <span class="score-value" id="bestValue">०</span>
+            <span class="score-label"><span class="trans-en">best</span><span class="trans-sa">सर्वोत्तमः</span></span>
+          </div>
+        </div>
+
+        <!-- Reset -->
+        <div class="reset-row">
+          <button class="reset-btn" id="resetBtn">🔄 <span class="trans-en">Reset Game</span><span class="trans-sa">पुनर्वारम्</span></button>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Feedback overlay -->
+  <div class="feedback-overlay" id="feedbackOverlay">
+    <div class="feedback-card">
+      <div class="feedback-emoji">🎉</div>
+      <div class="feedback-text"></div>
+      <div class="feedback-detail"></div>
+    </div>
+  </div>
+
+  <!-- Game scripts -->
+  <script src="sanskrit-time.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

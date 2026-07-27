@@ -1,0 +1,493 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap");
+
+:root {
+  --navy: #102d52;
+  --navy-2: #173a61;
+  --orange: #ed7b3b;
+  --gold: #f2b84b;
+  --cream: #fff8e9;
+  --paper: #fffdf8;
+  --green: #5f9368;
+  --line: #e5d6b7;
+  --shadow: 0 18px 45px rgba(74, 50, 17, .13);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--navy);
+  background:
+    linear-gradient(120deg, rgba(242, 184, 75, .13), transparent 35%),
+    radial-gradient(circle at 92% 10%, rgba(237, 123, 59, .14) 0 90px, transparent 92px),
+    var(--cream);
+  font-family: "DM Sans", "Noto Sans Devanagari", sans-serif;
+}
+
+button, a { font: inherit; }
+button { color: inherit; }
+
+.game-header {
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(18px, 5vw, 72px);
+  background: rgba(255, 253, 248, .94);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: var(--navy);
+  text-decoration: none;
+}
+
+.brand > span:last-child { display: grid; }
+.brand b { font-size: 29px; line-height: .85; letter-spacing: 0; }
+.brand em { color: var(--orange); font-style: normal; }
+.brand small { font-family: "Noto Sans Devanagari", sans-serif; font-size: 10px; margin-top: 7px; }
+
+.brand-mark { position: relative; width: 50px; height: 42px; }
+.brand-mark i {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+}
+.brand-mark i:nth-child(2) { left: 10px; border-color: var(--orange); }
+.brand-mark i:nth-child(3) { left: 20px; border-color: #8596b0; }
+
+.header-actions, .language-switch { display: flex; align-items: center; }
+.header-actions { gap: 10px; }
+.language-switch { padding: 4px; border: 1px solid var(--line); background: white; border-radius: 7px; }
+.lang-btn, .icon-button, .icon-link {
+  min-width: 40px;
+  height: 38px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 800;
+}
+.lang-btn.active { color: white; background: var(--navy); }
+.icon-button, .icon-link { border: 1px solid var(--line); background: white; font-size: 22px; }
+
+main { width: min(1400px, calc(100% - 32px)); margin: 0 auto; padding: 26px 0 28px; }
+
+.intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 30px;
+  margin-bottom: 16px;
+}
+
+.eyebrow { margin: 0 0 6px; color: #b65f2f; font-size: 12px; font-weight: 800; letter-spacing: 2px; }
+h1 { margin: 0; font-family: Georgia, serif; font-size: clamp(38px, 5vw, 62px); line-height: 1; letter-spacing: 0; }
+.intro-copy { margin: 10px 0 0; color: #59677a; }
+
+.difficulty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: white;
+}
+.difficulty > span { padding: 0 10px; font-weight: 700; font-size: 13px; }
+.difficulty-btn {
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.difficulty-btn.active { color: white; background: var(--orange); }
+
+.game-shell {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) 340px;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.control-panel { padding: 28px 22px; background: #fff2d5; border-right: 1px solid var(--line); }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.stat {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid #ead7ad;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .7);
+}
+.stat:last-child { grid-column: 1 / -1; }
+.stat span { display: block; color: #77808b; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+.stat strong { display: block; margin-top: 3px; font-size: 25px; }
+
+.progress-block { margin: 22px 0; }
+.progress-block > div:first-child { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: 700; }
+.progress-track { height: 8px; overflow: hidden; border-radius: 4px; background: #e8d5ac; }
+.progress-track span { display: block; width: 0; height: 100%; background: var(--green); transition: width .25s ease; }
+
+.puzzle-gallery-panel {
+  min-width: 0;
+  padding: 24px 22px;
+  background:
+    linear-gradient(180deg, rgba(242, 184, 75, .14), transparent 40%),
+    #fff7e5;
+  border-left: 1px solid var(--line);
+}
+
+.puzzle-picker-block {
+  height: 100%;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #ead7ad;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, .55);
+}
+
+.picker-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.picker-heading span { color: #77808b; }
+.picker-heading strong { color: var(--orange); text-align: right; text-transform: none; }
+
+.puzzle-picker {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: 146px;
+  align-content: start;
+  gap: 10px;
+  max-height: 360px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px 5px 2px 2px;
+}
+
+.puzzle-choice {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: #f5deb0;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(16, 45, 82, .08);
+}
+
+.puzzle-choice img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  padding: 8px;
+  transition: filter .18s ease;
+}
+
+.puzzle-choice span {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  overflow: hidden;
+  border-radius: 4px;
+  padding: 3px 4px;
+  color: white;
+  background: rgba(16, 45, 82, .78);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.puzzle-choice:hover,
+.puzzle-choice:focus-visible {
+  border-color: var(--green);
+  outline: 0;
+}
+
+.puzzle-choice:hover img,
+.puzzle-choice:focus-visible img { filter: saturate(1.1) brightness(1.03); }
+
+.puzzle-choice.active {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(242, 184, 75, .35);
+}
+
+.action-list { display: grid; gap: 8px; }
+.action {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  border: 1px solid #dfc999;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-weight: 700;
+  text-align: left;
+}
+.action span:first-child { width: 22px; color: var(--orange); font-size: 20px; text-align: center; }
+.action:hover { border-color: var(--orange); transform: translateY(-1px); }
+.action.primary { color: white; border-color: var(--navy); background: var(--navy); }
+.action.primary span:first-child { color: var(--gold); }
+
+.save-status { margin: 24px 0 8px; color: #6e6a62; font-size: 12px; line-height: 1.5; }
+.leaderboard-link { color: var(--navy); font-size: 13px; font-weight: 800; }
+
+.play-area { min-width: 0; display: grid; place-items: center; align-content: center; padding: 28px; background: #f8f2e5; }
+.board-wrap {
+  position: relative;
+  width: min(68vh, 680px, 100%);
+  aspect-ratio: 1;
+  border: 10px solid white;
+  outline: 2px solid #e4c98f;
+  border-radius: 6px;
+  background: #d5bb82;
+  box-shadow: 0 16px 32px rgba(57, 42, 20, .2);
+  overflow: hidden;
+}
+
+.puzzle-board { width: 100%; height: 100%; display: grid; gap: 2px; background: #fff1cf; touch-action: none; }
+.puzzle-piece {
+  position: relative;
+  min-width: 0;
+  border: 0;
+  border-radius: 2px;
+  background-image: var(--puzzle-image, url("assets/gurukula.png"));
+  background-repeat: no-repeat;
+  cursor: grab;
+  transition: transform .17s ease, filter .17s ease, box-shadow .17s ease;
+}
+.puzzle-piece::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, .42);
+}
+.puzzle-piece:hover, .puzzle-piece.keyboard-focus { z-index: 2; filter: brightness(1.08); box-shadow: inset 0 0 0 3px #68a272; }
+.puzzle-piece.selected { z-index: 3; transform: scale(.94); box-shadow: inset 0 0 0 4px var(--gold); }
+.puzzle-piece.dragging { z-index: 5; cursor: grabbing; transform: scale(.9) rotate(2deg); opacity: .78; }
+.puzzle-piece.drop-target { z-index: 4; box-shadow: inset 0 0 0 5px var(--orange); }
+.puzzle-piece.correct { box-shadow: inset 0 0 0 2px rgba(111, 174, 110, .72); }
+.puzzle-piece.hint-piece { z-index: 5; animation: hintPulse .65s ease 3; }
+.puzzle-piece.hint-target { z-index: 4; animation: targetPulse .65s ease 3; }
+
+@keyframes hintPulse { 50% { transform: scale(.86); box-shadow: inset 0 0 0 6px var(--gold); } }
+@keyframes targetPulse { 50% { filter: saturate(.45); box-shadow: inset 0 0 0 6px var(--green); } }
+
+.preview-image {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+.preview-image.visible { opacity: 1; }
+
+.board-start {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  padding: 28px;
+  text-align: center;
+  color: white;
+  background: rgba(16, 45, 82, .9);
+}
+
+.board-start[hidden] {
+  display: none;
+}
+
+.start-icon { width: 74px; height: 74px; display: grid; place-items: center; border: 2px solid var(--gold); border-radius: 50%; font: 700 36px "Noto Sans Devanagari"; }
+.board-start h2 { margin: 18px 0 8px; font: 700 clamp(24px, 4vw, 38px) Georgia, serif; letter-spacing: 0; }
+.board-start p { margin: 0 0 22px; color: #e8edf3; }
+.board-start button, .modal-actions button {
+  border: 0;
+  border-radius: 6px;
+  padding: 13px 22px;
+  color: var(--navy);
+  background: var(--gold);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.play-note {
+  width: min(68vh, 680px, 100%);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 16px;
+  color: #6d7682;
+  font-size: 13px;
+}
+.correct-count { white-space: nowrap; }
+.correct-count b { color: var(--green); }
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(12, 31, 54, .72);
+}
+.modal[hidden] { display: none; }
+.modal-card {
+  width: min(470px, 100%);
+  padding: 38px;
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.celebration { color: var(--orange); font: 700 36px "Noto Sans Devanagari"; }
+.modal-card h2 { margin: 8px 0; font: 700 38px Georgia, serif; letter-spacing: 0; }
+.modal-card > p:not(.eyebrow) { color: #647083; }
+.modal-actions { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 24px; }
+.modal-actions a { color: var(--navy); font-weight: 800; }
+
+@media (min-width: 901px) {
+  body { overflow: hidden; }
+
+  .game-header { height: 66px; }
+
+  main {
+    height: calc(100dvh - 66px);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    padding-top: 18px;
+    padding-bottom: 16px;
+  }
+
+  h1 { font-size: clamp(36px, 4vw, 52px); }
+  .intro-copy { margin-top: 6px; }
+
+  .game-shell {
+    height: 100%;
+    max-height: calc(100dvh - 66px - 112px);
+  }
+
+  .control-panel {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px 18px;
+  }
+
+  .stat-grid { gap: 7px; }
+  .stat { padding: 9px 11px; }
+  .stat strong { font-size: 22px; }
+  .progress-block { margin: 12px 0; }
+
+  .puzzle-picker-block {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .puzzle-gallery-panel {
+    min-height: 0;
+    padding: 18px;
+  }
+
+  .puzzle-picker {
+    min-height: 0;
+    flex: 1 1 auto;
+    max-height: none;
+  }
+
+  .action-list { gap: 7px; }
+  .action { min-height: 40px; }
+  .save-status { margin-top: 12px; }
+
+  .play-area { padding: 20px; }
+  .board-wrap,
+  .play-note {
+    width: min(43vw, calc(100dvh - 66px - 172px), 620px);
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1180px) {
+  .game-shell { grid-template-columns: 230px minmax(0, 1fr) 300px; }
+  .control-panel { padding-inline: 14px; }
+  .puzzle-gallery-panel { padding: 14px; }
+  .puzzle-picker { grid-auto-rows: 128px; gap: 8px; }
+  .puzzle-choice img { padding: 7px; }
+  .board-wrap,
+  .play-note {
+    width: min(40vw, calc(100dvh - 66px - 172px), 560px);
+  }
+}
+
+@media (max-width: 900px) {
+  .game-shell { grid-template-columns: 1fr; }
+  .control-panel { border-right: 0; border-bottom: 1px solid var(--line); }
+  .puzzle-gallery-panel { border-left: 0; border-top: 1px solid var(--line); padding: 20px; }
+  .puzzle-picker-block { height: auto; }
+  .stat-grid { grid-template-columns: repeat(3, 1fr); }
+  .stat:last-child { grid-column: auto; }
+  .action-list { grid-template-columns: 1fr 1fr; }
+  .puzzle-picker { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 128px; max-height: 360px; }
+  .save-status, .leaderboard-link { display: inline-block; margin-right: 12px; }
+  .board-wrap, .play-note { width: min(76vh, 680px, 100%); }
+}
+
+@media (max-width: 620px) {
+  .game-header { height: 66px; padding: 0 14px; }
+  .brand b { font-size: 23px; }
+  .brand small, .brand-mark, .icon-link { display: none; }
+  main { width: min(100% - 20px, 1400px); padding: 24px 0; }
+  .intro { align-items: stretch; flex-direction: column; gap: 18px; }
+  .difficulty { width: 100%; }
+  .difficulty > span { margin-right: auto; }
+  .difficulty-btn { padding-inline: 10px; }
+  .control-panel { padding: 18px; }
+  .puzzle-gallery-panel { padding: 16px; }
+  .puzzle-picker { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 150px; max-height: 420px; }
+  .puzzle-choice img { padding: 10px; }
+  .play-area { padding: 22px 12px; }
+  .play-note { align-items: flex-start; }
+  .play-note > span:first-child { max-width: 70%; }
+  .board-start { padding: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation-duration: .01ms !important; }
+}

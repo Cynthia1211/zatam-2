@@ -1,0 +1,1267 @@
+<!doctype html>
+<html lang="sa">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>पाशः — Maze</title>
+
+    <link rel="shortcut icon" href="../RockPaperScissors/zipaka.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Asap:wght@400;500;600;700&family=Bitcount+Grid+Double:wght@100..900&display=swap" rel="stylesheet">
+
+    <style>
+      :root{
+        --bg: #fdf8f1;
+        --sidebar-bg: #fafafa;
+        --sidebar-border: #e8e4de;
+        --title-teal: #1a5c4a;
+        --green-dark: #1a5c4a;
+        --green-badge: #2c3e5a;
+        --rules-bg: #ffffff;
+        --rules-border: #1a5c4a;
+        --text: #1a1a1a;
+        --text-muted: #555555;
+        --white: #ffffff;
+        --shadow: 0 4px 14px rgba(0, 0, 0, .1);
+        --shadow-lg: 0 8px 24px rgba(0, 0, 0, .14);
+        --card-yellow: #f4c430;
+        --card-yellow-hover: #f7d050;
+        --reset-bg: #2c3e5a;
+        --reset-hover: #3d4f6b;
+      }
+
+      *{box-sizing:border-box;margin:0;padding:0}
+      html,body{height:100%}
+      body{
+        background:var(--bg);
+        font-family:Asap,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;
+        color:var(--text);
+      }
+
+      .zim-game{min-height:100vh;display:flex}
+      .nav-sidebar{
+        width:56px;flex-shrink:0;background:var(--sidebar-bg);border-right:1px solid var(--sidebar-border);
+        display:flex;flex-direction:column;align-items:center;padding-top:12px;position:sticky;top:0;height:100vh;z-index:20
+      }
+      .nav-back{
+        display:flex;align-items:center;justify-content:center;
+        width:44px;height:44px;
+        border:1px solid rgba(26,92,74,.18);
+        background:#ffffff;
+        color:var(--title-teal);
+        cursor:pointer;
+        border-radius:12px;
+        box-shadow:0 8px 18px rgba(0,0,0,.08);
+        transition:background .15s ease, transform .12s ease, border-color .15s ease;
+      }
+      .nav-back:hover{background:#f3fbf8;border-color:rgba(26,92,74,.35);transform:translateY(-1px)}
+      .nav-back:active{transform:translateY(0) scale(.98)}
+      .nav-back svg{width:20px;height:20px;display:block}
+
+      .main-shell{flex:1;min-width:0;display:flex;flex-direction:column;min-height:100vh}
+      .page-header{
+        position:relative;display:flex;align-items:center;justify-content:center;
+        padding:24px 96px 26px 72px; /* leave room for profile icon */
+      }
+      .page-title{
+        font-family:Asap,system-ui,sans-serif;
+        font-size:clamp(22px,4vw,34px);
+        font-weight:800;
+        color:var(--title-teal);
+        text-align:center;
+        letter-spacing:.04em;
+        line-height:1.2;
+      }
+
+      .profile-icon{
+        position:absolute;top:12px;right:16px;width:44px;height:44px;
+        display:flex;align-items:center;justify-content:center;
+      }
+      .profile-icon-btn{
+        width:44px;height:44px;
+        border:1px solid rgba(26,92,74,.18);
+        background:#ffffff;
+        padding:0;
+        cursor:pointer;
+        border-radius:999px;
+        box-shadow:0 8px 18px rgba(0,0,0,.08);
+        transition:background .15s ease, transform .12s ease, border-color .15s ease;
+        display:flex;align-items:center;justify-content:center;
+      }
+      .profile-icon-btn:hover{background:#f3fbf8;border-color:rgba(26,92,74,.35);transform:translateY(-1px)}
+      .profile-icon-btn:active{transform:translateY(0) scale(.98)}
+
+      .zim-body{
+        flex:1;max-width:1100px;width:100%;margin:0 auto;padding:0 24px 110px;
+        display:grid;grid-template-columns:260px 1fr;gap:24px;align-items:start;
+      }
+      .rules-panel{
+        background:var(--rules-bg);
+        border:2px solid var(--rules-border);
+        border-radius:12px;padding:18px;
+        box-shadow:var(--shadow);
+      }
+      .rules-title{font-size:14px;font-weight:800;color:var(--green-dark);margin-bottom:10px}
+      .rules-text{font-size:13px;color:var(--text-muted);line-height:1.45}
+      .rules-list{margin-top:10px;padding-left:18px;color:var(--text-muted);font-size:13px;line-height:1.45}
+
+      .character-section{
+        margin-top:16px;
+        padding-top:14px;
+        border-top:1px solid rgba(26,92,74,.18);
+      }
+      .character-title{
+        font-size:13px;
+        font-weight:800;
+        color:var(--green-dark);
+        margin-bottom:10px;
+      }
+      .character-grid{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:8px;
+      }
+      .character-card{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:4px;
+        padding:10px 6px;
+        border:2px solid rgba(26,92,74,.22);
+        border-radius:12px;
+        background:#faf8f4;
+        cursor:pointer;
+        font-family:inherit;
+        transition:border-color .15s ease, background .15s ease, transform .1s ease, box-shadow .15s ease;
+      }
+      .character-card:hover{
+        border-color:rgba(26,92,74,.45);
+        background:#fff;
+        transform:translateY(-1px);
+      }
+      .character-card.selected{
+        border-color:var(--green-dark);
+        background:#e8f5f0;
+        box-shadow:0 0 0 2px rgba(26,92,74,.12);
+      }
+      .character-emoji{font-size:26px;line-height:1}
+      .character-name{font-size:11px;font-weight:700;color:var(--title-teal)}
+
+      .play-panel{
+        background:var(--rules-bg);
+        border:2px solid rgba(26,92,74,.25);
+        border-radius:14px;
+        box-shadow:var(--shadow-lg);
+        padding:16px;
+        min-height:520px;
+      }
+
+      .hud{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap}
+      .hud-pill{
+        background:var(--green-badge);color:var(--white);
+        border-radius:999px;padding:8px 14px;box-shadow:var(--shadow);
+        display:flex;gap:10px;align-items:center;
+        font-family: "Bitcount Grid Double", system-ui, sans-serif;
+        font-weight:700;
+      }
+      .hud-label{opacity:.9;font-family:Asap,system-ui,sans-serif;font-weight:700}
+
+      .game-message{
+        margin-bottom:10px;
+        padding:8px 12px;
+        border-radius:10px;
+        background:#e8f5f0;
+        border:1px solid rgba(26,92,74,.2);
+        color:var(--green-dark);
+        font-size:13px;
+        font-weight:700;
+        line-height:1.35;
+      }
+      .game-message.has-key{background:#fff8e6;border-color:rgba(244,196,48,.45);color:#7a5a00}
+
+      #mazeHolder{
+        width:100%;
+        height:auto;
+        min-height:160px;
+        display:block;
+        border-radius:12px;
+        overflow:hidden;
+      }
+      #mazeHolder canvas{
+        display:block;
+        width:100% !important;
+        height:100% !important;
+      }
+
+      .mobile-controls{
+        display:none;
+        margin-top:14px;
+        padding-top:4px;
+      }
+      .dpad{
+        display:grid;
+        grid-template-columns:repeat(3, minmax(0, 1fr));
+        grid-template-rows:repeat(2, minmax(0, 1fr));
+        gap:10px;
+        width:min(100%, 240px);
+        margin:0 auto;
+      }
+      .dpad-btn{
+        width:100%;
+        aspect-ratio:1;
+        min-height:58px;
+        border:1px solid rgba(26,92,74,.22);
+        border-radius:16px;
+        background:#ffffff;
+        color:var(--title-teal);
+        box-shadow:var(--shadow);
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        touch-action:manipulation;
+        user-select:none;
+        -webkit-tap-highlight-color:transparent;
+        transition:background .12s ease, transform .1s ease, border-color .12s ease;
+      }
+      .dpad-btn svg{width:24px;height:24px;display:block}
+      .dpad-btn:active,
+      .dpad-btn.pressed{
+        background:#e8f5f0;
+        border-color:rgba(26,92,74,.4);
+        transform:scale(.96);
+      }
+      .dpad-up{grid-column:2;grid-row:1}
+      .dpad-left{grid-column:1;grid-row:2}
+      .dpad-down{grid-column:2;grid-row:2}
+      .dpad-right{grid-column:3;grid-row:2}
+      .mobile-controls-label{
+        text-align:center;
+        font-size:12px;
+        font-weight:700;
+        color:var(--text-muted);
+        margin-bottom:10px;
+      }
+
+      .zim-footer{
+        position:fixed;bottom:0;left:56px;right:0;padding:16px 20px 20px;
+        display:flex;align-items:center;justify-content:center;pointer-events:none;
+      }
+      .reset-btn{
+        pointer-events:auto;background:var(--reset-bg);color:var(--white);
+        border:none;border-radius:12px;padding:14px 40px;font-size:18px;font-weight:700;
+        font-family:inherit;cursor:pointer;box-shadow:var(--shadow-lg);
+        transition:background .15s ease,transform .1s ease;
+      }
+      .reset-btn:hover{background:var(--reset-hover)}
+      .reset-btn:active{transform:scale(.97)}
+
+      .profile-panel{
+        display:none;
+        margin-top:12px;
+        padding:12px 14px;
+        border-radius:12px;
+        border:2px solid var(--rules-border);
+        background:var(--white);
+        box-shadow:var(--shadow);
+      }
+      .profile-row{display:flex;gap:10px;align-items:center}
+      .avatar{width:34px;height:34px;border-radius:999px;overflow:hidden;background:#e8e4de;flex:0 0 auto}
+      .profile-name{font-weight:800;color:var(--title-teal)}
+      .profile-sub{font-size:12px;color:var(--text-muted)}
+      .save-status{font-size:12px;color:var(--text-muted);margin-top:8px}
+
+      @media(max-width:860px){
+        .zim-body{
+          grid-template-columns:1fr;
+          display:flex;
+          flex-direction:column;
+          gap:16px;
+          padding:0 12px calc(220px + env(safe-area-inset-bottom, 0px));
+        }
+        .play-panel{order:1;min-height:auto;padding:12px}
+        .rules-panel{order:2;padding:14px}
+        #mazeHolder{min-height:140px}
+        .page-header{padding:14px 72px 16px 12px}
+        .page-title{font-size:clamp(20px, 6vw, 28px)}
+        .profile-icon{top:10px;right:10px}
+        .hud{
+          display:grid;
+          grid-template-columns:repeat(2, minmax(0, 1fr));
+          gap:8px;
+        }
+        .hud-pill{
+          width:100%;
+          justify-content:space-between;
+          padding:7px 10px;
+          font-size:13px;
+        }
+        .hud-label{font-size:12px}
+        .character-grid{grid-template-columns:repeat(3, minmax(0, 1fr))}
+        .mobile-controls{display:block}
+        .zim-footer{
+          left:56px;
+          padding:12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+        }
+        .reset-btn{
+          width:min(100%, 320px);
+          padding:13px 24px;
+          font-size:16px;
+        }
+      }
+
+      @media(max-width:420px){
+        .nav-sidebar{width:48px}
+        .zim-footer{left:48px}
+        #mazeHolder{min-height:120px}
+        .dpad{width:min(100%, 210px);gap:8px}
+        .dpad-btn{min-height:52px;border-radius:14px}
+        .dpad-btn svg{width:22px;height:22px}
+      }
+
+      /* Win modal (React-driven) */
+      .win-backdrop{
+        position:fixed;
+        inset:0;
+        background:rgba(11, 43, 43, 0.58);
+        display:none;
+        align-items:center;
+        justify-content:center;
+        z-index:9999;
+        padding:18px;
+      }
+      .win-backdrop.show{display:flex; animation:fadeIn .18s ease-out both;}
+      .win-card{
+        width:min(760px, 100%);
+        border-radius:22px;
+        background:#fff;
+        border:1px solid rgba(0,0,0,.08);
+        box-shadow:0 18px 50px rgba(0,0,0,.22);
+        overflow:hidden;
+        transform:translateY(8px) scale(.98);
+        animation:popIn .22s cubic-bezier(.2,1.4,.3,1) both;
+      }
+      .win-header{
+        background:linear-gradient(135deg, #1a5c4a 0%, #2c3e5a 100%);
+        color:#fff;
+        padding:18px 18px 16px;
+        position:relative;
+      }
+      .win-title{font-weight:900; letter-spacing:.12em; font-size:14px; opacity:.92;}
+      .win-sub{margin-top:6px; font-weight:800; font-size:22px;}
+      .win-close{
+        position:absolute; top:12px; right:12px;
+        width:40px; height:40px; border-radius:12px;
+        border:none; background:rgba(255,255,255,.14);
+        color:#fff; cursor:pointer; font-size:18px;
+      }
+      .win-close:hover{background:rgba(255,255,255,.22)}
+      .win-body{padding:16px 18px 18px;}
+      .stats-grid{
+        display:grid;
+        grid-template-columns:repeat(3, 1fr);
+        gap:10px;
+        margin-top:10px;
+      }
+      .stat{
+        border:1px solid rgba(26,92,74,.18);
+        border-radius:14px;
+        padding:12px 10px;
+        box-shadow:0 8px 18px rgba(0,0,0,.08);
+      }
+      .stat-k{font-size:11px; font-weight:900; letter-spacing:.12em; color:#2c3e5a; opacity:.9;}
+      .stat-v{margin-top:6px; font-family:"Bitcount Grid Double", system-ui, sans-serif; font-size:18px; font-weight:800; color:#1a5c4a;}
+      .win-tip{margin-top:12px; color:#555; font-size:13px;}
+      .win-actions{display:flex; gap:10px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap;}
+      .btn{
+        border:none; cursor:pointer; border-radius:14px;
+        padding:12px 16px; font-weight:900; font-family:inherit;
+        box-shadow:0 10px 24px rgba(0,0,0,.14);
+      }
+      .btn-primary{background:#f4c430; color:#0b2b2b;}
+      .btn-primary:hover{background:#f7d050;}
+      .btn-secondary{background:#2c3e5a; color:#fff;}
+      .btn-secondary:hover{background:#3d4f6b;}
+      @media(max-width:520px){
+        .stats-grid{grid-template-columns:1fr;}
+        .win-actions{justify-content:stretch;}
+        .btn{flex:1;}
+      }
+      @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+      @keyframes popIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+    </style>
+  </head>
+
+  <body>
+    <div class="zim-game">
+      <aside class="nav-sidebar">
+        <a class="nav-back" href="../../index.html" aria-label="Back to Home">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </aside>
+
+      <div class="main-shell">
+        <header class="page-header">
+          <div class="page-title">पाशः <span style="font-weight:600;color:#2c3e5a">Maze</span></div>
+          <div class="profile-icon">
+            <button class="profile-icon-btn" id="profileBtn" aria-label="Profile"></button>
+          </div>
+        </header>
+
+        <main class="zim-body">
+          <section class="rules-panel">
+            <div class="rules-title">How to play</div>
+            <div class="rules-text">
+              Navigate the maze, collect the key, then unlock the gate. Use arrow keys on desktop or the on-screen arrows on mobile.
+            </div>
+            <ul class="rules-list">
+              <li>Find the key hidden somewhere in the maze.</li>
+              <li>The gate stays locked until you have the key.</li>
+              <li>Fewer moves gives a higher score.</li>
+            </ul>
+
+            <div class="character-section">
+              <div class="character-title">Choose your character</div>
+              <div class="character-grid" id="characterGrid"></div>
+            </div>
+
+            <div class="profile-panel" id="profilePanel">
+              <div class="profile-row">
+                <div class="avatar" id="avatar"></div>
+                <div style="min-width:0">
+                  <div class="profile-name" id="profileName">Not logged in</div>
+                  <div class="profile-sub" id="profileEmail">Login from Home to save score.</div>
+                </div>
+              </div>
+              <div class="save-status" id="saveStatus">Score not saved yet.</div>
+            </div>
+          </section>
+
+          <section class="play-panel">
+            <div class="hud">
+              <div class="hud-pill"><span class="hud-label">Character</span><span id="charVal">🧑‍🎓 Vidya</span></div>
+              <div class="hud-pill"><span class="hud-label">Key</span><span id="keyVal">🔍 Find it</span></div>
+              <div class="hud-pill"><span class="hud-label">Moves</span><span id="movesVal">0</span></div>
+              <div class="hud-pill"><span class="hud-label">Time</span><span id="timeVal">0</span></div>
+              <div class="hud-pill"><span class="hud-label">Score</span><span id="scoreVal">0</span></div>
+            </div>
+            <div class="game-message" id="gameMessage">First find the key 🔑</div>
+            <div id="mazeHolder"></div>
+            <div class="mobile-controls" id="mobileControls" aria-label="Movement controls">
+              <div class="mobile-controls-label">Tap arrows to move</div>
+              <div class="dpad">
+                <button type="button" class="dpad-btn dpad-up" data-dir="up" aria-label="Move up">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 5l-7 7h4v7h6v-7h4l-7-7z" fill="currentColor"/>
+                  </svg>
+                </button>
+                <button type="button" class="dpad-btn dpad-left" data-dir="left" aria-label="Move left">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M5 12l7-7v4h7v6h-7v4l-7-7z" fill="currentColor"/>
+                  </svg>
+                </button>
+                <button type="button" class="dpad-btn dpad-down" data-dir="down" aria-label="Move down">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 19l7-7h-4V5h-6v7H5l7 7z" fill="currentColor"/>
+                  </svg>
+                </button>
+                <button type="button" class="dpad-btn dpad-right" data-dir="right" aria-label="Move right">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M19 12l-7 7v-4H5v-6h7V5l7 7z" fill="currentColor"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <footer class="zim-footer">
+          <button class="reset-btn" id="resetBtn">Reset</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Win Modal (React controls content) -->
+    <div class="win-backdrop" id="winBackdrop" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+      <div class="win-card">
+        <div class="win-header">
+          <div class="win-title" id="winTitle">MAZE COMPLETE</div>
+          <div class="win-sub" id="winSub">✅ Uttamam!</div>
+          <button class="win-close" id="winClose" aria-label="Close">✕</button>
+        </div>
+        <div class="win-body">
+          <div class="stats-grid">
+            <div class="stat"><div class="stat-k">MOVES</div><div class="stat-v" id="winMoves">0</div></div>
+            <div class="stat"><div class="stat-k">TIME</div><div class="stat-v" id="winTime">0s</div></div>
+            <div class="stat"><div class="stat-k">SCORE</div><div class="stat-v" id="winScore">0 ⭐</div></div>
+          </div>
+          <div class="win-tip">Try again with fewer moves to score higher.</div>
+          <div class="win-actions">
+            <button class="btn btn-secondary" id="winHome">Home</button>
+            <button class="btn btn-primary" id="winAgain">Play Again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZIM (ESM build) -->
+    <script type="module">
+      import zim from "https://zimjs.org/cdn/016/zim.js";
+      // expose for our module code below (keeps code changes small)
+      window.zim = zim;
+    </script>
+
+    <!-- React (no build step) + game logic -->
+    <script type="module">
+      import React, { useEffect, useMemo, useRef, useState } from "https://esm.sh/react@18.3.1";
+      import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
+      import htm from "https://esm.sh/htm@3.1.1";
+
+      import {
+        auth,
+        onAuthStateChanged,
+        db,
+        collection,
+        addDoc,
+        serverTimestamp
+      } from "../../firebase-config.js";
+
+      const html = htm.bind(React.createElement);
+
+      function todayString() {
+        return new Date().toISOString().split("T")[0];
+      }
+
+      function escapeHTML(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function makeAvatar(el, user) {
+        el.innerHTML = "";
+        if (user?.photoURL) {
+          const img = document.createElement("img");
+          img.src = user.photoURL;
+          img.alt = "Avatar";
+          img.referrerPolicy = "no-referrer";
+          img.style.width = "100%";
+          img.style.height = "100%";
+          img.style.objectFit = "cover";
+          el.appendChild(img);
+          return;
+        }
+
+        const d = document.createElement("div");
+        d.style.width = "100%";
+        d.style.height = "100%";
+        d.style.display = "flex";
+        d.style.alignItems = "center";
+        d.style.justifyContent = "center";
+        d.style.color = "#1a5c4a";
+        d.style.background = "#1a5c4a14";
+
+        if (!user) {
+          d.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="18" height="18">
+              <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          `;
+          el.appendChild(d);
+          return;
+        }
+
+        const initials =
+          (user?.displayName || "Player")
+            .trim()
+            .split(/\s+/)
+            .slice(0, 2)
+            .map((w) => w[0]?.toUpperCase())
+            .join("") || "P";
+        d.textContent = initials;
+        d.style.fontWeight = "900";
+        el.appendChild(d);
+      }
+
+      // ZIM is loaded as an ES module above and exposed on window.
+      const zim = window.zim;
+
+      const CHARACTERS = [
+        { id: "vidya", name: "Vidya", emoji: "🧑‍🎓", color: "#2c3e5a" },
+        { id: "simha", name: "Simha", emoji: "🦁", color: "#e87722" },
+        { id: "gaja", name: "Gaja", emoji: "🐘", color: "#5a6a7a" },
+        { id: "mayura", name: "Mayura", emoji: "🦚", color: "#1a8c5c" },
+        { id: "vanara", name: "Vanara", emoji: "🐒", color: "#8b5a2b" },
+        { id: "naga", name: "Naga", emoji: "🐍", color: "#3d6b4f" }
+      ];
+      const CHARACTER_STORAGE_KEY = "mazeSelectedCharacter";
+
+      function loadSavedCharacter() {
+        try {
+          const id = localStorage.getItem(CHARACTER_STORAGE_KEY);
+          return CHARACTERS.find((c) => c.id === id) || CHARACTERS[0];
+        } catch {
+          return CHARACTERS[0];
+        }
+      }
+
+      function drawCellEmoji(stage, ox, oy, cellSize, cellX, cellY, emoji, sizeFactor = 0.5) {
+        const cx = ox + cellX * cellSize + cellSize / 2;
+        const cy = oy + cellY * cellSize + cellSize / 2;
+        const fontSize = Math.max(20, Math.floor(cellSize * sizeFactor));
+        const TextCtor = window.createjs?.Text || zim.Text;
+        if (TextCtor) {
+          const emojiText = new TextCtor(
+            emoji,
+            `bold ${fontSize}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`,
+            "#1a1a1a"
+          );
+          emojiText.textAlign = "center";
+          emojiText.textBaseline = "middle";
+          emojiText.x = cx;
+          emojiText.y = cy;
+          stage.addChild(emojiText);
+          return;
+        }
+
+        new zim.Label({
+          text: emoji,
+          size: fontSize,
+          align: "center",
+          valign: "center"
+        })
+          .pos(cx, cy, "CENTER", "CENTER")
+          .addTo(stage);
+      }
+
+      function drawPlayerCharacter(stage, ox, oy, cellSize, p, char) {
+        drawCellEmoji(stage, ox, oy, cellSize, p.x, p.y, char.emoji, 0.55);
+      }
+
+      function bfsDistances(maze, cols, rows, start) {
+        const dist = Array.from({ length: rows }, () => Array(cols).fill(undefined));
+        const queue = [{ x: start.x, y: start.y, d: 0 }];
+        dist[start.y][start.x] = 0;
+
+        while (queue.length) {
+          const { x, y, d } = queue.shift();
+          const cell = maze[y][x];
+          const neighbors = [];
+          if (y > 0 && !cell.walls.top) neighbors.push({ x, y: y - 1 });
+          if (x < cols - 1 && !cell.walls.right) neighbors.push({ x: x + 1, y });
+          if (y < rows - 1 && !cell.walls.bottom) neighbors.push({ x, y: y + 1 });
+          if (x > 0 && !cell.walls.left) neighbors.push({ x: x - 1, y });
+
+          for (const n of neighbors) {
+            if (dist[n.y][n.x] !== undefined) continue;
+            dist[n.y][n.x] = d + 1;
+            queue.push({ x: n.x, y: n.y, d: d + 1 });
+          }
+        }
+
+        return dist;
+      }
+
+      function findKeyLocation(maze, cols, rows, start, goal) {
+        const fromStart = bfsDistances(maze, cols, rows, start);
+        const fromGoal = bfsDistances(maze, cols, rows, goal);
+
+        let best = null;
+        let bestScore = -1;
+
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            if (x === start.x && y === start.y) continue;
+            if (x === goal.x && y === goal.y) continue;
+            const ds = fromStart[y][x];
+            const dg = fromGoal[y][x];
+            if (ds === undefined || dg === undefined) continue;
+            const total = ds + dg;
+            if (total > bestScore) {
+              bestScore = total;
+              best = { x, y };
+            }
+          }
+        }
+
+        return best || { x: Math.floor(cols / 2), y: Math.floor(rows / 2) };
+      }
+
+      function setupMazeRun(cols, rows) {
+        const maze = generateMaze(cols, rows);
+        const start = { x: 0, y: 0 };
+        const goal = { x: cols - 1, y: rows - 1 };
+        const key = findKeyLocation(maze, cols, rows, start, goal);
+        return { maze, goal, key };
+      }
+
+      function generateMaze(cols, rows) {
+        // DFS / recursive backtracker
+        const cells = Array.from({ length: rows }, () =>
+          Array.from({ length: cols }, () => ({
+            visited: false,
+            walls: { top: true, right: true, bottom: true, left: true }
+          }))
+        );
+        const stack = [];
+        const start = { x: 0, y: 0 };
+        let current = start;
+        cells[current.y][current.x].visited = true;
+
+        function neighbors(x, y) {
+          const list = [];
+          if (y > 0 && !cells[y - 1][x].visited) list.push({ x, y: y - 1, dir: "top" });
+          if (x < cols - 1 && !cells[y][x + 1].visited) list.push({ x: x + 1, y, dir: "right" });
+          if (y < rows - 1 && !cells[y + 1][x].visited) list.push({ x, y: y + 1, dir: "bottom" });
+          if (x > 0 && !cells[y][x - 1].visited) list.push({ x: x - 1, y, dir: "left" });
+          return list;
+        }
+
+        function knock(a, b, dir) {
+          const A = cells[a.y][a.x];
+          const B = cells[b.y][b.x];
+          if (dir === "top") { A.walls.top = false; B.walls.bottom = false; }
+          if (dir === "right") { A.walls.right = false; B.walls.left = false; }
+          if (dir === "bottom") { A.walls.bottom = false; B.walls.top = false; }
+          if (dir === "left") { A.walls.left = false; B.walls.right = false; }
+        }
+
+        while (true) {
+          const nbs = neighbors(current.x, current.y);
+          if (nbs.length) {
+            const next = nbs[Math.floor(Math.random() * nbs.length)];
+            stack.push(current);
+            knock(current, next, next.dir);
+            current = { x: next.x, y: next.y };
+            cells[current.y][current.x].visited = true;
+          } else if (stack.length) {
+            current = stack.pop();
+          } else {
+            break;
+          }
+        }
+
+        return cells;
+      }
+
+      function MazeGame() {
+        const [user, setUser] = useState(null);
+        const [moves, setMoves] = useState(0);
+        const [seconds, setSeconds] = useState(0);
+        const [finished, setFinished] = useState(false);
+        const [scoreUploaded, setScoreUploaded] = useState(false);
+        const [selectedCharacter, setSelectedCharacter] = useState(() => loadSavedCharacter());
+        const [hasKey, setHasKey] = useState(false);
+        const [gameMessage, setGameMessage] = useState("First find the key 🔑");
+
+        const timerRef = useRef(null);
+        const frameRef = useRef(null);
+        const stageRef = useRef(null);
+        const selectedCharacterRef = useRef(selectedCharacter);
+        const hasKeyRef = useRef(false);
+
+        const config = useMemo(() => {
+          // Similar difficulty feel to other games: responsive to screen size.
+          const isSmall = window.matchMedia("(max-width: 860px)").matches;
+          return { cols: isSmall ? 12 : 16, rows: isSmall ? 10 : 12 };
+        }, []);
+
+        const initialRun = useMemo(() => setupMazeRun(
+          window.matchMedia("(max-width: 860px)").matches ? 12 : 16,
+          window.matchMedia("(max-width: 860px)").matches ? 10 : 12
+        ), []);
+        const mazeRef = useRef(initialRun.maze);
+        const playerRef = useRef({ x: 0, y: 0 });
+        const goalRef = useRef(initialRun.goal);
+        const keyRef = useRef(initialRun.key);
+
+        function computeScore(nextMoves, nextSeconds) {
+          // High-level scoring similar to Memory Match style: big base, penalties.
+          const base = 12000 + (config.cols * config.rows) * 12;
+          const timePenalty = Math.round(nextSeconds * 18);
+          const movePenalty = Math.round(nextMoves * 35);
+          return Math.max(100, base - timePenalty - movePenalty);
+        }
+
+        function showWinScreen({ finalScore, finalMoves, finalSeconds }) {
+          const backdrop = document.getElementById("winBackdrop");
+          if (!backdrop) return;
+
+          document.getElementById("winMoves").textContent = String(finalMoves);
+          document.getElementById("winTime").textContent = `${finalSeconds}s`;
+          document.getElementById("winScore").textContent = `${Number(finalScore).toLocaleString()} ⭐`;
+
+          backdrop.classList.add("show");
+        }
+
+        const score = useMemo(() => computeScore(moves, seconds), [moves, seconds]);
+
+        useEffect(() => {
+          const unsub = onAuthStateChanged(auth, (u) => setUser(u || null));
+          return () => unsub?.();
+        }, []);
+
+        useEffect(() => {
+          // HUD to DOM for the static layout
+          document.getElementById("movesVal").textContent = String(moves);
+          document.getElementById("timeVal").textContent = String(seconds);
+          document.getElementById("scoreVal").textContent = String(score);
+          const charVal = document.getElementById("charVal");
+          if (charVal) charVal.textContent = `${selectedCharacter.emoji} ${selectedCharacter.name}`;
+          const keyVal = document.getElementById("keyVal");
+          if (keyVal) keyVal.textContent = hasKey ? "🔑 Got it!" : "🔍 Find it";
+          const messageEl = document.getElementById("gameMessage");
+          if (messageEl) {
+            messageEl.textContent = gameMessage;
+            messageEl.classList.toggle("has-key", hasKey);
+          }
+        }, [moves, seconds, score, selectedCharacter, hasKey, gameMessage]);
+
+        useEffect(() => {
+          selectedCharacterRef.current = selectedCharacter;
+          draw();
+        }, [selectedCharacter]);
+
+        useEffect(() => {
+          const grid = document.getElementById("characterGrid");
+          if (!grid) return;
+          grid.innerHTML = "";
+          CHARACTERS.forEach((char) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = `character-card${selectedCharacter.id === char.id ? " selected" : ""}`;
+            btn.setAttribute("aria-pressed", selectedCharacter.id === char.id ? "true" : "false");
+            btn.innerHTML = `<span class="character-emoji">${escapeHTML(char.emoji)}</span><span class="character-name">${escapeHTML(char.name)}</span>`;
+            btn.onclick = () => {
+              setSelectedCharacter(char);
+              try {
+                localStorage.setItem(CHARACTER_STORAGE_KEY, char.id);
+              } catch {
+                // ignore storage errors
+              }
+            };
+            grid.appendChild(btn);
+          });
+        }, [selectedCharacter]);
+
+        useEffect(() => {
+          // Profile UI (static DOM)
+          const avatar = document.getElementById("avatar");
+          const name = document.getElementById("profileName");
+          const email = document.getElementById("profileEmail");
+          if (!user) {
+            name.textContent = "Not logged in";
+            email.textContent = "Login from Home to save score.";
+            makeAvatar(avatar, null);
+            return;
+          }
+          name.textContent = user.displayName || "Player";
+          email.textContent = user.email || "";
+          makeAvatar(avatar, user);
+        }, [user]);
+
+        async function uploadScore(finalScore) {
+          if (scoreUploaded) return;
+          if (!user) {
+            alert("Please login before saving your score.");
+            return;
+          }
+          setScoreUploaded(true);
+          const saveStatus = document.getElementById("saveStatus");
+
+          const scoreData = {
+            userId: user.uid,
+            playerName: user.displayName || "Player",
+            email: user.email || "",
+            photoURL: user.photoURL || "",
+            gameId: "maze",
+            gameName: "Paasha Maze",
+            score: finalScore,
+            createdAt: serverTimestamp(),
+            scoreDate: todayString()
+          };
+
+          try {
+            await addDoc(collection(db, "leaderboard"), scoreData);
+            if (saveStatus) saveStatus.textContent = `Saved: ${finalScore.toLocaleString()} ⭐`;
+          } catch (err) {
+            setScoreUploaded(false);
+            if (saveStatus) saveStatus.textContent = `Save failed: ${err?.code || err?.message || "unknown error"}`;
+          }
+        }
+
+        function resetGame() {
+          setFinished(false);
+          setScoreUploaded(false);
+          setMoves(0);
+          setSeconds(0);
+          setHasKey(false);
+          hasKeyRef.current = false;
+          setGameMessage("First find the key 🔑");
+          playerRef.current = { x: 0, y: 0 };
+          const run = setupMazeRun(config.cols, config.rows);
+          mazeRef.current = run.maze;
+          goalRef.current = run.goal;
+          keyRef.current = run.key;
+          document.getElementById("winBackdrop")?.classList.remove("show");
+          draw();
+        }
+
+        function startTimer() {
+          if (timerRef.current) return;
+          timerRef.current = window.setInterval(() => {
+            setSeconds((s) => s + 1);
+          }, 1000);
+        }
+
+        function stopTimer() {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+        }
+
+        function canMove(from, dir) {
+          const cell = mazeRef.current[from.y][from.x];
+          if (dir === "up") return !cell.walls.top;
+          if (dir === "right") return !cell.walls.right;
+          if (dir === "down") return !cell.walls.bottom;
+          if (dir === "left") return !cell.walls.left;
+          return false;
+        }
+
+        function move(dir) {
+          if (finished) return;
+          startTimer();
+
+          const p = playerRef.current;
+          const next = { x: p.x, y: p.y };
+          if (dir === "up" && canMove(p, "up")) next.y -= 1;
+          if (dir === "right" && canMove(p, "right")) next.x += 1;
+          if (dir === "down" && canMove(p, "down")) next.y += 1;
+          if (dir === "left" && canMove(p, "left")) next.x -= 1;
+          if (next.x === p.x && next.y === p.y) return;
+
+          const g = goalRef.current;
+          const key = keyRef.current;
+          if (next.x === g.x && next.y === g.y && !hasKeyRef.current) {
+            setGameMessage("You need a key to unlock the door!");
+            return;
+          }
+
+          playerRef.current = next;
+          setMoves((m) => m + 1);
+
+          if (!hasKeyRef.current && next.x === key.x && next.y === key.y) {
+            hasKeyRef.current = true;
+            setHasKey(true);
+            setGameMessage("You found the key! Now unlock the gate.");
+          }
+
+          draw();
+
+          if (next.x === g.x && next.y === g.y && hasKeyRef.current) {
+            stopTimer();
+            setFinished(true);
+            const final = computeScore(moves + 1, seconds);
+            uploadScore(final);
+            showWinScreen({ finalScore: final, finalMoves: moves + 1, finalSeconds: seconds });
+          }
+        }
+
+        function draw() {
+          const stage = stageRef.current;
+          if (!stage) return;
+          stage.removeAllChildren();
+
+          const cols = config.cols;
+          const rows = config.rows;
+          const w = stage.width;
+          const h = stage.height;
+          const cellSize = Math.floor(Math.min((w - 20) / cols, (h - 20) / rows));
+          const ox = Math.floor((w - cellSize * cols) / 2);
+          const oy = Math.floor((h - cellSize * rows) / 2);
+
+          const maze = mazeRef.current;
+          const wallColor = "#1a5c4a";
+          const floor = new zim.Rectangle(w, h, "#fff").addTo(stage);
+          floor.alpha = 0.01; // allow pointer events
+
+          const wall = new zim.Shape().addTo(stage);
+          wall.graphics.setStrokeStyle(3).beginStroke(wallColor);
+
+          for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+              const c = maze[y][x];
+              const x0 = ox + x * cellSize;
+              const y0 = oy + y * cellSize;
+              const x1 = x0 + cellSize;
+              const y1 = y0 + cellSize;
+              if (c.walls.top) { wall.graphics.moveTo(x0, y0).lineTo(x1, y0); }
+              if (c.walls.right) { wall.graphics.moveTo(x1, y0).lineTo(x1, y1); }
+              if (c.walls.bottom) { wall.graphics.moveTo(x0, y1).lineTo(x1, y1); }
+              if (c.walls.left) { wall.graphics.moveTo(x0, y0).lineTo(x0, y1); }
+            }
+          }
+          wall.graphics.endStroke();
+
+          const g = goalRef.current;
+          const gateColor = hasKeyRef.current ? "#f4c430" : "#6b6b6b";
+          new zim.Rectangle(cellSize - 10, cellSize - 10, gateColor)
+            .pos(ox + g.x * cellSize + 5, oy + g.y * cellSize + 5)
+            .addTo(stage)
+            .alp(hasKeyRef.current ? 0.9 : 0.8);
+
+          drawCellEmoji(
+            stage,
+            ox,
+            oy,
+            cellSize,
+            g.x,
+            g.y,
+            hasKeyRef.current ? "🚪" : "🔒",
+            0.42
+          );
+
+          if (!hasKeyRef.current) {
+            const k = keyRef.current;
+            drawCellEmoji(stage, ox, oy, cellSize, k.x, k.y, "🔑", 0.42);
+          }
+
+          const p = playerRef.current;
+          drawPlayerCharacter(stage, ox, oy, cellSize, p, selectedCharacterRef.current);
+
+          stage.update();
+        }
+
+        function syncMazeSize() {
+          const holder = document.getElementById("mazeHolder");
+          if (!holder) return null;
+
+          const cols = config.cols;
+          const rows = config.rows;
+          const pad = 20;
+          const w = Math.max(160, Math.floor(holder.clientWidth));
+          const cellSize = Math.floor((w - pad) / cols);
+          const h = Math.max(100, cellSize * rows + pad);
+
+          holder.style.height = `${h}px`;
+
+          const canvasEl = document.getElementById("mazeHolderCanvas");
+          const frame = frameRef.current;
+
+          if (canvasEl) {
+            canvasEl.width = w;
+            canvasEl.height = h;
+          }
+
+          if (frame?.stage) {
+            frame.stage.canvas.width = w;
+            frame.stage.canvas.height = h;
+            frame.stage.width = w;
+            frame.stage.height = h;
+            draw();
+          }
+
+          return { w, h };
+        }
+
+        useEffect(() => {
+          const holder = document.getElementById("mazeHolder");
+          if (!holder) return;
+
+          const initial = syncMazeSize();
+          const w = initial?.w ?? 320;
+          const h = initial?.h ?? 260;
+
+          const frame = new zim.Frame("mazeHolder", w, h, "#ffffff", "#ffffff");
+          frameRef.current = frame;
+          frame.on("ready", () => {
+            stageRef.current = frame.stage;
+            requestAnimationFrame(() => syncMazeSize());
+          });
+
+          requestAnimationFrame(() => syncMazeSize());
+
+          const onResize = () => {
+            syncMazeSize();
+          };
+
+          const resizeObserver = new ResizeObserver(onResize);
+          resizeObserver.observe(holder);
+          window.addEventListener("resize", onResize);
+
+          return () => {
+            resizeObserver.disconnect();
+            window.removeEventListener("resize", onResize);
+            stopTimer();
+          };
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, []);
+
+        useEffect(() => {
+          const onKey = (e) => {
+            const isArrow =
+              e.key === "ArrowUp" ||
+              e.key === "ArrowRight" ||
+              e.key === "ArrowDown" ||
+              e.key === "ArrowLeft";
+
+            if (!isArrow) return;
+
+            // Prevent the browser from scrolling the page on arrow keys.
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (e.key === "ArrowUp") move("up");
+            if (e.key === "ArrowRight") move("right");
+            if (e.key === "ArrowDown") move("down");
+            if (e.key === "ArrowLeft") move("left");
+          };
+          // Use capture on window so we beat the browser's scroll handling.
+          window.addEventListener("keydown", onKey, { passive: false, capture: true });
+          return () => window.removeEventListener("keydown", onKey, { capture: true });
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [finished, moves, seconds]);
+
+        useEffect(() => {
+          // Basic swipe / drag handling on canvas
+          let cancelled = false;
+          let cleanup = () => {};
+
+          const attach = () => {
+            if (cancelled) return;
+            const canvas = document.getElementById("mazeHolderCanvas");
+            if (!canvas) {
+              requestAnimationFrame(attach);
+              return;
+            }
+
+            let sx = 0, sy = 0;
+            const threshold = 24;
+            const onDown = (e) => {
+              const t = e.touches ? e.touches[0] : e;
+              sx = t.clientX; sy = t.clientY;
+            };
+            const onUp = (e) => {
+              const t = e.changedTouches ? e.changedTouches[0] : e;
+              const dx = t.clientX - sx;
+              const dy = t.clientY - sy;
+              if (Math.abs(dx) < threshold && Math.abs(dy) < threshold) return;
+              if (Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? "right" : "left");
+              else move(dy > 0 ? "down" : "up");
+            };
+
+            canvas.addEventListener("pointerdown", onDown);
+            canvas.addEventListener("pointerup", onUp);
+            canvas.addEventListener("touchstart", onDown, { passive: true });
+            canvas.addEventListener("touchend", onUp, { passive: true });
+
+            cleanup = () => {
+              canvas.removeEventListener("pointerdown", onDown);
+              canvas.removeEventListener("pointerup", onUp);
+              canvas.removeEventListener("touchstart", onDown);
+              canvas.removeEventListener("touchend", onUp);
+            };
+          };
+
+          attach();
+          return () => {
+            cancelled = true;
+            cleanup();
+          };
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [finished, moves, seconds]);
+
+        useEffect(() => {
+          const buttons = document.querySelectorAll(".dpad-btn");
+          const cleanups = [];
+
+          buttons.forEach((btn) => {
+            const dir = btn.dataset.dir;
+            const press = (e) => {
+              e.preventDefault();
+              btn.classList.add("pressed");
+              move(dir);
+            };
+            const release = () => btn.classList.remove("pressed");
+
+            btn.addEventListener("pointerdown", press, { passive: false });
+            btn.addEventListener("pointerup", release);
+            btn.addEventListener("pointercancel", release);
+            btn.addEventListener("pointerleave", release);
+            cleanups.push(() => {
+              btn.removeEventListener("pointerdown", press);
+              btn.removeEventListener("pointerup", release);
+              btn.removeEventListener("pointercancel", release);
+              btn.removeEventListener("pointerleave", release);
+            });
+          });
+
+          return () => cleanups.forEach((fn) => fn());
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [finished, moves, seconds]);
+
+        useEffect(() => {
+          document.getElementById("resetBtn").onclick = resetGame;
+          // Win modal buttons
+          const backdrop = document.getElementById("winBackdrop");
+          const closeBtn = document.getElementById("winClose");
+          const againBtn = document.getElementById("winAgain");
+          const homeBtn = document.getElementById("winHome");
+          const hide = () => backdrop?.classList.remove("show");
+
+          closeBtn?.addEventListener("click", hide);
+          backdrop?.addEventListener("click", (e) => {
+            if (e.target === backdrop) hide();
+          });
+          againBtn?.addEventListener("click", () => {
+            hide();
+            resetGame();
+          });
+          homeBtn?.addEventListener("click", () => {
+            window.location.href = "../../index.html";
+          });
+
+          const btn = document.getElementById("profileBtn");
+          const panel = document.getElementById("profilePanel");
+          btn.onclick = () => {
+            panel.style.display = panel.style.display === "block" ? "none" : "block";
+          };
+          // Render avatar in icon
+          const host = btn;
+          host.innerHTML = "";
+          const icon = document.createElement("div");
+          icon.style.width = "32px";
+          icon.style.height = "32px";
+          icon.style.borderRadius = "999px";
+          icon.style.overflow = "hidden";
+          host.appendChild(icon);
+          makeAvatar(icon, user);
+          return () => {
+            closeBtn?.removeEventListener("click", hide);
+          };
+        }, [user]);
+
+        return html`<${React.Fragment} />`;
+      }
+
+      // Mount React into the real DOM; otherwise effects won't run reliably.
+      const reactRootEl = document.createElement("div");
+      reactRootEl.id = "mazeReactRoot";
+      reactRootEl.style.display = "none";
+      document.body.appendChild(reactRootEl);
+
+      const root = createRoot(reactRootEl);
+      root.render(html`<${MazeGame} />`);
+    </script>
+  </body>
+</html>

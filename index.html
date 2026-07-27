@@ -1,0 +1,2220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zat.am - Sanskrit Games</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: #fffaf2;
+      color: #09264a;
+      overflow-x: hidden;
+    }
+
+    header {
+      height: 76px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      border-bottom: 1px solid #eadfce;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-mark {
+      width: 58px;
+      height: 42px;
+      position: relative;
+    }
+
+    .circle {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border: 2px solid;
+      border-radius: 50%;
+      opacity: 0.75;
+    }
+
+    .c1 {
+      border-color: #f6b23b;
+      left: 0;
+      top: 5px;
+    }
+
+    .c2 {
+      border-color: #e86c5b;
+      left: 14px;
+      top: 0;
+    }
+
+    .c3 {
+      border-color: #7188a8;
+      left: 24px;
+      top: 12px;
+    }
+
+    .logo-text h1 {
+      font-size: 28px;
+      line-height: 24px;
+      font-weight: 800;
+    }
+
+    .logo-text span:nth-child(1) {
+      color: #f16945;
+    }
+
+    .logo-text span:nth-child(2) {
+      color: #2f6dff;
+    }
+
+    .logo-text span:nth-child(3) {
+      color: #111;
+    }
+
+    .logo-text p {
+      font-size: 12px;
+      color: #39415c;
+      margin-top: 4px;
+    }
+
+    nav {
+      display: flex;
+      gap: 42px;
+      font-weight: 600;
+      color: #18284a;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: inherit;
+      padding: 28px 0;
+      position: relative;
+    }
+
+    nav a.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 18px;
+      width: 100%;
+      height: 3px;
+      background: #f6b23b;
+      border-radius: 999px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .lang-btn,
+    .login-btn {
+      height: 40px;
+      border-radius: 14px;
+      padding: 0 18px;
+      font-size: 17px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lang-btn {
+      background: white;
+      border: 1.5px solid #222;
+      color: #111;
+    }
+
+    .login-btn {
+      background: #0b2b4f;
+      color: white;
+      border: none;
+    }
+
+    .user-profile {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: white;
+      border: 1.5px solid #0b2b4f;
+      border-radius: 16px;
+      padding: 5px 8px 5px 5px;
+    }
+
+    .user-profile img {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #f6b23b;
+      background: #ffe1a5;
+    }
+
+    #userName {
+      max-width: 120px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0b2b4f;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #logoutBtn {
+      background: #f6b23b;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 7px 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    #logoutBtn:hover {
+      background: #ef6945;
+    }
+
+    .hero {
+      min-height: clamp(500px, 62vh, 640px);
+      background:
+        radial-gradient(circle at 86% 18%, rgba(255, 192, 70, 0.34) 0 72px, transparent 74px),
+        radial-gradient(circle at 52% 92%, rgba(246, 178, 59, 0.2) 0 120px, transparent 122px),
+        linear-gradient(120deg, #fff2db 0%, #fffaf2 48%, #ffe8bf 100%);
+      display: grid;
+      grid-template-columns: minmax(320px, 0.9fr) minmax(380px, 1.05fr);
+      align-items: center;
+      gap: clamp(26px, 4vw, 58px);
+      padding: clamp(34px, 4.5vw, 58px) clamp(24px, 6vw, 72px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::before,
+    .hero::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      opacity: 0.42;
+    }
+
+    .hero::before {
+      width: 86px;
+      height: 22px;
+      left: 5%;
+      bottom: 21%;
+      background: #9d9f47;
+      border-radius: 50%;
+      transform: rotate(-22deg);
+    }
+
+    .hero::after {
+      width: 54px;
+      height: 16px;
+      right: 7%;
+      top: 33%;
+      background: #d8aa45;
+      border-radius: 50%;
+      transform: rotate(58deg);
+    }
+
+    .hero-text {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h2 {
+      font-family: Georgia, serif;
+      font-size: clamp(44px, 5.2vw, 78px);
+      line-height: 0.98;
+      color: #0b2b4f;
+      margin-bottom: 18px;
+      max-width: 580px;
+    }
+
+    .underline {
+      width: 68px;
+      height: 5px;
+      background: #f6b23b;
+      border-radius: 999px;
+      margin-bottom: 18px;
+    }
+
+    .hero p {
+      color: #24394f;
+      font-size: clamp(17px, 1.6vw, 22px);
+      line-height: 1.45;
+      margin-bottom: 22px;
+      max-width: 560px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      min-height: 46px;
+      border-radius: 8px;
+      padding: 0 20px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 16px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .primary-btn {
+      background: #0b2b4f;
+      color: white;
+      box-shadow: 0 10px 22px rgba(11, 43, 79, .18);
+    }
+
+    .secondary-btn {
+      background: white;
+      color: #1b2d44;
+      border: 1px solid #e8cda5;
+      box-shadow: 0 8px 18px rgba(143, 93, 20, 0.12);
+    }
+
+    .primary-btn:hover,
+    .secondary-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 26px rgba(11, 43, 79, .18);
+    }
+
+    .hero-art {
+      min-height: clamp(320px, 36vw, 440px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .sun {
+      width: 70px;
+      height: 70px;
+      background: #ffd36b;
+      border-radius: 50%;
+      position: absolute;
+      top: 28px;
+      right: 38px;
+      box-shadow: 0 0 0 20px rgba(255, 211, 107, 0.16);
+    }
+
+    .mountain {
+      width: clamp(320px, 38vw, 560px);
+      height: clamp(160px, 19vw, 250px);
+      border-radius: 180px 180px 24px 24px;
+      background: linear-gradient(135deg, #f0c879, #d99119);
+      position: absolute;
+      right: -24px;
+      bottom: 0;
+      opacity: .18;
+    }
+
+    .temple {
+      display: none;
+    }
+
+    .hero-card {
+      width: 68px;
+      height: 64px;
+      background: #ffc247;
+      border: 3px solid #0b2b4f;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 34px;
+      font-weight: 800;
+      color: #111;
+      transform: rotate(-8deg);
+      position: absolute;
+      bottom: 24px;
+      animation: letterFloat 3.8s ease-in-out infinite;
+      z-index: 7;
+    }
+
+    .card1 {
+      left: 22px;
+    }
+
+    .card2 {
+      left: 104px;
+      background: #fff9ef;
+      transform: rotate(0deg);
+      animation-delay: -1.1s;
+    }
+
+    .card3 {
+      left: 186px;
+      background: #c8d98c;
+      transform: rotate(8deg);
+      animation-delay: -2.2s;
+    }
+
+    .game-slideshow {
+      width: min(620px, 100%);
+      height: clamp(280px, 28vw, 385px);
+      position: relative;
+      z-index: 2;
+      border: 4px solid rgba(11, 43, 79, 0.2);
+      border-radius: 12px;
+      background: rgba(255, 250, 242, 0.78);
+      box-shadow: 0 18px 38px rgba(11, 43, 79, 0.14);
+      overflow: hidden;
+      transform: rotate(0.6deg);
+      padding: 14px;
+      backdrop-filter: blur(6px);
+    }
+
+    .game-slideshow::before {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(11, 43, 79, 0.16);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 14px;
+      display: block;
+      border-radius: 8px;
+      opacity: 0;
+      transform: translateX(22px) scale(0.985);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      overflow: hidden;
+      background: #fff7e8;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+
+    .slide-preview {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .slide-preview::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(5, 20, 39, 0.02), rgba(5, 20, 39, 0.26) 58%, rgba(5, 20, 39, 0.62));
+      pointer-events: none;
+    }
+
+    .slide-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .slide-art {
+      position: relative;
+      z-index: 1;
+      color: #0b2b4f;
+      font-size: clamp(48px, 7vw, 84px);
+      font-weight: 800;
+      line-height: 1.04;
+      text-align: center;
+      text-shadow: 0 8px 20px rgba(5, 20, 39, 0.14);
+    }
+
+    .slide-puzzle-grid {
+      position: absolute;
+      left: 16%;
+      top: 14%;
+      z-index: 1;
+      width: min(230px, 34%);
+      aspect-ratio: 4 / 3;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+
+    .slide-puzzle-grid span {
+      display: grid;
+      place-items: center;
+      border: 2px solid rgba(255, 255, 255, 0.78);
+      color: #fff !important;
+      font-weight: 800;
+      font-size: clamp(16px, 2vw, 28px);
+    }
+
+    .slide-big-title {
+      position: absolute;
+      right: 12%;
+      top: 12%;
+      z-index: 1;
+      color: #fff !important;
+      text-align: center;
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 800;
+      line-height: 0.95;
+      text-shadow: 0 8px 20px rgba(5, 20, 39, 0.22);
+    }
+
+    .slide-big-title strong {
+      display: block;
+      font-size: clamp(84px, 12vw, 138px);
+      line-height: 0.86;
+    }
+
+    .slide-caption {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      max-width: none;
+      z-index: 4;
+      color: white;
+      font-size: clamp(17px, 1.5vw, 22px);
+      font-weight: 800;
+      line-height: 1.16;
+      padding: 14px 18px;
+      border-radius: 8px;
+      background: linear-gradient(90deg, rgba(5, 20, 39, 0.98), rgba(11, 43, 79, 0.9));
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 14px 24px rgba(11, 43, 79, 0.28);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.72);
+    }
+
+    .slide-caption,
+    .slide-caption * {
+      color: #fff !important;
+    }
+
+    .slide-caption span {
+      display: block;
+      color: #ffd36b !important;
+      font-size: 14px;
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .slide-dots {
+      position: absolute;
+      left: 28px;
+      top: 28px;
+      z-index: 5;
+      display: flex;
+      gap: 7px;
+    }
+
+    .slide-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 0;
+      background: rgba(255, 255, 255, 0.72);
+      cursor: pointer;
+      transition: width 0.2s ease, background 0.2s ease;
+    }
+
+    .slide-dot.active {
+      background: #f6b23b;
+      width: 34px;
+      border-radius: 999px;
+    }
+
+    .slide-arrow,
+    .slide-toggle {
+      position: absolute;
+      z-index: 6;
+      border: 1px solid rgba(255, 255, 255, 0.56);
+      background: rgba(5, 20, 39, 0.78);
+      color: white;
+      box-shadow: 0 10px 22px rgba(5, 20, 39, 0.24);
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .slide-arrow {
+      top: 50%;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      line-height: 1;
+      transform: translateY(-50%);
+    }
+
+    .slide-arrow:hover,
+    .slide-toggle:hover {
+      background: rgba(11, 43, 79, 0.94);
+    }
+
+    .slide-prev {
+      left: 24px;
+    }
+
+    .slide-next {
+      right: 24px;
+    }
+
+    .slide-arrow:hover {
+      transform: translateY(-50%) scale(1.06);
+    }
+
+    .slide-toggle {
+      right: 28px;
+      top: 26px;
+      min-height: 34px;
+      border-radius: 999px;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .search-box {
+      width: min(420px, 100%);
+      position: relative;
+    }
+
+    #gameSearch {
+      width: 100%;
+      height: 58px;
+      padding: 0 22px;
+      border: 1.5px solid rgba(11, 43, 79, 0.3);
+      border-radius: 999px;
+      background: rgba(255, 250, 242, 0.86);
+      color: #09264a;
+      font-size: 20px;
+      font-weight: 800;
+      outline: none;
+      box-shadow: 0 8px 18px rgba(143, 93, 20, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    #gameSearch:focus {
+      background: white;
+      border-color: #f6b23b;
+      box-shadow: 0 4px 14px rgba(246, 178, 59, .35);
+    }
+
+    .category-bar {
+      background: #fff7e8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      padding: 18px 32px;
+      border-top: 1px solid #eadfce;
+      border-bottom: 1px solid #eadfce;
+      flex-wrap: wrap;
+    }
+
+    .category {
+      min-width: 155px;
+      height: 58px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(11, 43, 79, 0.26);
+      background: rgba(255, 255, 255, 0.78);
+      color: #0b2b4f;
+      font-size: 22px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 8px 18px rgba(143, 93, 20, 0.1);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .category:hover {
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: 0 8px 18px rgba(11, 43, 79, .16);
+    }
+
+    .category.wide {
+      min-width: 235px;
+    }
+
+    .category.active {
+      background: #0b2b4f;
+      color: white;
+      border-color: #0b2b4f;
+      box-shadow: 0 10px 24px rgba(11, 43, 79, .18);
+    }
+
+    .games {
+      max-width: 1120px;
+      margin: 28px auto 50px;
+      display: grid;
+      grid-template-columns: repeat(3, 320px);
+      justify-content: center;
+      gap: 34px 58px;
+    }
+
+    .game-card {
+      width: 320px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, .14);
+      border: 1px solid #f1e2c9;
+      transition: transform 0.24s ease, box-shadow 0.24s ease;
+    }
+
+    .game-card:hover {
+      transform: translateY(-8px) rotate(-0.4deg);
+      box-shadow: 0 14px 28px rgba(11, 43, 79, .18);
+    }
+
+    .game-card:hover .game-image {
+      transform: scale(1.025);
+    }
+
+    .game-card.hide {
+      display: none;
+    }
+
+    .game-image {
+      height: 140px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      transition: transform 0.24s ease;
+    }
+
+    .picture-puzzle-thumbnail {
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(10, 36, 62, .04), rgba(10, 36, 62, .04)),
+        url("Games/019-cs(Picture Puzzel)/assets/gurukula.png") center 43% / cover no-repeat;
+    }
+
+    .pictionary-thumbnail {
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(10, 36, 62, .04), rgba(10, 36, 62, .04)),
+        url("Games/SanskritPictionary/cover.png") center center / cover no-repeat;
+    }
+
+    .wordcomplex-thumbnail {
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(10, 36, 62, .04), rgba(10, 36, 62, .04)),
+        url("Games/WordComplex/cover.jpg") center center / cover no-repeat;
+    }
+
+    .monopoly-thumbnail {
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(10, 36, 62, .04), rgba(10, 36, 62, .04)),
+        url("Games/SanskritMonopoly/cover.png") center center / cover no-repeat;
+    }
+
+    .orange {
+      background: linear-gradient(135deg, #ff8b3d, #e85b2e);
+    }
+
+    .teal {
+      background: linear-gradient(135deg, #69e1dc, #2cbcc0);
+    }
+
+    .green {
+      background: #f6f3d9;
+    }
+
+    .purple {
+      background: linear-gradient(135deg, #a684f5, #f0c7e4);
+    }
+
+    .blue {
+      background: linear-gradient(135deg, #9edaff, #d7f0ff);
+    }
+
+    .new-tag {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: #95e22a;
+      color: #0b2b2b;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 5px 10px;
+      border-radius: 999px;
+    }
+
+    .puzzle-preview {
+      width: 130px;
+      height: 100px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+      position: absolute;
+      left: 78px;
+      top: 24px;
+    }
+
+    .puzzle-preview div {
+      border: 1px solid white;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .big-title {
+      position: absolute;
+      right: 30px;
+      top: 12px;
+      color: white;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .big-title strong {
+      font-size: 66px;
+      display: block;
+      line-height: .95;
+    }
+
+    .emoji-art {
+      font-size: 46px;
+      letter-spacing: 16px;
+      text-align: center;
+      position: relative;
+    }
+
+    .game-content {
+      padding: 14px 18px 18px;
+    }
+
+    .game-content h3 {
+      font-size: 19px;
+      color: #132d55;
+      margin-bottom: 8px;
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .yellow-pill {
+      background: #ffd766;
+      color: #7a5500;
+    }
+
+    .green-pill {
+      background: #a6e8bd;
+      color: #176033;
+    }
+
+    .blue-pill {
+      background: #bad6ff;
+      color: #154d93;
+    }
+
+    .purple-pill {
+      background: #e4c8ff;
+      color: #67379b;
+    }
+
+    .pink-pill {
+      background: #ffc2d1;
+      color: #800e2e;
+    }
+
+    .game-bottom {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .game-bottom p {
+      font-size: 13px;
+      color: #333;
+      line-height: 1.35;
+    }
+
+    .play-btn {
+      background: #0b2b4f;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 12px;
+      white-space: nowrap;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .play-btn:hover,
+    .primary-btn:hover,
+    .secondary-btn:hover,
+    .lang-btn:hover,
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(11, 43, 79, .16);
+    }
+
+    @keyframes letterFloat {
+
+      0%,
+      100% {
+        translate: 0 0;
+      }
+
+      50% {
+        translate: 0 -10px;
+      }
+    }
+
+    .empty-state {
+      display: none;
+      text-align: center;
+      grid-column: 1 / -1;
+      color: #0b2b4f;
+      font-size: 22px;
+      font-weight: 700;
+      padding: 60px 0;
+    }
+
+    .reveal-on-scroll {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.48s ease, transform 0.48s ease;
+    }
+
+    .reveal-on-scroll.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .slide,
+      .hero-card,
+      .reveal-on-scroll {
+        animation: none;
+        transition: none;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .games {
+        grid-template-columns: repeat(2, 320px);
+      }
+    }
+
+    @media (max-width: 900px) {
+      header {
+        height: auto;
+        padding: 16px;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      nav {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        gap: 20px;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 30px;
+      }
+
+      .game-slideshow {
+        margin-top: 10px;
+        transform: none;
+      }
+
+      .games {
+        grid-template-columns: 1fr;
+        padding: 0 20px;
+      }
+
+      .category {
+        min-width: 150px;
+        font-size: 20px;
+      }
+
+      .category.wide {
+        min-width: 220px;
+      }
+    }
+
+    /* Custom modal */
+    .zatam-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: rgba(11, 43, 79, 0.45);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .zatam-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .zatam-modal {
+      background: #fffaf2;
+      border: 1.5px solid #eadfce;
+      border-radius: 16px;
+      box-shadow: 0 24px 48px rgba(11, 43, 79, 0.22);
+      max-width: 420px;
+      width: 90%;
+      padding: 32px 28px 24px;
+      text-align: center;
+      transform: translateY(18px) scale(0.96);
+      transition: transform 0.3s ease;
+    }
+
+    .zatam-overlay.visible .zatam-modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .zatam-modal-icon {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, #f6b23b, #ffd36b);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      box-shadow: 0 6px 16px rgba(246, 178, 59, 0.3);
+    }
+
+    .zatam-modal p {
+      color: #24394f;
+      font-size: 16px;
+      line-height: 1.55;
+      margin-bottom: 22px;
+    }
+
+    .zatam-modal-btn {
+      background: #0b2b4f;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 36px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .zatam-modal-btn:hover {
+      background: #143d6b;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(11, 43, 79, 0.2);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Custom modal -->
+  <div class="zatam-overlay" id="zatamOverlay">
+    <div class="zatam-modal">
+      <div class="zatam-modal-icon">💡</div>
+      <p id="zatamModalMsg"></p>
+      <button class="zatam-modal-btn" id="zatamModalOk">OK</button>
+    </div>
+  </div>
+
+  <header>
+    <div class="logo">
+      <div class="logo-mark">
+        <div class="circle c1"></div>
+        <div class="circle c2"></div>
+        <div class="circle c3"></div>
+      </div>
+
+      <div class="logo-text">
+        <h1>
+          <span>za</span><span>t</span><span>.am</span>
+        </h1>
+        <p>शब्दम् मम प्रेरणम्</p>
+      </div>
+    </div>
+
+    <nav>
+      <a href="#" class="active" data-i18n="navGames">Games</a>
+      <a href="About.html" data-i18n="navAbout">About</a>
+      <a href="Resources.html" data-i18n="navResources">Resources</a>
+      <a href="leaderboard.html" data-i18n="navLeaderboard">Leaderboard</a>
+      <a href="Contact.html" data-i18n="navContact">Contact</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="lang-btn">🌐 EN / SA</button>
+
+      <button class="login-btn" id="loginBtn" data-i18n="login">↪ Login</button>
+
+      <div class="user-profile" id="userProfile">
+        <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=ffe1a5&color=09264a"
+          alt="User Avatar">
+        <span id="userName"></span>
+        <button id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-text">
+      <h2 data-i18n="heroTitle">Learn Sanskrit<br>Through Games</h2>
+      <div class="underline"></div>
+      <p data-i18n="heroDesc">
+        Making Sanskrit Learning Fun Through Interactive Play,<br>
+        Clever Puzzles, Engaging Games, and Exciting Challenges.
+      </p>
+
+      <div class="hero-buttons">
+        <button class="primary-btn" id="startPlayingBtn" data-i18n="startPlaying">Start Playing</button>
+        <button class="secondary-btn" id="howItWorksBtn" data-i18n="howItWorks">How It Works</button>
+      </div>
+    </div>
+
+    <div class="hero-art">
+      <div class="sun"></div>
+      <div class="mountain"></div>
+      <div class="temple"></div>
+      <div class="hero-card card1">क</div>
+      <div class="hero-card card2">अ</div>
+      <div class="hero-card card3">म</div>
+      <div class="game-slideshow" aria-label="Featured games">
+        <div class="slide active">
+          <div class="slide-preview">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <img src="Games/SanskritPictionary/cover.png" alt="Sanskrit Pictionary thumbnail">
+          </div>
+          <p class="slide-caption" data-i18n="slidePictionary">Draw and guess Sanskrit words live<span>Sanskrit Pictionary</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <img src="Games/WordComplex/cover.jpg" alt="Word Complex thumbnail">
+          </div>
+          <p class="slide-caption" data-i18n="slideWordComplex">Learn, play and explore Sanskrit words<span>Word Complex</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <img src="Games/SanskritMonopoly/cover.png" alt="Sanskrit Monopoly thumbnail">
+          </div>
+          <p class="slide-caption" data-i18n="slideMonopoly">Buy, trade and learn Sanskrit properties<span>Sanskrit Monopoly</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview orange">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <div class="slide-puzzle-grid" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span>
+              <span>5</span><span>6</span><span>7</span><span>8</span>
+              <span>9</span><span>10</span><span>11</span><span>12</span>
+              <span>13</span><span>14</span><span>15</span><span></span>
+            </div>
+            <div class="slide-big-title">CLASSIC<strong>15</strong>PUZZLE</div>
+          </div>
+          <p class="slide-caption" data-i18n="slidePuzzle">Slide numbers into order<span>Classic 15 Puzzle</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview teal">
+            <div class="slide-art">🪨&nbsp;&nbsp;📄&nbsp;&nbsp;✂️</div>
+          </div>
+          <p class="slide-caption" data-i18n="slideWords">Play quick Sanskrit words<span>Rock Paper Scissors</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview green">
+            <div class="slide-art">🪜&nbsp;&nbsp;🐍&nbsp;&nbsp;🎲</div>
+          </div>
+          <p class="slide-caption" data-i18n="slideBoard">Roll, climb, and listen<span>Ladders & Snakes</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview purple">
+            <div class="slide-art">क&nbsp;&nbsp;ख&nbsp;&nbsp;ग<br>घ&nbsp;&nbsp;ड&nbsp;&nbsp;च</div>
+          </div>
+          <p class="slide-caption" data-i18n="slideMemory">Match letters and remember<span>Memory Match</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview blue">
+            <div class="slide-art" style="color:#2f6dff;">O X O<br>X O X</div>
+          </div>
+          <p class="slide-caption" data-i18n="slideTic">Think ahead and win<span>Tic Tac Toe</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview green">
+            <div class="slide-art">🧩&nbsp;&nbsp;🗝️&nbsp;&nbsp;🚪</div>
+          </div>
+          <p class="slide-caption" data-i18n="slideMaze">Find the key and escape<span>Paasha Maze</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview orange">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <div class="slide-art" style="color:white;">2048</div>
+          </div>
+          <p class="slide-caption" data-i18n="slide2048">Slide and merge numbers<span>2048</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview purple">
+            <div class="slide-art">आलिङ्गन<br>स्मितम्</div>
+          </div>
+          <p class="slide-caption" data-i18n="slideMemoryConnect">Connect words to pictures<span>Memory Connect</span>
+          </p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview orange">
+            <div class="slide-art" style="color:white;">शब्द</div>
+          </div>
+          <p class="slide-caption" data-i18n="slideShabd">Sort the Sanskrit words<span>Shabd Puzzle</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview orange">
+            <div class="slide-art" style="color:white;">उत्तमशवः</div>
+          </div>
+          <p class="slide-caption" data-i18n="slideCorpse">Build pictures and vocabulary<span>Exquisite Corpse</span>
+          </p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <img src="Games/Analog Watch/cover.jpg" alt="Analog Watch thumbnail">
+          </div>
+          <p class="slide-caption" data-i18n="slideWatch">Tell time in Sanskrit<span>Analog Watch</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview" style="background: linear-gradient(135deg, #FAF6EF, #FFF0E4);">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <div class="slide-art" style="color:#e8721a; letter-spacing:6px;">०१२३४</div>
+          </div>
+          <p class="slide-caption" data-i18n="slideNumerale">Guess the Devanagari number<span>Numerale</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview" style="background: linear-gradient(135deg, #fff3c4, #f4a34c);">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <div class="slide-puzzle-grid" aria-hidden="true">
+              <span>१</span><span></span><span>३</span><span></span>
+              <span></span><span>५</span><span></span><span>७</span>
+              <span>८</span><span></span><span>२</span><span></span>
+              <span></span><span>६</span><span></span><span>९</span>
+            </div>
+            <div class="slide-big-title">SUDOKU</div>
+          </div>
+          <p class="slide-caption" data-i18n="slideSudoku">Fill the Sanskrit number grid<span>Sudoku</span></p>
+        </div>
+        <div class="slide">
+          <div class="slide-preview">
+            <span class="new-tag" data-i18n="newTag">NEW</span>
+            <img src="Games/019-cs(Picture Puzzel)/assets/gurukula.png" alt="Picture Puzzle thumbnail">
+          </div>
+          <p class="slide-caption" data-i18n="slidePicturePuzzle">Rebuild the gurukula scene<span>Picture Puzzle</span></p>
+        </div>
+        <div class="slide-dots" aria-hidden="true">
+          <button class="slide-dot active" data-slide-target="0" type="button"></button>
+          <button class="slide-dot" data-slide-target="1" type="button"></button>
+          <button class="slide-dot" data-slide-target="2" type="button"></button>
+          <button class="slide-dot" data-slide-target="3" type="button"></button>
+          <button class="slide-dot" data-slide-target="4" type="button"></button>
+          <button class="slide-dot" data-slide-target="5" type="button"></button>
+          <button class="slide-dot" data-slide-target="6" type="button"></button>
+          <button class="slide-dot" data-slide-target="7" type="button"></button>
+          <button class="slide-dot" data-slide-target="8" type="button"></button>
+          <button class="slide-dot" data-slide-target="9" type="button"></button>
+          <button class="slide-dot" data-slide-target="10" type="button"></button>
+          <button class="slide-dot" data-slide-target="11" type="button"></button>
+          <button class="slide-dot" data-slide-target="12" type="button"></button>
+          <button class="slide-dot" data-slide-target="13" type="button"></button>
+          <button class="slide-dot" data-slide-target="14" type="button"></button>
+          <button class="slide-dot" data-slide-target="15" type="button"></button>
+          <button class="slide-dot" data-slide-target="16" type="button"></button>
+        </div>
+        <button class="slide-arrow slide-prev" id="slidePrev" type="button"
+          aria-label="Previous slide">&lsaquo;</button>
+        <button class="slide-arrow slide-next" id="slideNext" type="button" aria-label="Next slide">&rsaquo;</button>
+        <button class="slide-toggle" id="slideshowToggle" type="button" aria-label="Pause slideshow">Pause</button>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="category-bar">
+    <button class="category active" data-filter="all" data-i18n="catAll">▦ ALL</button>
+    <button class="category wide" data-filter="multiplayer" data-i18n="catMultiplayer">👥 Multiplayer</button>
+    <button class="category wide" data-filter="word" data-i18n="catWord">शब्दः Word Games</button>
+    <button class="category wide" data-filter="board" data-i18n="catBoard">🎲 Board Games</button>
+    <button class="category" data-filter="puzzle" data-i18n="catPuzzle">🧩 Puzzles</button>
+    <button class="category" data-filter="memory" data-i18n="catMemory">♣ Memory</button>
+    <button class="category" data-filter="more" data-i18n="catMore">⋯ More</button>
+    <div class="search-box">
+      <input type="text" id="gameSearch" placeholder="🔍 Search games...">
+    </div>
+  </section>
+
+  <main class="games" id="gamesSection">
+
+    <article class="game-card" data-category="multiplayer" data-title="sanskrit pictionary drawing guess word multiplayer game चित्रम्">
+      <div class="game-image pictionary-thumbnail" role="img" aria-label="Sanskrit Pictionary">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="pictionaryTitle">Sanskrit Pictionary</h3>
+        <div class="meta">
+          <span class="pill pink-pill" data-i18n="multiplayerTag">Multiplayer</span>
+          <span data-i18n="easy">• Easy</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="pictionaryDesc">Draw and guess Sanskrit words with friends online in real-time!</p>
+          <a href="https://sanskrit-pictionary.vercel.app/welcome" target="_blank" rel="noopener noreferrer" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="multiplayer" data-title="word complex learn play explore sanskrit words multiplayer">
+      <div class="game-image wordcomplex-thumbnail" role="img" aria-label="Word Complex">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="wordComplexTitle">Word Complex</h3>
+        <div class="meta">
+          <span class="pill pink-pill" data-i18n="multiplayerTag">Multiplayer</span>
+          <span data-i18n="easy">• Easy</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="wordComplexDesc">Learn, play and explore Sanskrit words in a fun multiplayer challenge!</p>
+          <a href="https://word-complex.vercel.app/" target="_blank" rel="noopener noreferrer" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="multiplayer" data-title="sanskrit monopoly board property trade buy sell multiplayer">
+      <div class="game-image monopoly-thumbnail" role="img" aria-label="Sanskrit Monopoly">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="monopolyTitle">Sanskrit Monopoly</h3>
+        <div class="meta">
+          <span class="pill pink-pill" data-i18n="multiplayerTag">Multiplayer</span>
+          <span data-i18n="easy">• Easy</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="monopolyDesc">Buy, trade and learn Sanskrit properties with friends online!</p>
+          <a href="https://sanskrit-monopoly.vercel.app/login" target="_blank" rel="noopener noreferrer" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="puzzle" data-title="classic 15 puzzle fifteen sliding numbers">
+      <div class="game-image orange">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+
+        <div class="puzzle-preview">
+          <div>1</div>
+          <div>2</div>
+          <div>3</div>
+          <div>4</div>
+          <div>5</div>
+          <div>6</div>
+          <div>7</div>
+          <div>8</div>
+          <div>9</div>
+          <div>10</div>
+          <div>11</div>
+          <div>12</div>
+          <div>13</div>
+          <div>14</div>
+          <div>15</div>
+          <div></div>
+        </div>
+
+        <div class="big-title">
+          CLASSIC
+          <strong>15</strong>
+          PUZZLE
+        </div>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="puzzleTitle">Classic 15 Puzzle</h3>
+        <div class="meta">
+          <span class="pill yellow-pill" data-i18n="puzzleTag">Puzzle</span>
+          <span data-i18n="easy">• Easy</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="puzzleDesc">The classic sliding puzzle. Arrange the numbers in the correct order!</p>
+          <a href="Games/Puzzles/C15Puzzle.html" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="word" data-title="rock paper scissors word game">
+      <div class="game-image teal">
+        <div class="emoji-art">🪨 📄 ✂️</div>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="rpsTitle">Rock, Paper, Scissors</h3>
+        <div class="meta">
+          <span class="pill green-pill" data-i18n="wordTag">Word Game</span>
+          <span data-i18n="easy">• Easy</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="rpsDesc">Learn Sanskrit words while playing Rock, Paper, Scissors!</p>
+          <a href="Games/RockPaperScissors/" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="board" data-title="ladders snakes board game dice">
+      <div class="game-image green">
+        <div style="font-size:52px;">🪜 🐍 🎲</div>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="ladderTitle">Ladders & Snakes</h3>
+        <div class="meta">
+          <span class="pill blue-pill" data-i18n="boardTag">Board Game</span>
+          <span data-i18n="medium">• Medium</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="ladderDesc">A fun board game to learn Sanskrit in an exciting way!</p>
+          <a href="Games/Snakes%20%26%20Ladders/" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="memory" data-title="memory match card letters">
+      <div class="game-image purple">
+        <div class="emoji-art">क ख ग<br>घ ड च</div>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="memoryTitle">Memory Match</h3>
+        <div class="meta">
+          <span class="pill purple-pill" data-i18n="memoryTag">Memory</span>
+          <span data-i18n="easy">• Easy</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="memoryDesc">Match the cards and learn Sanskrit letters!</p>
+          <a href="Games/MemoryMatch/MemoryMatch.html" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="board" data-title="tic tac toe board game x o">
+      <div class="game-image blue">
+        <div style="font-size:58px; color:#2f6dff;">O X O<br>X O X</div>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="tttTitle">Tic Tac Toe</h3>
+        <div class="meta">
+          <span class="pill blue-pill" data-i18n="boardTag">Board Game</span>
+          <span data-i18n="easy">• Easy</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="tttDesc">Play Tic Tac Toe and have fun while thinking ahead!</p>
+          <a href="Games/Tic-Tac-Toe/index.html"
+          class="play-btn"
+          data-i18n="playNow">
+          Play Now ▶
+          </a>
+        </div>
+      </div>
+    </article>
+
+      <article class="game-card"
+        data-category="puzzle"
+        data-title="sanskrit puzzle sliding puzzle picture game">
+<div class="game-image blue">
+
+    <div style="
+        font-size:56px;
+        color:#2f6dff;
+        font-weight:700;
+        line-height:1.1;
+        text-align:center;
+        letter-spacing:8px;
+        user-select:none;">
+        अ आ इ<br>
+        उ ए ओ
+    </div>
+
+</div>
+
+      <div class="game-content">
+        <h3>Sanskrit Puzzle</h3>
+        <div class="meta">
+          <span class="pill yellow-pill">Puzzle</span>
+          <span data-i18n="medium">• Medium</span>
+        </div>
+
+        <div class="game-bottom">
+        <p>Solve Sanskrit picture puzzles in the fewest moves and shortest time.</p>
+          <a href="Games/Sanskrit-Puzzle-016/index.html"
+          class="play-btn"
+          data-i18n="playNow">
+          Play Now ▶
+          </a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="puzzle" data-title="maze paasha key gate puzzle">
+      <div class="game-image green">
+        <div style="font-size:52px;">🧩 🗝️ 🚪</div>
+      </div>
+
+      <div class="game-content">
+        <h3>Paasha Maze</h3>
+        <div class="meta">
+          <span class="pill yellow-pill">Puzzle</span>
+          <span data-i18n="medium">• Medium</span>
+        </div>
+
+        <div class="game-bottom">
+          <p>Collect the key, unlock the gate, and escape the maze.</p>
+          <a href="Games/022-p/" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="puzzle" data-title="2048 number puzzle sliding merge game">
+      <div class="game-image orange">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+        <div style="font-size:72px; font-weight:800; color:white; text-shadow:2px 2px 6px rgba(0,0,0,.2);">2048</div>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="game2048Title">2048</h3>
+        <div class="meta">
+          <span class="pill yellow-pill" data-i18n="puzzleTag">Puzzle</span>
+          <span data-i18n="medium">• Medium</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="game2048Desc">Slide and merge the numbers to reach 2048!</p>
+          <a href="Games/2048/2048.html" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="memory" data-title="memory connect words to picture game">
+      <div class="game-image purple">
+        <div class="emoji-art">आलिङ्गन<br>स्मितम्</div>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="memorycTitle">Memory Connect</h3>
+        <div class="meta">
+          <span class="pill purple-pill" data-i18n="memoryTag">Memory</span>
+          <span data-i18n="medium">• Medium</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="memorycDesc">Drag words to pictures and learn Sanskrit!</p>
+          <a href="Games/MemoryConnect/MemoryConnect.html" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="puzzle" data-title="shabd puzzle put words in the right declension">
+      <div class="game-image orange">
+        <div class="emoji-art">शब्द</div>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="shabdTitle">Shabd Puzzle</h3>
+        <div class="meta">
+          <span class="pill yellow-pill" data-i18n="puzzleTag">Puzzle</span>
+          <span data-i18n="hard">• Hard</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="shabdDesc">Drag words to the correct category!</p>
+          <a href="Games/ShabdPuzzle/shabd.html" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="puzzle"
+      data-title="exquisite corpse move parts into the right place to get the word">
+      <div class="game-image orange">
+        <div class="emoji-art">उत्तमशवः</div>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="ecTitle">Exquisite Corpse</h3>
+        <div class="meta">
+          <span class="pill yellow-pill" data-i18n="puzzleTag">Puzzle</span>
+          <span data-i18n="easy">• Easy</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="ecDesc">Form pictures to learn vocabulary!</p>
+          <a href="Games/ExquisiteCorpse/ExquisiteCorpse.html" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="more" data-title="analog watch clock time sanskrit kah samayah">
+      <div class="game-image" style="background:#fff; padding:0;">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+        <img src="Games/Analog Watch/cover.jpg" alt="Analog Watch" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="analogWatchTitle">Analog Watch</h3>
+        <div class="meta">
+          <span class="pill purple-pill" data-i18n="moreTag">More</span>
+          <span data-i18n="easy">• Easy</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="analogWatchDesc">Read the analog clock and tell the time in Sanskrit!</p>
+          <a href="Games/Analog Watch/index.html" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="puzzle" data-title="numerale devanagari numeral number guessing wordle">
+      <div class="game-image" style="background: linear-gradient(135deg, #FAF6EF, #FFF0E4); padding:0;">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+        <div
+          style="font-size:40px; font-weight:800; color:#E8721A; letter-spacing:4px; font-family:'Noto Sans Devanagari',system-ui,sans-serif;">
+          ०१२३४<br><span style="font-size:16px; font-weight:700; letter-spacing:2px; color:#633806;">NUMERALE</span>
+        </div>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="numeraleTitle">Numerale</h3>
+        <div class="meta">
+          <span class="pill yellow-pill" data-i18n="puzzleTag">Puzzle</span>
+          <span data-i18n="medium">• Medium</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="numeraleDesc">Guess the 5-digit number in Devanagari script!</p>
+          <a href="Games/051-Numerali/051-Numerale.html" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="puzzle" data-title="sudoku number logic sanskrit english grid">
+      <div class="game-image" style="background: linear-gradient(135deg, #fff3c4, #f4a34c);">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+        <div class="puzzle-preview">
+          <div>1</div>
+          <div></div>
+          <div>3</div>
+          <div></div>
+          <div></div>
+          <div>5</div>
+          <div></div>
+          <div>7</div>
+          <div>8</div>
+          <div></div>
+          <div>2</div>
+          <div></div>
+          <div></div>
+          <div>6</div>
+          <div></div>
+          <div>9</div>
+        </div>
+        <div class="big-title" style="right:24px; top:38px; font-size:28px;">SUDOKU</div>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="sudokuTitle">Sudoku</h3>
+        <div class="meta">
+          <span class="pill yellow-pill" data-i18n="puzzleTag">Puzzle</span>
+          <span data-i18n="medium">• Medium</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="sudokuDesc">Fill the grid using English or Sanskrit symbols.</p>
+          <a href="Games/004-sis(Sudoku)/index.html" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="game-card" data-category="puzzle" data-title="picture puzzle jigsaw gurukula sanskrit drag pieces">
+      <div class="game-image picture-puzzle-thumbnail" role="img" aria-label="Gurukula picture puzzle">
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="picturePuzzleTitle">Picture Puzzle</h3>
+        <div class="meta">
+          <span class="pill yellow-pill" data-i18n="puzzleTag">Puzzle</span>
+          <span data-i18n="medium">• Medium</span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="picturePuzzleDesc">Drag and swap pieces to rebuild a Sanskrit learning scene.</p>
+          <a href="Games/019-cs(Picture Puzzel)/index.html" class="play-btn" data-i18n="playNow">Play Now ▶</a>
+        </div>
+      </div>
+    </article>
+    <div class="empty-state" data-i18n="emptyState">No games available in this category yet.</div>
+
+  </main>
+
+  <script type="module">
+    import {
+      auth,
+      provider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "./firebase-config.js";
+
+    const categoryButtons = document.querySelectorAll(".category");
+    const gameCards = document.querySelectorAll(".game-card");
+    const emptyState = document.querySelector(".empty-state");
+    const langBtn = document.querySelector(".lang-btn");
+    const startPlayingBtn = document.getElementById("startPlayingBtn");
+    const howItWorksBtn = document.getElementById("howItWorksBtn");
+    const loginBtn = document.getElementById("loginBtn");
+    const searchInput = document.getElementById("gameSearch");
+    const slides = document.querySelectorAll(".slide");
+    const slideDots = document.querySelectorAll(".slide-dot");
+    const slidePrev = document.getElementById("slidePrev");
+    const slideNext = document.getElementById("slideNext");
+    const slideshowToggle = document.getElementById("slideshowToggle");
+
+    const userProfile = document.getElementById("userProfile");
+    const userAvatar = document.getElementById("userAvatar");
+    const userName = document.getElementById("userName");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    let currentLanguage = localStorage.getItem("zatamLanguage") || "en";
+    let currentFilter = "all";
+    let currentSlide = 0;
+    let slideTimer = null;
+    let slideshowPaused = false;
+
+    function getDefaultAvatar(name = "User") {
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ffe1a5&color=09264a`;
+    }
+
+    function getSafeGooglePhoto(photoURL) {
+      if (!photoURL) return "";
+
+      return photoURL
+        .replace("=s96-c", "=s200-c")
+        .replace("=s64-c", "=s200-c")
+        .replace("=s48-c", "=s200-c");
+    }
+
+    function setAvatar(imgElement, user) {
+      const name = user?.displayName || "User";
+      const googlePhoto = getSafeGooglePhoto(user?.photoURL);
+
+      imgElement.alt = name;
+      imgElement.src = googlePhoto || getDefaultAvatar(name);
+
+      imgElement.onerror = () => {
+        imgElement.onerror = null;
+        imgElement.src = getDefaultAvatar(name);
+      };
+    }
+
+    const translations = {
+      en: {
+        navGames: "Games",
+        navAbout: "About",
+        navResources: "Resources",
+        navLeaderboard: "Leaderboard",
+        navContact: "Contact",
+        login: "↪ Login",
+        logout: "Logout",
+
+        heroTitle: "Learn Sanskrit<br>Through Games",
+        heroDesc: "Play interactive Sanskrit learning games<br>built with ZimJS. Fun, engaging and educational!",
+        startPlaying: "🎮 Start Playing",
+        howItWorks: "📖 How It Works",
+
+        searchPlaceholder: "🔍 Search games...",
+        slideAll: "Choose a game and begin<span>All games</span>",
+        slidePuzzle: "Slide numbers into order<span>Classic 15 Puzzle</span>",
+        slideBoard: "Roll, climb, and listen<span>Ladders & Snakes</span>",
+        slideMemory: "Match letters from memory<span>Memory Match</span>",
+        slideWords: "Play quick Sanskrit words<span>Rock Paper Scissors</span>",
+        slideTic: "Think ahead and win<span>Tic Tac Toe</span>",
+        slideMaze: "Find the key and escape<span>Paasha Maze</span>",
+        slide2048: "Slide and merge numbers<span>2048</span>",
+        slideMemoryConnect: "Connect words to pictures<span>Memory Connect</span>",
+        slideShabd: "Sort the Sanskrit words<span>Shabd Puzzle</span>",
+        slideCorpse: "Build pictures and vocabulary<span>Exquisite Corpse</span>",
+        slideWatch: "Tell time in Sanskrit<span>Analog Watch</span>",
+        slideNumerale: "Guess the Devanagari number<span>Numerale</span>",
+        slideSudoku: "Fill the Sanskrit number grid<span>Sudoku</span>",
+        slidePicturePuzzle: "Rebuild the gurukula scene<span>Picture Puzzle</span>",
+
+        catAll: "▦ ALL",
+        catMultiplayer: "👥 Multiplayer",
+        catWord: "शब्दः Word Games",
+        catBoard: "🎲 Board Games",
+        catPuzzle: "🧩 Puzzles",
+        catMemory: "♣ Memory",
+        catMore: "⋯ More",
+
+        newTag: "NEW",
+        pictionaryTitle: "Sanskrit Pictionary",
+        pictionaryDesc: "Draw and guess Sanskrit words with friends online in real-time!",
+        slidePictionary: "Draw and guess Sanskrit words live<span>Sanskrit Pictionary</span>",
+        wordComplexTitle: "Word Complex",
+        wordComplexDesc: "Learn, play and explore Sanskrit words in a fun multiplayer challenge!",
+        slideWordComplex: "Learn, play and explore Sanskrit words<span>Word Complex</span>",
+        monopolyTitle: "Sanskrit Monopoly",
+        monopolyDesc: "Buy, trade and learn Sanskrit properties with friends online!",
+        slideMonopoly: "Buy, trade and learn Sanskrit properties<span>Sanskrit Monopoly</span>",
+        multiplayerTag: "Multiplayer",
+        puzzleTitle: "Classic 15 Puzzle",
+        puzzleTag: "Puzzle",
+        wordTag: "Word Game",
+        boardTag: "Board Game",
+        memoryTag: "Memory",
+
+        easy: "• Easy",
+        medium: "• Medium",
+        hard: "• Hard",
+
+        puzzleDesc: "The classic sliding puzzle. Arrange the numbers in the correct order!",
+        rpsTitle: "Rock, Paper, Scissors",
+        rpsDesc: "Learn Sanskrit words while playing Rock, Paper, Scissors!",
+        ladderTitle: "Ladders & Snakes",
+        ladderDesc: "A fun board game to learn Sanskrit in an exciting way!",
+        memoryTitle: "Memory Match",
+        memoryDesc: "Match the cards and learn Sanskrit letters!",
+        memorycTitle: "Memory Connect",
+        memorycDesc: "Drag words to pictures and learn Sanskrit!",
+        tttTitle: "Tic Tac Toe",
+        tttDesc: "Play Tic Tac Toe and have fun while thinking ahead!",
+        game2048Title: "2048",
+        game2048Desc: "Slide and merge the numbers to reach 2048!",
+        shabdTitle: "Shabd Puzzle",
+        shabdDesc: "Drag words to the correct category!",
+        ecTitle: "Exquisite Corpse",
+        ecDesc: "Form pictures to learn vocabulary!",
+        analogWatchTitle: "Analog Watch",
+        analogWatchDesc: "Read the analog clock and tell the time in Sanskrit!",
+        moreTag: "More",
+        numeraleTitle: "Numerale",
+        numeraleDesc: "Guess the 5-digit number in Devanagari script!",
+        sudokuTitle: "Sudoku",
+        sudokuDesc: "Fill the grid using English or Sanskrit symbols.",
+        picturePuzzleTitle: "Picture Puzzle",
+        picturePuzzleDesc: "Drag and swap pieces to rebuild a Sanskrit learning scene.",
+
+        playNow: "Play Now ▶",
+        emptyState: "No games found.",
+        langButton: "🌐 EN / SA",
+
+        comingSoon: "This game is coming soon!",
+        howText: "Choose a game category, click Play Now, and learn Sanskrit through simple interactive games.",
+        loginFailed: "Login failed. Please try again."
+      },
+
+      sa: {
+        navGames: "क्रीडाः",
+        navAbout: "विषये",
+        navResources: "संसाधनानि",
+        navLeaderboard: "श्रेष्ठसूची",
+        navContact: "सम्पर्कः",
+        login: "↪ प्रवेशः",
+        logout: "निर्गमः",
+
+        heroTitle: "संस्कृतम्<br>क्रीडाभिः शिक्षस्व",
+        heroDesc: "ZimJS द्वारा निर्मिताः संस्कृतक्रीडाः।<br>आनन्ददायकाः शिक्षाप्रदाः च।",
+        startPlaying: "🎮 क्रीडां आरभस्व",
+        howItWorks: "📖 कथं कार्यं करोति",
+
+        searchPlaceholder: "🔍 क्रीडां अन्वेषय...",
+        slideAll: "क्रीडां चिनुत आरभध्वम्<span>सर्वाः क्रीडाः</span>",
+        slidePuzzle: "संख्याः क्रमे स्थापय<span>१५ प्रहेलिका</span>",
+        slideBoard: "अक्षं पातय, आरोह, शृणु<span>सोपानानि च सर्पाः</span>",
+        slideMemory: "अक्षराणि स्मृत्या मेलय<span>स्मृतिमेलनम्</span>",
+        slideWords: "शीघ्रं संस्कृतशब्दैः क्रीड<span>शिला पत्रम् कर्तरी</span>",
+        slideTic: "चिन्तयित्वा विजयस्व<span>त्रिरेखा क्रीडा</span>",
+        slideMaze: "कुञ्चिकां प्राप्य निर्गच्छ<span>पाश भूलभुलैया</span>",
+        slide2048: "संख्याः चालयित्वा संयोजय<span>२०४८</span>",
+        slideMemoryConnect: "शब्दान् चित्रैः संयोजय<span>स्मृतिसंयोजकम्</span>",
+        slideShabd: "संस्कृतशब्दान् वर्गीकुरु<span>शब्द पहेली</span>",
+        slideCorpse: "चित्रैः शब्दावलीं रचय<span>उत्तमशवः</span>",
+        slideWatch: "संस्कृते समयं वद<span>घटिकायन्त्रम्</span>",
+        slideNumerale: "देवनागरीसंख्यां अनुमानय<span>न्यूमरेल</span>",
+        slideSudoku: "संस्कृतसंख्याजालकं पूरय<span>सुडोकू</span>",
+        slidePicturePuzzle: "गुरुकुलस्य चित्रं पुनर्निर्मीयताम्<span>चित्र-समस्या</span>",
+
+        catAll: "▦ सर्वम्",
+        catMultiplayer: "👥 बहुक्रीडकः",
+        catWord: "शब्दक्रीडाः",
+        catBoard: "🎲 फलकक्रीडाः",
+        catPuzzle: "🧩 प्रहेलिकाः",
+        catMemory: "♣ स्मृतिक्रीडाः",
+        catMore: "⋯ अधिकम्",
+
+        newTag: "नूतनम्",
+        pictionaryTitle: "संस्कृत चित्रक्रीडा",
+        pictionaryDesc: "मित्रैः सह चित्राणि आलिख्य संस्कृतशब्दान् अनुमानयतु!",
+        slidePictionary: "चित्रं लिखित्वा संस्कृतशब्दान् अनुमानयतु<span>संस्कृत चित्रक्रीडा</span>",
+        wordComplexTitle: "शब्दसमुच्चयः",
+        wordComplexDesc: "बहुक्रीडके स्पर्धायां संस्कृतशब्दान् शिक्षस्व क्रीडस्व अन्वेषयस्व!",
+        slideWordComplex: "संस्कृतशब्दान् शिक्षस्व क्रीडस्व अन्वेषयस्व<span>शब्दसमुच्चयः</span>",
+        monopolyTitle: "संस्कृत एकाधिपत्यम्",
+        monopolyDesc: "मित्रैः सह संस्कृतसम्पत्तीन् क्रीणीय विक्रीणीय शिक्षस्व!",
+        slideMonopoly: "संस्कृतसम्पत्तीन् क्रीणीय विक्रीणीय शिक्षस्व<span>संस्कृत एकाधिपत्यम्</span>",
+        multiplayerTag: "बहुक्रीडकः",
+        puzzleTitle: "१५ प्रहेलिका",
+        puzzleTag: "प्रहेलिका",
+        wordTag: "शब्दक्रीडा",
+        boardTag: "फलकक्रीडा",
+        memoryTag: "स्मृति",
+
+        easy: "• सरलम्",
+        medium: "• मध्यमम्",
+        hard: "• कठिनम्",
+
+        puzzleDesc: "संख्याः सम्यक् क्रमे स्थापय।",
+        rpsTitle: "शिला, पत्रम्, कर्तरी",
+        rpsDesc: "क्रीडया संस्कृतशब्दान् शिक्षस्व।",
+        ladderTitle: "सोपानानि च सर्पाः",
+        ladderDesc: "संस्कृतम् अधिगन्तुं रोचकः फलकक्रीडा।",
+        memoryTitle: "स्मृतिमेलनम्",
+        memoryDesc: "पत्राणि मेलयित्वा संस्कृताक्षराणि शिक्षस्व।",
+        memorycTitle: "स्मृतिसंयोजकम्",
+        memorycDesc: "शब्दान् चित्रेषु कर्षयन्तु, संस्कृतं च शिक्षन्तु!",
+        tttTitle: "त्रिरेखा क्रीडा",
+        tttDesc: "चिन्तनपूर्वकं क्रीडां कुरु।",
+        game2048Title: "२०४८",
+        game2048Desc: "संख्याः चालयित्वा संयोजयित्वा २०४८ प्राप्तुं प्रयत्नं कुरु।",
+        shabdTitle: "शब्द पहेली",
+        shabdDesc: "शब्दान् समीचीनवर्गे कर्षयन्तु!",
+        ecTitle: "उत्तमशवः",
+        ecDesc: "शब्दावली ज्ञातुं चित्राणि रचयन्तु!",
+        analogWatchTitle: "घटिकायन्त्रम्",
+        analogWatchDesc: "घटिकायन्त्रं पठित्वा संस्कृते समयं वदतु!",
+        moreTag: "अधिकम्",
+        numeraleTitle: "न्यूमरेल",
+        numeraleDesc: "देवनागरीलिप्या पञ्चाङ्कसंख्यां अनुमानयतु!",
+        sudokuTitle: "सुडोकू",
+        sudokuDesc: "आङ्ग्ल-संस्कृतचिह्नैः जालकं पूरय।",
+        picturePuzzleTitle: "चित्र-समस्या",
+        picturePuzzleDesc: "खण्डान् कर्षयित्वा संस्कृताध्ययनचित्रं पुनर्निर्मीयताम्।",
+
+        playNow: "क्रीडतु ▶",
+        emptyState: "क्रीडा न प्राप्ता।",
+        langButton: "🌐 SA / EN",
+
+        comingSoon: "एषा क्रीडा शीघ्रं आगमिष्यति।",
+        howText: "वर्गं चिनुत, Play Now नुदत, संस्कृतं क्रीडाभिः शिक्षध्वम्।",
+        loginFailed: "प्रवेशः असफलः। पुनः प्रयत्नं कुरु।"
+      }
+    };
+
+    function updateLanguage() {
+      const t = translations[currentLanguage];
+
+      document.querySelectorAll("[data-i18n]").forEach(element => {
+        const key = element.dataset.i18n;
+
+        if (t[key]) {
+          element.innerHTML = t[key];
+        }
+      });
+
+      langBtn.innerHTML = t.langButton;
+      logoutBtn.innerHTML = t.logout;
+      searchInput.placeholder = t.searchPlaceholder;
+
+      localStorage.setItem("zatamLanguage", currentLanguage);
+    }
+
+    function initScrollReveal() {
+      const revealTargets = document.querySelectorAll(".hero-text, .game-slideshow, .category-bar .search-box, .category, .game-card");
+
+      revealTargets.forEach((element) => element.classList.add("reveal-on-scroll"));
+
+      if (!("IntersectionObserver" in window)) {
+        revealTargets.forEach((element) => element.classList.add("in-view"));
+        return;
+      }
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.14 });
+
+      revealTargets.forEach((element) => observer.observe(element));
+    }
+
+    function showSlide(index) {
+      if (!slides.length) return;
+
+      currentSlide = (index + slides.length) % slides.length;
+
+      slides.forEach((slide, slideIndex) => {
+        slide.classList.toggle("active", slideIndex === currentSlide);
+      });
+
+      slideDots.forEach((dot, dotIndex) => {
+        dot.classList.toggle("active", dotIndex === currentSlide);
+      });
+    }
+
+    function stopSlideshow() {
+      window.clearInterval(slideTimer);
+      slideTimer = null;
+    }
+
+    function updateSlideshowToggle() {
+      if (!slideshowToggle) return;
+
+      slideshowToggle.textContent = slideshowPaused ? "Play" : "Pause";
+      slideshowToggle.setAttribute("aria-label", slideshowPaused ? "Play slideshow" : "Pause slideshow");
+      slideshowToggle.setAttribute("aria-pressed", String(slideshowPaused));
+    }
+
+    function startSlideshow() {
+      if (!slides.length || slideshowPaused) return;
+      stopSlideshow();
+      slideTimer = window.setInterval(() => showSlide(currentSlide + 1), 3600);
+    }
+
+    function moveSlide(direction) {
+      showSlide(currentSlide + direction);
+      startSlideshow();
+    }
+
+    function applyFilters() {
+      const keyword = searchInput.value.toLowerCase().trim();
+      let visibleCount = 0;
+
+      gameCards.forEach(card => {
+        const category = card.dataset.category;
+        const title = `${card.dataset.title || ""} ${card.textContent || ""}`.toLowerCase();
+
+        const matchesCategory = currentFilter === "all" || category === currentFilter;
+        const matchesSearch = title.includes(keyword);
+
+        if (matchesCategory && matchesSearch) {
+          card.classList.remove("hide");
+          visibleCount++;
+        } else {
+          card.classList.add("hide");
+        }
+      });
+
+      emptyState.style.display = visibleCount === 0 ? "block" : "none";
+    }
+
+    loginBtn.addEventListener("click", async () => {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Login error:", error);
+        showModal(translations[currentLanguage].loginFailed);
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginBtn.style.display = "none";
+        userProfile.style.display = "flex";
+
+        setAvatar(userAvatar, user);
+        userName.textContent = user.displayName || "Player";
+
+        localStorage.setItem("zatamUserId", user.uid);
+        localStorage.setItem("zatamUserName", user.displayName || "Player");
+        localStorage.setItem("zatamUserEmail", user.email || "");
+        localStorage.setItem("zatamUserPhoto", getSafeGooglePhoto(user.photoURL) || getDefaultAvatar(user.displayName || "Player"));
+      } else {
+        loginBtn.style.display = "flex";
+        userProfile.style.display = "none";
+
+        userAvatar.src = getDefaultAvatar("User");
+        userName.textContent = "";
+
+        localStorage.removeItem("zatamUserId");
+        localStorage.removeItem("zatamUserName");
+        localStorage.removeItem("zatamUserEmail");
+        localStorage.removeItem("zatamUserPhoto");
+      }
+    });
+
+    categoryButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        currentFilter = button.dataset.filter;
+
+        categoryButtons.forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+
+        applyFilters();
+      });
+    });
+
+    searchInput.addEventListener("input", () => {
+      applyFilters();
+    });
+
+    slideDots.forEach((dot) => {
+      dot.addEventListener("click", () => {
+        showSlide(Number(dot.dataset.slideTarget));
+        startSlideshow();
+      });
+    });
+
+    slidePrev.addEventListener("click", () => {
+      moveSlide(-1);
+    });
+
+    slideNext.addEventListener("click", () => {
+      moveSlide(1);
+    });
+
+    slideshowToggle.addEventListener("click", () => {
+      slideshowPaused = !slideshowPaused;
+      updateSlideshowToggle();
+
+      if (slideshowPaused) {
+        stopSlideshow();
+      } else {
+        startSlideshow();
+      }
+    });
+
+    langBtn.addEventListener("click", () => {
+      currentLanguage = currentLanguage === "en" ? "sa" : "en";
+      updateLanguage();
+      applyFilters();
+    });
+
+    startPlayingBtn.addEventListener("click", () => {
+      document.getElementById("gamesSection").scrollIntoView({
+        behavior: "smooth"
+      });
+    });
+
+    howItWorksBtn.addEventListener("click", () => {
+      showModal(translations[currentLanguage].howText);
+    });
+
+    document.querySelectorAll(".coming-soon-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        showModal(translations[currentLanguage].comingSoon);
+      });
+    });
+
+    function showModal(message) {
+      const overlay = document.getElementById("zatamOverlay");
+      const msg = document.getElementById("zatamModalMsg");
+      const okBtn = document.getElementById("zatamModalOk");
+      msg.textContent = message;
+      overlay.classList.add("visible");
+      okBtn.focus();
+      function close() {
+        overlay.classList.remove("visible");
+        okBtn.removeEventListener("click", close);
+        overlay.removeEventListener("click", onOverlayClick);
+      }
+      function onOverlayClick(e) {
+        if (e.target === overlay) close();
+      }
+      okBtn.addEventListener("click", close);
+      overlay.addEventListener("click", onOverlayClick);
+    }
+
+    showSlide(0);
+    updateSlideshowToggle();
+    startSlideshow();
+    initScrollReveal();
+    updateLanguage();
+    applyFilters();
+  </script>
+
+</body>
+
+</html>

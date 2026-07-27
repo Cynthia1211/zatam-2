@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,user-scalable=no"/>
+  <title>Memory Match · Zat.am</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://zimjs.org/cdn/1.5.0/createjs.js"></script>
+  <script src="https://zimjs.org/cdn/018/zim_min.js"></script>
+  <script src="../firebase-config.js"></script>
+
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{width:100%;height:100%;background:#fffdf5;overflow:hidden}
+    canvas{display:block}
+
+    #lb-overlay{
+      display:none;position:fixed;inset:0;background:rgba(9,38,74,.88);
+      z-index:9999;align-items:center;justify-content:center;
+      font-family:'Nunito',sans-serif;
+    }
+    #lb-overlay.show{display:flex;}
+    #lb-box{
+      background:#fffdf5;border:2px solid #f4a300;border-radius:20px;
+      width:520px;max-height:80vh;overflow:hidden;
+      display:flex;flex-direction:column;
+    }
+    #lb-header{
+      background:#09264a;padding:18px 24px 14px;
+      border-bottom:2px solid #f4a300;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    #lb-header h2{color:#ffe1a5;font-family:'Fredoka One',sans-serif;font-size:22px;margin:0;}
+    #lb-header span{color:#a8c4e0;font-size:13px;}
+    #lb-close{
+      background:transparent;border:1px solid #f4a300;color:#ffe1a5;
+      border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;
+      display:flex;align-items:center;justify-content:center;
+    }
+    #lb-close:hover{background:#f4a300;color:#09264a;}
+    #lb-tabs{display:flex;padding:12px 24px 0;gap:8px;background:#fffdf5;}
+    .lb-tab{
+      padding:7px 16px;border-radius:20px;border:1px solid #d4b896;
+      color:#09264a;cursor:pointer;font-size:12px;font-weight:700;
+      font-family:'Nunito',sans-serif;background:transparent;
+    }
+    .lb-tab.active{background:#f4a300;border-color:#f4a300;color:#fff;}
+    #lb-body{overflow-y:auto;padding:14px 24px 20px;flex:1;}
+    #lb-body table{width:100%;border-collapse:collapse;}
+    #lb-body th{color:#6b7f96;font-size:11px;font-weight:700;text-align:left;padding:6px 8px;border-bottom:1px solid #e8dcc8;}
+    #lb-body td{color:#09264a;font-size:13px;padding:9px 8px;border-bottom:1px solid #f5ede0;}
+    #lb-body tr:first-child td{color:#f4a300;font-weight:800;}
+    #lb-body tr:nth-child(2) td{color:#6b7f96;}
+    #lb-body tr:nth-child(3) td{color:#e07b39;}
+    .lb-medal{font-size:16px;margin-right:4px;}
+    #lb-empty{color:#6b7f96;text-align:center;padding:30px;font-size:14px;}
+    #lb-loading{color:#6b7f96;text-align:center;padding:30px;font-size:14px;}
+
+    #name-form{
+      display:none;position:fixed;inset:0;background:rgba(9,38,74,.92);
+      z-index:10000;align-items:center;justify-content:center;
+    }
+    #name-form.show{display:flex;}
+    #name-box{
+      background:#fffdf5;border:2px solid #f4a300;border-radius:20px;
+      padding:32px 36px;width:380px;text-align:center;
+      font-family:'Nunito',sans-serif;
+    }
+    #name-box h3{color:#09264a;font-family:'Fredoka One',sans-serif;font-size:24px;margin-bottom:6px;}
+    #name-box p{color:#6b7f96;font-size:13px;margin-bottom:20px;}
+    #name-input{
+      width:100%;padding:11px 16px;border-radius:12px;
+      background:#fff;border:1.5px solid #d4b896;color:#09264a;
+      font-size:16px;font-family:'Nunito',sans-serif;outline:none;
+      box-sizing:border-box;margin-bottom:16px;
+    }
+    #name-input:focus{border-color:#f4a300;}
+    #name-submit{
+      width:100%;padding:12px;border-radius:12px;border:none;
+      background:#f4a300;color:#fff;font-size:16px;font-weight:800;
+      font-family:'Fredoka One',sans-serif;cursor:pointer;
+    }
+    #name-submit:hover{background:#e09500;}
+    #name-skip{
+      background:transparent;border:none;color:#6b7f96;
+      font-size:12px;cursor:pointer;margin-top:10px;
+      font-family:'Nunito',sans-serif;text-decoration:underline;
+    }
+  /* ── Win overlay ── */
+    #win-overlay{
+      display:none;position:fixed;inset:0;background:rgba(9,38,74,.88);
+      z-index:10001;align-items:center;justify-content:center;
+      font-family:'Nunito',sans-serif;
+    }
+    #win-overlay.show{display:flex;}
+    #win-box{
+      background:#fffdf5;border-radius:24px;
+      width:420px;overflow:hidden;
+      box-shadow:0 20px 60px rgba(9,38,74,.4);
+    }
+    #win-header{
+      background:#09264a;padding:28px 24px 20px;text-align:center;
+      border-bottom:3px solid #f4a300;
+    }
+    #win-header .trophy{font-size:52px;display:block;margin-bottom:6px;}
+    #win-header h2{color:#ffe1a5;font-family:'Fredoka One',sans-serif;font-size:28px;margin:0 0 4px;}
+    #win-stars{font-size:32px;letter-spacing:4px;display:block;margin-top:6px;}
+    #win-body{padding:20px 24px;}
+    .win-stat{
+      display:flex;align-items:center;justify-content:space-between;
+      background:#f5ede0;border-radius:12px;padding:12px 16px;margin-bottom:10px;
+    }
+    .win-stat-label{color:#6b7f96;font-size:13px;font-weight:700;}
+    .win-stat-val{color:#09264a;font-size:20px;font-family:'Fredoka One',sans-serif;}
+    #win-name-row{margin:16px 0 4px;}
+    #win-name-row label{display:block;color:#6b7f96;font-size:12px;font-weight:700;margin-bottom:6px;}
+    #win-name-input{
+      width:100%;padding:10px 14px;border-radius:10px;
+      background:#fff;border:1.5px solid #d4b896;color:#09264a;
+      font-size:15px;font-family:'Nunito',sans-serif;outline:none;box-sizing:border-box;
+    }
+    #win-name-input:focus{border-color:#f4a300;}
+    #win-footer{display:flex;gap:10px;padding:0 24px 24px;}
+    #win-play-again{
+      flex:1;padding:12px;border-radius:12px;border:none;
+      background:#f4a300;color:#fff;font-size:16px;font-weight:800;
+      font-family:'Fredoka One',sans-serif;cursor:pointer;
+    }
+    #win-play-again:hover{background:#e09500;}
+    #win-save{
+      flex:1;padding:12px;border-radius:12px;
+      border:2px solid #09264a;background:transparent;
+      color:#09264a;font-size:15px;font-weight:800;
+      font-family:'Fredoka One',sans-serif;cursor:pointer;
+    }
+    #win-save:hover{background:#09264a;color:#fff;}
+  </style>
+</head>
+<body>
+
+<div id="name-form">
+  <div id="name-box">
+    <h3>🏆 You Won!</h3>
+    <p>Enter your name to save your score to the leaderboard.</p>
+    <input id="name-input" type="text" placeholder="Your name" maxlength="24"/>
+    <button id="name-submit">Save Score</button><br/>
+    <button id="name-skip">Skip</button>
+  </div>
+</div>
+
+<div id="win-overlay">
+  <div id="win-box">
+    <div id="win-header">
+      <span class="trophy">🏆</span>
+      <h2>You Did It!</h2>
+      <span id="win-stars"></span>
+    </div>
+    <div id="win-body">
+      <div class="win-stat"><span class="win-stat-label">🎯 Moves</span><span class="win-stat-val" id="win-moves">0</span></div>
+      <div class="win-stat"><span class="win-stat-label">💡 Pairs Matched</span><span class="win-stat-val" id="win-pairs">0</span></div>
+      <div class="win-stat"><span class="win-stat-label">⏱ Time</span><span class="win-stat-val" id="win-time">0s</span></div>
+      <div id="win-name-row">
+        <label>YOUR NAME (for the leaderboard)</label>
+        <input id="win-name-input" type="text" placeholder="Enter your name…" maxlength="24"/>
+      </div>
+    </div>
+    <div id="win-footer">
+      <button id="win-save">💾 Save Score</button>
+      <button id="win-play-again">▶ Play Again</button>
+    </div>
+  </div>
+</div>
+
+<div id="lb-overlay">
+  <div id="lb-box">
+    <div id="lb-header">
+      <div>
+        <h2>🏅 Leaderboard</h2>
+        <span>Memory Match · Best scores</span>
+      </div>
+      <button id="lb-close">✕</button>
+    </div>
+    <div id="lb-tabs">
+      <button class="lb-tab active" data-diff="easy">Easy</button>
+      <button class="lb-tab" data-diff="medium">Medium</button>
+      <button class="lb-tab" data-diff="hard">Hard</button>
+    </div>
+    <div id="lb-body">
+      <div id="lb-loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PLAYER_KEY = 'zatam_playerName';
+function getPlayerName(){ return localStorage.getItem(PLAYER_KEY) || ''; }
+function setPlayerName(n){ localStorage.setItem(PLAYER_KEY, n.trim()); }
+
+function submitScore({ playerName, moves, timeSecs, stars }){
+  const finalScore = moves * 100 + timeSecs;
+  if(typeof uploadScore === 'function'){
+    uploadScore({
+      userId:'', playerName:playerName||'Anonymous', email:'', photoURL:'',
+      gameId:'memory', gameName:'Memory Match', score:finalScore,
+      createdAt:new Date(), scoreDate:new Date().toISOString(),
+    });
+  }
+}
+
+let currentLbDiff = 'easy';
+async function fetchLeaderboard(diff){
+  const body = document.getElementById('lb-body');
+  body.innerHTML = '<div id="lb-loading">Loading…</div>';
+  const firestore = (typeof db !== 'undefined') ? db : null;
+  if(!firestore){ body.innerHTML = '<div id="lb-empty">Leaderboard not available</div>'; return; }
+  try{
+    const snap = await firestore.collection('leaderboard')
+      .where('gameId','==','memory').orderBy('score','asc').limit(10).get();
+    if(snap.empty){ body.innerHTML = '<div id="lb-empty">No scores yet – be the first! 🎯</div>'; return; }
+    const medals = ['🥇','🥈','🥉'];
+    let html = '<table><thead><tr><th>#</th><th>Player</th><th>Score</th><th>⭐</th></tr></thead><tbody>';
+    snap.docs.forEach((doc,i)=>{
+      const d=doc.data(), m=medals[i]?`<span class="lb-medal">${medals[i]}</span>`:'';
+      html += `<tr><td>${m}${i+1}</td><td>${escHtml(d.playerName||'Anonymous')}</td><td>${d.score}</td><td>${'⭐'.repeat(d.stars||1)}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    body.innerHTML = html;
+  } catch(e){ body.innerHTML = '<div id="lb-empty">Error loading scores.</div>'; }
+}
+function escHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtTime(s){ const m=Math.floor(s/60),sec=s%60; return m>0?m+'m '+String(sec).padStart(2,'0')+'s':sec+'s'; }
+
+function openLeaderboard(diff){
+  currentLbDiff = diff||'easy';
+  document.querySelectorAll('.lb-tab').forEach(t=>t.classList.toggle('active',t.dataset.diff===currentLbDiff));
+  document.getElementById('lb-overlay').classList.add('show');
+  fetchLeaderboard(currentLbDiff);
+}
+document.getElementById('lb-close').onclick = ()=>document.getElementById('lb-overlay').classList.remove('show');
+document.querySelectorAll('.lb-tab').forEach(t=>{
+  t.onclick = ()=>{ currentLbDiff=t.dataset.diff; document.querySelectorAll('.lb-tab').forEach(x=>x.classList.remove('active')); t.classList.add('active'); fetchLeaderboard(currentLbDiff); };
+});
+
+let _nameResolve = null;
+function askPlayerName(){
+  return new Promise(resolve=>{
+    _nameResolve = resolve;
+    document.getElementById('name-form').classList.add('show');
+    document.getElementById('name-input').value = getPlayerName();
+    document.getElementById('name-input').focus();
+  });
+}
+document.getElementById('name-submit').onclick = ()=>{
+  const v = document.getElementById('name-input').value.trim();
+  if(v) setPlayerName(v);
+  document.getElementById('name-form').classList.remove('show');
+  if(_nameResolve){ _nameResolve(v||'Anonymous'); _nameResolve=null; }
+};
+document.getElementById('name-skip').onclick = ()=>{
+  document.getElementById('name-form').classList.remove('show');
+  if(_nameResolve){ _nameResolve(getPlayerName()||'Anonymous'); _nameResolve=null; }
+};
+document.getElementById('name-input').onkeydown = e=>{ if(e.key==='Enter') document.getElementById('name-submit').click(); };
+
+// ════════════════════════════════════════════════════════
+//  GAME — zat.am warm theme
+// ════════════════════════════════════════════════════════
+
+const C = {
+  bg:"#fffdf5",
+  panel:"#09264a",
+  card:"#f5ede0",
+  border:"#d4b896",
+  back:"#dde8f5",      // card back: light blue
+  backBorder:"#09264a",
+  green:"#3d9970",
+  yellow:"#f4a300",
+  blue:"#09264a",
+  red:"#e05a2b",
+  muted:"#6b7f96",
+  light:"#fffdf5",
+  dark:"#09264a",
+};
+
+// Sanskrit words paired to each picture emoji
+// Format: { id, emoji, word (Sanskrit Devanagari), transliteration, color }
+const ALL_PAIRS = [
+  {id:1,  emoji:"🐶", word:"श्वान",   color:"#e07b39"},  // shvāna = dog
+  {id:2,  emoji:"🐱", word:"मार्जार",  color:"#e05a2b"},  // mārjāra = cat
+  {id:3,  emoji:"🌸", word:"पुष्प",    color:"#c45a9e"},  // puṣpa = flower
+  {id:4,  emoji:"🌙", word:"चन्द्र",   color:"#7a6bcc"},  // candra = moon
+  {id:5,  emoji:"🔥", word:"अग्नि",    color:"#e03d2b"},  // agni = fire
+  {id:6,  emoji:"🌊", word:"तरङ्ग",   color:"#2b6cb0"},  // taraṅga = wave
+  {id:7,  emoji:"⚡", word:"विद्युत्",  color:"#c49a00"},  // vidyut = lightning
+  {id:8,  emoji:"🍀", word:"दल",       color:"#2d7a4a"},  // dala = leaf/petal
+  {id:9,  emoji:"🎵", word:"संगीत",    color:"#b0468a"},  // saṃgīta = music
+  {id:10, emoji:"🌈", word:"इन्द्रधनु", color:"#7a6bcc"}, // indradhanū = rainbow
+  {id:11, emoji:"🦋", word:"पतङ्ग",    color:"#3d9970"},  // pataṅga = butterfly
+  {id:12, emoji:"🍕", word:"भोजन",    color:"#e07b39"},  // bhojana = food
+];
+
+const DIFF = {
+  easy:  {cols:4,rows:4,pairs:8, cw:140,ch:110,gap:18,label:"Easy",  color:C.green, thresh:[10,16]},
+  medium:{cols:5,rows:4,pairs:10,cw:114,ch:100,gap:14,label:"Medium",color:C.yellow,thresh:[14,22]},
+  hard:  {cols:6,rows:4,pairs:12,cw:100,ch:90, gap:10,label:"Hard",  color:C.red,   thresh:[18,28]},
+};
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+function buildDeck(n){
+  const deck=[];
+  ALL_PAIRS.slice(0,n).forEach(p=>{
+    deck.push({id:p.id,type:"picture",emoji:p.emoji,word:p.word,color:p.color});
+    deck.push({id:p.id,type:"word",   emoji:p.emoji,word:p.word,color:p.color});
+  });
+  return shuffle(deck);
+}
+function getRating(m,t){return m<=t[0]?3:m<=t[1]?2:1;}
+
+let _ac;
+function tone(f,t,d,v,dl=0){
+  try{
+    _ac=_ac||new(window.AudioContext||window.webkitAudioContext)();
+    const o=_ac.createOscillator(),g=_ac.createGain();
+    o.connect(g);g.connect(_ac.destination);o.type=t;
+    o.frequency.setValueAtTime(f,_ac.currentTime+dl);
+    g.gain.setValueAtTime(v,_ac.currentTime+dl);
+    g.gain.exponentialRampToValueAtTime(0.001,_ac.currentTime+dl+d);
+    o.start(_ac.currentTime+dl);o.stop(_ac.currentTime+dl+d);
+  }catch(e){}
+}
+const SFX={
+  flip :()=>tone(520,"sine",.1,.15),
+  match:()=>{tone(520,"sine",.12,.18);tone(780,"sine",.15,.2,.12);},
+  miss :()=>tone(200,"sawtooth",.1,.1),
+  win  :()=>[523,659,784,1047].forEach((f,i)=>tone(f,"sine",.2,.18,i*.1)),
+};
+
+const GW=1024, GH=768, HEADER=90, FOOTER=60;
+const frame = new Frame(FIT, GW, GH, C.bg, C.bg);
+
+frame.on("ready", ()=>{
+  const stage = frame.stage;
+  const W = frame.width, H = frame.height;
+
+  createjs.Ticker.timingMode = createjs.Ticker.RAF;
+  createjs.Ticker.on("tick", stage);
+
+  // Warm dot background
+  const bgS = new Shape(W,H);
+  for(let x=0;x<W;x+=40) for(let y=0;y<H;y+=40)
+    bgS.graphics.beginFill("rgba(9,38,74,.05)").drawCircle(x,y,1.5).endFill();
+  bgS.addTo(stage);
+  // Saffron glow
+  const glS = new Shape(W,H);
+  glS.graphics.beginRadialGradientFill(
+    ["rgba(244,163,0,.1)","rgba(255,253,245,0)"],[0,1],
+    W/2,H/2,0, W/2,H/2,W*.55
+  ).drawRect(0,0,W,H).endFill();
+  glS.addTo(stage);
+
+  // ── Header ────────────────────────────────────────────
+  const hdr = new Container(W, HEADER).addTo(stage);
+  new Rectangle(W, HEADER, C.panel).addTo(hdr);
+  new Rectangle(W, 3, C.yellow).pos(0,HEADER-3,LEFT,TOP,hdr);
+  new Label({text:"Memory Match",size:34,font:"Fredoka One",color:C.light}).pos(32,-6,LEFT,CENTER,hdr);
+  new Label({text:"Pictures to Sanskrit Words",size:13,font:"Nunito",color:"#a8c4e0"}).pos(36,14,LEFT,CENTER,hdr);
+
+  function scoreBlock(lbl,val,color,x){
+    const b=new Container(100,56).addTo(hdr); b.x=x; b.y=(HEADER-56)/2;
+    new Rectangle(100,56,C.card,color,2,10).addTo(b);
+    new Label({text:lbl,size:10,font:"Nunito",color:C.muted,bold:true}).pos(0,7,CENTER,TOP,b);
+    const v=new Label({text:String(val),size:24,font:"Fredoka One",color}).pos(0,0,CENTER,CENTER,b);
+    return v;
+  }
+  const movLbl = scoreBlock("MOVES","0",C.blue,  W-360);
+  const parLbl = scoreBlock("PAIRS","0",C.green, W-245);
+  const timLbl = scoreBlock("TIME", "0s",C.yellow,W-130);
+
+  const lbBtn = new Container(152,40).addTo(hdr);
+  lbBtn.x = Math.round(W/2 - 76);
+  lbBtn.y = Math.round((HEADER-40)/2);
+  new Rectangle(152,40,"transparent",C.yellow,1.5,20).addTo(lbBtn);
+  new Label({text:"🏅 Leaderboard",size:12,font:"Nunito",color:C.yellow,bold:true}).pos(0,0,CENTER,CENTER,lbBtn);
+  lbBtn.cursor="pointer";
+  lbBtn.on("click",()=>openLeaderboard(activeDiff));
+
+  // ── Footer ────────────────────────────────────────────
+  const ftr = new Container(W, FOOTER).addTo(stage);
+  ftr.y = H-FOOTER;
+  new Rectangle(W, FOOTER, C.panel).addTo(ftr);
+  new Rectangle(W, 3, C.yellow).pos(0,0,LEFT,TOP,ftr);
+  new Label({text:"DIFFICULTY",size:11,font:"Nunito",color:"#a8c4e0",bold:true}).pos(24,0,LEFT,CENTER,ftr);
+
+  let activeDiff = "easy";
+  const chipObjs = {};
+  function makeChip(key,x){
+    const d=DIFF[key];
+    const chip=new Container(88,32).addTo(ftr); chip.x=x; chip.y=(FOOTER-32)/2;
+    const bg=new Rectangle(88,32,key===activeDiff?d.color:"transparent",d.color,2,16).addTo(chip);
+    const lbl=new Label({text:d.label,size:12,font:"Nunito",color:key===activeDiff?"#fff":d.color,bold:true})
+      .pos(0,0,CENTER,CENTER,chip);
+    chip.cursor="pointer"; chip.bg=bg; chip.lbl=lbl; chip.color=d.color; chip.key=key;
+    chip.on("click",()=>{
+      if(chip.key===activeDiff) return;
+      Object.values(chipObjs).forEach(c=>{c.bg.color="transparent";c.lbl.color=c.color;});
+      bg.color=d.color; lbl.color="#fff";
+      activeDiff=key;
+      startGame(key);
+    });
+    chipObjs[key]=chip;
+  }
+  makeChip("easy",140); makeChip("medium",238); makeChip("hard",336);
+
+  const rstBtn=new Container(110,32).addTo(ftr);
+  rstBtn.x=W-128; rstBtn.y=(FOOTER-32)/2;
+  new Rectangle(110,32,"transparent","rgba(255,255,255,.3)",1,16).addTo(rstBtn);
+  new Label({text:"↺  Restart",size:12,font:"Nunito",color:"rgba(255,255,255,.8)",bold:true}).pos(0,0,CENTER,CENTER,rstBtn);
+  rstBtn.cursor="pointer";
+  rstBtn.on("click",()=>startGame(activeDiff));
+
+  let gameLayer = null;
+  let moves=0, pairs=0, secs=0, started=false;
+  let timerID=null, locked=false, first=null;
+
+  function startTimer(){ if(started) return; started=true; timerID=setInterval(()=>{secs++;timLbl.text=fmtTime(secs);},1000); }
+  function stopTimer(){clearInterval(timerID); timerID=null;}
+  function resetState(){
+    stopTimer();
+    moves=0; pairs=0; secs=0; started=false; locked=false; first=null;
+    movLbl.text="0"; parLbl.text="0"; timLbl.text="0s";
+  }
+
+  function revealCard(card){
+    card.flipped=true; card.bk.visible=false; card.ft.visible=true; SFX.flip();
+    card.scaleX=0.85; card.scaleY=0.85;
+    animate({target:card,props:{scaleX:1,scaleY:1},time:160,ease:"backOut"});
+  }
+  function hideCard(card){
+    card.flipped=false; card.ft.visible=false; card.bk.visible=true;
+    card.scaleX=0.85; card.scaleY=0.85;
+    animate({target:card,props:{scaleX:1,scaleY:1},time:160,ease:"backOut"});
+  }
+  function lockMatch(a,b){
+    SFX.match(); a.matched=true; b.matched=true;
+    a.cursor="default"; b.cursor="default";
+    [a,b].forEach(c=>{
+      new Rectangle(c.cw,c.ch,"rgba(61,153,112,.15)","#3d9970",2,12).addTo(c);
+      const badge=new Container(26,26).addTo(c); badge.x=c.cw-32; badge.y=6;
+      new Circle(13,"#3d9970").pos(0,0,LEFT,TOP,badge);
+      new Label({text:"✓",size:13,font:"Nunito",color:"#fff",bold:true}).pos(0,-1,CENTER,CENTER,badge);
+      animate({target:c,props:{scaleX:1.1,scaleY:1.1},time:90,ease:"quadOut",
+        call:()=>animate({target:c,props:{scaleX:1,scaleY:1},time:200,ease:"elasticOut"})});
+    });
+    pairs++; parLbl.text=String(pairs);
+    if(pairs===DIFF[activeDiff].pairs){stopTimer(); setTimeout(()=>showWin(activeDiff),600);}
+  }
+
+  function onCardClick(card){
+    if(card.flipped||card.matched||locked) return;
+    if(!first){
+      startTimer(); first=card; revealCard(card);
+    } else {
+      locked=true; const a=first; first=null;
+      revealCard(card); moves++; movLbl.text=String(moves);
+      setTimeout(()=>{
+        if(a.data.id===card.data.id && a.data.type!==card.data.type){
+          lockMatch(a,card); locked=false;
+        } else {
+          SFX.miss();
+          [a,card].forEach(c=>{
+            animate({target:c,props:{x:c.x-6},time:50,ease:"quadOut",call:()=>
+              animate({target:c,props:{x:c.x+12},time:70,ease:"quadInOut",call:()=>
+                animate({target:c,props:{x:c.x-6},time:50,ease:"quadOut"})})});
+          });
+          setTimeout(()=>{hideCard(a); hideCard(card); locked=false;},650);
+        }
+      },800);
+    }
+  }
+
+  function showWin(diffKey){
+    SFX.win();
+    const finalMoves=moves, finalPairs=pairs, finalSecs=secs;
+    const stars = finalMoves < 20 ? 3 : finalMoves < 30 ? 2 : 1;
+    const starStr = "⭐".repeat(stars) + "✩".repeat(3-stars);
+
+    // Populate and show the HTML win overlay — guaranteed to appear on top
+    document.getElementById('win-stars').textContent = starStr;
+    document.getElementById('win-moves').textContent = finalMoves;
+    document.getElementById('win-pairs').textContent = finalPairs;
+    document.getElementById('win-time').textContent = fmtTime(finalSecs);
+    const savedName = getPlayerName();
+    document.getElementById('win-name-input').value = savedName || '';
+    document.getElementById('win-overlay').classList.add('show');
+    setTimeout(()=>document.getElementById('win-name-input').focus(), 100);
+
+    document.getElementById('win-save').onclick = ()=>{
+      const name = document.getElementById('win-name-input').value.trim() || 'Anonymous';
+      setPlayerName(name);
+      submitScore({playerName:name, moves:finalMoves, timeSecs:finalSecs, stars});
+      document.getElementById('win-overlay').classList.remove('show');
+      startGame(activeDiff);
+    };
+    document.getElementById('win-play-again').onclick = ()=>{
+      document.getElementById('win-overlay').classList.remove('show');
+      startGame(activeDiff);
+    };
+    document.getElementById('win-name-input').onkeydown = e=>{
+      if(e.key==='Enter') document.getElementById('win-save').click();
+    };
+  }
+
+  function showStart(){
+    const pn=new Container(440,240).addTo(stage); pn.center(stage);
+    new Rectangle(440,240,"#fffdf5",C.yellow,2.5,22).addTo(pn);
+    new Rectangle(440,14,C.yellow,null,0,14).pos(0,0,LEFT,TOP,pn);
+    new Label({text:"🃏",size:46}).pos(0,18,CENTER,TOP,pn);
+    new Label({text:"Ready to Play?",size:28,font:"Fredoka One",color:C.dark}).pos(0,78,CENTER,TOP,pn);
+    new Label({text:"Match each picture to its Sanskrit word",size:13,font:"Nunito",color:C.muted}).pos(0,118,CENTER,TOP,pn);
+    const btn=new Container(200,44).addTo(pn); btn.x=120; btn.y=165;
+    new Rectangle(200,44,C.yellow,null,0,22).addTo(btn);
+    new Label({text:"Start Game",size:18,font:"Fredoka One",color:"#fff"}).pos(0,0,CENTER,CENTER,btn);
+    btn.cursor="pointer";
+    btn.on("click",()=>{ pn.removeFrom(stage); stage.update(); startTimer(); });
+    pn.addTo(stage);
+    hdr.addTo(stage); ftr.addTo(stage);
+  }
+
+  function startGame(diffKey){
+    resetState();
+    if(gameLayer){gameLayer.removeAllChildren(); gameLayer.removeFrom(stage);}
+    gameLayer=new Container().addTo(stage);
+
+    const d=DIFF[diffKey];
+    const gridW=d.cols*d.cw+(d.cols-1)*d.gap;
+    const gridH=d.rows*d.ch+(d.rows-1)*d.gap;
+    const gx=Math.round((W-gridW)/2);
+    const gy=HEADER+Math.round((H-HEADER-FOOTER-gridH)/2);
+
+    new Rectangle(gridW+48,gridH+48,"#ffffff",C.border,1.5,16)
+      .pos(gx-24,gy-24,LEFT,TOP,gameLayer);
+
+    buildDeck(d.pairs).forEach((data,i)=>{
+      const col=i%d.cols, row=Math.floor(i/d.cols);
+      const cx=gx+col*(d.cw+d.gap), cy=gy+row*(d.ch+d.gap);
+      const card=new Container(d.cw,d.ch);
+      card.x=cx; card.y=cy;
+      card.data=data; card.flipped=false; card.matched=false;
+      card.cw=d.cw; card.ch=d.ch;
+
+      // Card back — navy with Devanagari "Z" watermark
+      const bk=new Container(d.cw,d.ch);
+      new Rectangle(d.cw,d.ch,C.panel,C.border,1.5,12).addTo(bk);
+      new Rectangle(d.cw-14,d.ch-14,"transparent","rgba(255,255,255,.08)",1,8).pos(7,7,LEFT,TOP,bk);
+      new Label({text:"ज",size:Math.round(d.cw*.22),font:"Fredoka One",color:"rgba(255,255,255,.12)"})
+        .pos(0,0,CENTER,CENTER,bk);
+      bk.addTo(card);
+
+      // Card front
+      const ft=new Container(d.cw,d.ch); ft.visible=false;
+      new Rectangle(d.cw,d.ch,"#ffffff",data.color,2,12).addTo(ft);
+      new Rectangle(d.cw,10,data.color,null,0,12).pos(0,0,LEFT,TOP,ft);
+
+      if(data.type==="picture"){
+        // Show emoji (picture stays — no change needed)
+        new Label({text:data.emoji,size:Math.round(d.cw*.32)}).pos(0,4,CENTER,CENTER,ft);
+        new Label({text:"PICTURE",size:9,font:"Nunito",color:data.color,bold:true}).pos(0,7,CENTER,BOTTOM,ft);
+      } else {
+        // Show Sanskrit Devanagari word instead of English
+        const fontSize = d.cw >= 140 ? 22 : d.cw >= 114 ? 18 : 15;
+        new Label({text:data.word,size:fontSize,font:"Nunito",color:data.color,bold:true}).pos(0,4,CENTER,CENTER,ft);
+        new Label({text:"SANSKRIT",size:9,font:"Nunito",color:data.color,bold:true}).pos(0,7,CENTER,BOTTOM,ft);
+      }
+      ft.addTo(card);
+      card.bk=bk; card.ft=ft;
+
+      card.on("mouseover",()=>{
+        if(!card.flipped&&!card.matched)
+          animate({target:card,props:{scaleX:1.06,scaleY:1.06},time:80,ease:"quadOut"});
+      });
+      card.on("mouseout",()=>{
+        if(!card.flipped&&!card.matched)
+          animate({target:card,props:{scaleX:1,scaleY:1},time:80,ease:"quadOut"});
+      });
+      card.cursor="pointer";
+      card.on("click",()=>onCardClick(card));
+      card.addTo(gameLayer);
+    });
+
+    hdr.addTo(stage); ftr.addTo(stage);
+    showStart();
+  }
+
+  startGame("easy");
+});
+</script>
+</body>
+</html>

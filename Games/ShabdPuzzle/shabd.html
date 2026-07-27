@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double:wght@100..900&display=swap" rel="stylesheet">
+<meta charset="utf-8" />
+<title>Shabd Puzzle - ZIM Noun Declension Sort</title>
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+
+<style>
+
+    .auth-bar {
+        position: fixed;
+        top: 22px;
+        right: 28px;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #shabdLoginBtn,
+    #shabdLogoutBtn {
+        background: #0b2b2b;
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 10px 16px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,.2);
+    }
+
+    #shabdLogoutBtn {
+        background: #f2b300;
+        padding: 8px 12px;
+    }
+
+    #shabdUserProfile {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        background: white;
+        border: 2px solid #0b2b2b;
+        border-radius: 18px;
+        padding: 5px 8px;
+    }
+
+    #shabdUserAvatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #f2b300;
+    }
+
+    #shabdUserName {
+        max-width: 120px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #0b2b2b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+</style>
+
+<script>
+const NOUNS = [{"word": "Rama (राम)", "meaning": "God", "gender": "Masculine", "ending": "a", "decl": [["रामः", "रामौ", "रामाः"], ["रामम्", "रामौ", "रामान्"], ["रामेण", "रामाभ्याम्", "रामैः"], ["रामाय", "रामाभ्याम्", "रामेभ्यः"], ["रामात्", "रामाभ्याम्", "रामेभ्यः"], ["रामस्य", "रामयोः", "रामाणाम्"], ["रामे", "रामयोः", "रामेषु"], ["हे राम", "हे रामौ", "हे रामाः"]]}, {"word": "Sitaa (सीता)", "meaning": "Godess", "gender": "Feminine", "ending": "aa", "decl": [["सीता", "सीते", "सीताः"], ["सीताम्", "सीते", "सीताः"], ["सीतया", "सीताभ्याम्", "सीताभिः"], ["सीतायै", "सीताभ्याम्", "सीताभ्यः"], ["सीतायाः", "सीताभ्याम्", "सीताभ्यः"], ["सीतायाः", "सीतयोः", "सीतानाम्"], ["सीतायाम्", "सीतयोः", "सीतासु"], ["सीते", "सीते", "सीताः"]]}, {"word": "Deva (देव)", "meaning": "God", "gender": "Masculine", "ending": "a", "decl": [["देवः", "देवौ", "देवाः"], ["देवम्", "देवौ", "देवान्"], ["देवेन", "देवाभ्याम्", "देवैः"], ["देवाय", "देवाभ्याम्", "देवेभ्यः"], ["देवात्", "देवाभ्याम्", "देवेभ्यः"], ["देवस्य", "देवयोः", "देवानाम्"], ["देवे", "देवयोः", "देवेषु"], ["देव", "देवौ", "देवाः"]], "nom": ["देवः", "देवौ", "देवाः"], "acc": ["देवम्", "देवौ", "देवान्"], "ins": ["देवेन", "देवाभ्याम्", "देवैः"], "dat": ["देवाय", "देवाभ्याम्", "देवेभ्यः"], "abl": ["देवात्", "देवाभ्याम्", "देवेभ्यः"], "gen": ["देवस्य", "देवयोः", "देवानाम्"], "loc": ["देवे", "देवयोः", "देवेषु"], "voc": ["देव", "देवौ", "देवाः"]}, {"word": "Muni (मुनि)", "meaning": "Sage", "gender": "Masculine", "ending": "i", "decl": [["मुनिः", "मुनी", "मुनयः"], ["मुनिम्", "मुनी", "मुनीन्"], ["मुनिना", "मुनिभ्याम्", "मुनिभिः"], ["मुनये", "मुनिभ्याम्", "मुनिभ्यः"], ["मुनेः", "मुनिभ्याम्", "मुनिभ्यः"], ["मुनेः", "मुन्योः", "मुनीनाम्"], ["मुनौ", "मुन्योः", "मुनिषु"], ["मुने", "मुनी", "मुनयः"]]}, {"word": "Pashu (पशु)", "meaning": "Animal", "gender": "Masculine", "ending": "u", "decl": [["पशुः", "पशू", "पशवः"], ["पशुम्", "पशू", "पशून्"], ["पशुना", "पशुभ्याम्", "पशुभिः"], ["पशवे", "पशुभ्याम्", "पशुभ्यः"], ["पशोः", "पशुभ्याम्", "पशुभ्यः"], ["पशोः", "पश्वोः", "पशूनाम्"], ["पशौ", "पश्वोः", "पशुषु"], ["पशो", "पशू", "पशवः"]]}, {"word": "Pitr (पितृ)", "meaning": "Father", "gender": "Masculine", "ending": "r", "decl": [["पिता", "पितरौ", "पितरः"], ["पितरम्", "पितरौ", "पितॄन्"], ["पित्रा", "पितृभ्याम्", "पितृभिः"], ["पित्रे", "पितृभ्याम्", "पितृभ्यः"], ["पितुः", "पितृभ्याम्", "पितृभ्यः"], ["पितुः", "पित्रोः", "पितॄणाम्"], ["पितरि", "पित्रोः", "पितृषु"], ["पितः", "पितरौ", "पितरः"]]}, {"word": "Go (गो)", "meaning": "Bull", "gender": "Masculine", "ending": "o", "decl": [["गौः", "गावौ", "गावः"], ["गाम्", "गावौ", "गाः"], ["गवा", "गोभ्याम्", "गोभिः"], ["गवे", "गोभ्याम्", "गोभ्यः"], ["गोः", "गोभ्याम्", "गोभ्यः"], ["गोः", "गवोः", "गवाम्"], ["गवि", "गवोः", "गोषु"], ["गौः", "गावौ", "गावः"]]}, {"word": "Aatman (आत्मन्)", "meaning": "Soul", "gender": "Masculine", "ending": "n", "decl": [["आत्मा", "आत्मानौ", "आत्मानः"], ["आत्मानम्", "आत्मानौ", "आत्मनः"], ["आत्मना", "आत्मभ्याम्", "आत्मभिः"], ["आत्मने", "आत्मभ्याम्", "आत्मभ्यः"], ["आत्मनः", "आत्मभ्याम्", "आत्मभ्यः"], ["आत्मनः", "आत्मनोः", "आत्मनाम्"], ["आत्मनि", "आत्मनोः", "आत्मसु"], ["आत्मन्", "आत्मानौ", "आत्मानः"]]}, {"word": "Katha (कथा)", "meaning": "Story", "gender": "Feminine", "ending": "aa", "decl": [["कथा", "कथे", "कथाः"], ["कथाम्", "कथे", "कथाः"], ["कथया", "कथाभ्याम्", "कथाभिः"], ["कथायै", "कथाभ्याम्", "कथाभ्यः"], ["कथायाः", "कथाभ्याम्", "कथाभ्यः"], ["कथायाः", "कथयोः", "कथानाम्"], ["कथायाम्", "कथयोः", "कथासु"], ["कथे", "कथे", "कथाः"]]}, {"word": "Gati (गति)", "meaning": "Motion", "gender": "Feminine", "ending": "i", "decl": [["गतिः", "गती", "गतयः"], ["गतिम्", "गती", "गतीः"], ["गत्या", "गतिभ्याम्", "गतिभिः"], ["गत्यै / गतये", "गतिभ्याम्", "गतिभ्यः"], ["गत्याः / गतेः", "गतिभ्याम्", "गतिभ्यः"], ["गत्याः / गतेः", "गत्योः", "गतीनाम्"], ["गत्याम् / गतौ", "गत्योः", "गतिषु"], ["गते", "गती", "गतयः"]]}, {"word": "Dhii (धी)", "meaning": "Wisdom", "gender": "Feminine", "ending": "ii", "decl": [["धीः", "धियौ", "धियः"], ["धियम्", "धियौ", "धियः"], ["धिया", "धीभ्याम्", "धीभिः"], ["धिये", "धीभ्याम्", "धीभ्यः"], ["धियः", "धीभ्याम्", "धीभ्यः"], ["धियः", "धियोः", "धीयाम्"], ["धियि", "धियोः", "धीषु"], ["धि", "धियौ", "धियः"]]}, {"word": "Nadii (नदी)", "meaning": "River", "gender": "Feminine", "ending": "ii", "decl": [["नदी", "नद्यौ", "नद्यः"], ["नदीम्", "नद्यौ", "नदीः"], ["नद्या", "नदीभ्याम्", "नदीभिः"], ["नद्यै", "नदीभ्याम्", "नदीभ्यः"], ["नद्याः", "नदीभ्याम्", "नदीभ्यः"], ["नद्याः", "नद्योः", "नदीनाम्"], ["नद्याम्", "नद्योः", "नदीषु"], ["नदि", "नद्यौ", "नद्यः"]]}, {"word": "Dhenu (धेनु)", "meaning": "Cow", "gender": "Feminine", "ending": "u", "decl": [["धेनुः", "धेनू", "धेनवः"], ["धेनुम्", "धेनू", "धेनूः"], ["धेन्वाम्", "धेनुभ्याम्", "धेनुभिः"], ["धेन्वै / धेनवे", "धेनुभ्याम्", "धेनुभ्यः"], ["धेन्वाः / धेनोः", "धेनुभ्याम्", "धेनुभ्यः"], ["धेन्वाः / धेनोः", "धेन्वोः", "धेनूनाम्"], ["धेन्वाम् / धेनौ", "धेन्वोः", "धेनुषु"], ["धेनो", "धेनू", "धेनवः"]]}, {"word": "Phala (फल)", "meaning": "Fruit", "gender": "Neuter", "ending": "a", "decl": [["फलम्", "फले", "फलानि"], ["फलम्", "फले", "फलानि"], ["फलेन", "फलाभ्याम्", "फलैः"], ["फलाय", "फलाभ्याम्", "फलेभ्यः"], ["फलात्", "फलाभ्याम्", "फलेभ्यः"], ["फलस्य", "फलयोः", "फलानाम्"], ["फले", "फलयोः", "फलेषु"], ["फल", "फले", "फलानि"]]}, {"word": "Vaari (वारि)", "meaning": "Water", "gender": "Neuter", "ending": "i", "decl": [["वारि", "वारिणी", "वारीणि"], ["वारि", "वारिणी", "वारीणि"], ["वारिणा", "वारिभ्याम्", "वारिभिः"], ["वारिणे", "वारिभ्याम्", "वारिभ्यः"], ["वारिणः", "वारिभ्याम्", "वारिभ्यः"], ["वारिणः", "वारिणोः", "वारीणाम्"], ["वारिणि", "वारिणोः", "वारिषु"], ["वारे", "वारिणी", "वारीणि"]]}, {"word": "Madhu (मधु)", "meaning": "Honey", "gender": "Neuter", "ending": "u", "decl": [["मधु", "मधुनी", "मधूनि"], ["मधु", "मधुनी", "मधूनि"], ["मधुना", "मधुभ्याम्", "मधुभिः"], ["मधुने", "मधुभ्याम्", "मधुभ्यः"], ["मधुनः", "मधुभ्याम्", "मधुभ्यः"], ["मधुनः", "मधुनोः", "मधूनाम्"], ["मधुनि", "मधुनोः", "मधुषु"], ["मधो / मधु", "मधुनी", "मधूनिः"]]}, {"word": "Kartr (कर्तृ)", "meaning": "Doer", "gender": "Neuter", "ending": "r", "decl": [["कर्तृ", "कर्तृणी", "कर्तॄणि"], ["कर्तृ", "कर्तृणी", "कर्तॄणि"], ["कर्तृणा / कर्त्रा", "कर्तृभ्याम्", "कर्तृभिः"], ["कर्तृणे / कर्त्रे", "कर्तृभ्याम्", "कर्तृभ्यः"], ["कर्तृणः / कर्तुः", "कर्तृभ्याम्", "कर्तृभ्यः"], ["कर्तृणः / कर्तुः", "कर्तृणोः / कर्त्रोः", "कर्तॄणाम्"], ["कर्तृणि / कर्तरि", "कर्तृणोः / कर्त्रोः", "कर्तृषु"], ["कर्तः / कर्तृः", "कर्तृणी", "कर्तॄणि"]]}, {"word": "Adas (अदस्)", "meaning": "That", "gender": "Masculine", "ending": " ", "vocative": false, "decl": [["असौ", " अमू", " अमी"], ["अमुम्", " अमू", " अमून्"], ["अमुना", " अमूभ्याम्", " अमीभिः"], ["अमुष्मै", " अमूभ्याम्", " अमीभ्यः"], ["अमुष्मात्", " अमूभ्याम्", " अमीभ्यः"], ["अमुष्य", " अमुयोः", " अमीषाम्"], ["अमुष्मिन्", " अमुयोः", " अमीषु"], ["-", "-", "-"]]}, {"word": "Idam (इदम्)", "meaning": "This", "gender": "Masculine", "ending": " ", "vocative": false, "decl": [["अयम्", " इमौ", " इमे"], ["इमम् / एनम्", " इमौ / एनौ", " इमान् / एनान्"], ["अनेन / एनेन", " आभ्याम्", " एभिः"], ["अस्मै", " आभ्याम्", " एभ्यः"], ["अस्मात्", " आभ्याम्", " एभ्यः"], ["अस्य", " अनयोः / एनयोः", " एषाम्"], ["अस्मिन्", " अनयोः / एनयोः", " एषु"], ["-", "-", "-"]]}, {"word": "Etad (एतद्)", "meaning": "This", "gender": "Masculine", "ending": " ", "vocative": false, "decl": [["एषः", " एतौ", " एते"], ["एतम् / एनम्", " एतौ / एनौ", " एतान् / एनान्"], ["एतेन / एनेन", " एताभ्याम्", " एतैः"], ["एतस्मै", " एताभ्याम्", " एतेभ्यः"], ["एतस्मात् / एतस्माद्", " एताभ्याम्", " एतेभ्यः"], ["एतस्य", " एतयोः / एनयोः", " एतेषाम्"], ["एतस्मिन्", " एतयोः / एनयोः", " एतेषु"], ["-", "-", "-"]]}, {"word": "Kim (किम्)", "meaning": "Who? What? Which?", "gender": "Masculine", "ending": " ", "vocative": false, "decl": [["कः", " कौ", " के"], ["कम्", " कौ", " कान्"], ["केन", " काभ्याम्", " कैः"], ["कस्मै", " काभ्याम्", " केभ्यः"], ["कस्मात्", " काभ्याम्", " केभ्यः"], ["कस्य", " कयोः", " केषाम्"], ["कस्मिन्", " कयोः", " केषु"], ["-", "-", "-"]]}, {"word": "Tad (तद्)", "meaning": "That", "gender": "Masculine", "ending": " ", "vocative": false, "decl": [["सः", " तौ", " ते"], ["तम्", " तौ", " तान्"], ["तेन", " ताभ्याम्", " तैः"], ["तस्मै", " ताभ्याम्", " तेभ्यः"], ["तस्मात्", " ताभ्याम्", " तेभ्यः"], ["तस्य", " तयोः", " तेषाम्"], ["तस्मिन्", " तयोः", " तेषु"], ["-", "-", "-"]]}, {"word": "Yad (यद्)", "meaning": "He who", "gender": "Masculine", "ending": " ", "vocative": false, "decl": [["यः", " यौ", " ये"], ["यम्", " यौ", " यान्"], ["येन", " याभ्याम्", " यैः"], ["यस्मै", " याभ्याम्", " येभ्यः"], ["यस्मात्", " याभ्याम्", " येभ्यः"], ["यस्य", " ययोः", " येषाम्"], ["यस्मिन्", " ययोः", " येषु"], ["-", "-", "-"]]}, {"word": "Sarva (सर्व)", "meaning": "All", "gender": "Masculine", "ending": " ", "decl": [["सर्वः", " सर्वौ", " सर्वे"], ["सर्वम्", " सर्वौ", " सर्वान्"], ["सर्वेण", " सर्वाभ्याम्", " सर्वैः"], ["सर्वस्मै", " सर्वाभ्याम्", " सर्वेभ्यः"], ["सर्वस्मात्", " सर्वाभ्याम्", " सर्वेभ्यः"], ["सर्वस्य", " सर्वयोः", " सर्वेषाम्"], ["सर्वस्मिन्", " सर्वयोः", " सर्वेषु"], ["सर्वः", " सर्वौ", " सर्वे"]]}, {"word": "Adas (अदस्)", "meaning": "That", "gender": "Feminine", "ending": " ", "vocative": false, "decl": [["असौ", " अमू", " अमूः"], ["अमूम्", " अमू", " अमूः"], ["अमुया", " अमूभ्याम्", " अमूभिः"], ["अमुष्यै", " अमूभ्याम्", " अमूभ्यः"], ["अमुष्याः", " अमूभ्याम्", " अमूभ्यः"], ["अमुष्याः", " अमुयोः", " अमुषाम्"], ["अमुष्याम्", " अमुयोः", " अमूषु"], ["-", "-", "-"]]}, {"word": "Idam (इदम्)", "meaning": "This", "gender": "Feminine", "ending": " ", "vocative": false, "decl": [["इयम्", " इमे", " इमाः"], ["इमाम् / एनाम्", " इमे / एने", " इमाः / एनाः"], ["अनया / एनया", " आभ्याम्", " आभिः"], ["अस्यै", " आभ्याम्", " आभ्यः"], ["अस्याः", " आभ्याम्", " आभ्यः"], ["अस्याः", " अनयोः / एनयोः", " आसाम्"], ["अस्याम्", " अनयोः / एनयोः", " आसु"], ["-", "-", "-"]]}, {"word": "Etad (एतद्)", "meaning": "This", "gender": "Feminine", "ending": " ", "vocative": false, "decl": [["एषा", " एते", " एताः"], ["एताम् / एनाम्", " एते / एने", " एताः / एनाः"], ["एतया / एनया", " एताभ्याम्", " एताभिः"], ["एतस्यै", " एताभ्याम्", " एताभ्यः"], ["एतस्याः", " एताभ्याम्", " एताभ्यः"], ["एतस्याः", " एतयोः / एनयोः", " एतासाम्"], ["एतस्याम्", " एतयोः / एनयोः", " एतासु"], ["-", "-", "-"]]}, {"word": "Kim (किम्)", "meaning": "Who? What? Which?", "gender": "Feminine", "ending": " ", "vocative": false, "decl": [["का", " के", " काः"], ["काम्", " के", " काः"], ["कया", " काभ्याम्", " काभिः"], ["कस्यै", " काभ्याम्", " काभ्यः"], ["कस्याः", " काभ्याम्", " काभ्यः"], ["कस्याः", " कयोः", " कासाम्"], ["कस्याम्", " कयोः", " कासु"], ["-", "-", "-"]]}, {"word": "Tad (तद्)", "meaning": "That", "gender": "Feminine", "ending": " ", "vocative": false, "decl": [["सा", " ते", " ताः"], ["ताम्", " ते", " ताः"], ["तया", " ताभ्याम्", " ताभिः"], ["तस्यै", " ताभ्याम्", " ताभ्यः"], ["तस्याः", " ताभ्याम्", " ताभ्यः"], ["तस्याः", " तयोः", " तासाम्"], ["तस्याम्", " तयोः", " तासु"], ["-", "-", "-"]]}, {"word": "Yad (यद्)", "meaning": "He who", "gender": "Feminine", "ending": " ", "vocative": false, "decl": [["या", " ये", " याः"], ["याम्", " ये", " याः"], ["यया", " याभ्याम्", " याभिः"], ["यस्यै", " याभ्याम्", " याभ्यः"], ["यस्याः", " याभ्याम्", " याभ्यः"], ["यस्याः", " ययोः", " यासाम्"], ["यस्याम्", " ययोः", " यासु"], ["-", "-", "-"]]}, {"word": "Sarvaa (सर्वा)", "meaning": "All", "gender": "Feminine", "ending": " ", "decl": [["सर्वा", " सर्वे", " सर्वाः"], ["सर्वाम्", " सर्वे", " सर्वाः"], ["सर्वया", " सर्वाभ्याम्", " सर्वभिः"], ["सर्वस्यै", " सर्वाभ्याम्", " सर्वाभ्यः"], ["सर्वस्याः", " सर्वाभ्याम्", " सर्वाभ्यः"], ["सर्वस्याः", " सर्वयोः", " सर्वसाम्"], ["सर्वस्याम्", " सर्वयोः", " सर्वासु"], ["सर्वे", " सर्वे", " सर्वाः"]]}, {"word": "Adas (अदस्)", "meaning": "That", "gender": "Neuter", "ending": " ", "vocative": false, "decl": [["अदः", " अमू", " अमूनि"], ["अदः", " अमू", " अमूनि"], ["अमुना", " अमूभ्याम्", " अमीभिः"], ["अमुष्मै", " अमूभ्याम्", " अमीभ्यः"], ["अमुष्मात् / अमुष्माद्", " अमूभ्याम्", " अमीभ्यः"], ["अमुष्य", " अमुयोः", " अमीषाम्"], ["अमुष्मिन्", " अमुयोः", " अमीषु"], ["-", "-", "-"]]}, {"word": "Idam (इदम्)", "meaning": "This", "gender": "Neuter", "ending": " ", "vocative": false, "decl": [["इदम्", " इमे", " इमानि"], ["इदम् / एनत्", " इमे / एने", " इमानि / एनानि"], ["अनेन / एनेन", " आभ्याम्", " एभिः"], ["अस्मै", " आभ्याम्", " एभ्यः"], ["अस्मात्", " आभ्याम्", " एभ्यः"], ["अस्य", " अनयोः / एनयोः", " एषाम्"], ["अस्मिन्", " अनयोः / एनयोः", " एषु"], ["-", "-", "-"]]}, {"word": "Etad (एतद्)", "meaning": "This", "gender": "Neuter", "ending": " ", "vocative": false, "decl": [["एतत् / एतद्", " एते", " एतानि"], ["एतत् / एतद् / एनत्", " एते / एने", " एतानि / एनानि"], ["एतेन / एनेन", " एताभ्याम्", " एतैः"], ["एतस्मै", " एताभ्याम्", " एतेभ्यः"], ["एतस्मात्", " एताभ्याम्", " एतेभ्यः"], ["एतस्य", " एतयोः / एनयोः", " एतेषाम्"], ["एतस्मिन्", " एतयोः / एनयोः", " एतेषु"], ["-", "-", "-"]]}, {"word": "Kim (किम्)", "meaning": "Who? What? Which?", "gender": "Neuter", "ending": " ", "vocative": false, "decl": [["किम्", " के", " कानि"], ["किम्", " के", " कानि"], ["केन", " काभ्याम्", " कैः"], ["कस्मै", " काभ्याम्", " केभ्यः"], ["कस्मात्", " काभ्याम्", " केभ्यः"], ["कस्य", " कयोः", " केषाम्"], ["कस्मिन्", " कयोः", " केषु"], ["-", "-", "-"]]}, {"word": "Tad (तद्)", "meaning": "That", "gender": "Neuter", "ending": " ", "vocative": false, "decl": [["तद् / तत्", " ते", " तानि"], ["तद् / तत्", " ते", " तानि"], ["तेन", " ताभ्याम्", " तैः"], ["तस्मै", " ताभ्याम्", " तेभ्यः"], ["तस्मात्", " ताभ्याम्", " तेभ्यः"], ["तस्य", " तयोः", " तेषाम्"], ["तस्मिन्", " तयोः", " तेषु"], ["-", "-", "-"]]}, {"word": "Yad (यद्)", "meaning": "He who", "gender": "Neuter", "ending": " ", "vocative": false, "decl": [["यत् / यद्", " ये", " यानि"], ["यत् / यद्", " ये", " यानि"], ["येन", " याभ्याम्", " यैः"], ["यस्मै", " याभ्याम्", " येभ्यः"], ["यस्मात्", " याभ्याम्", " येभ्यः"], ["यस्य", " ययोः", " येषाम्"], ["यस्मिन्", " ययोः", " येषु"], ["-", "-", "-"]]}, {"word": "Sarva (सर्व)", "meaning": "All", "gender": "Neuter", "ending": " ", "decl": [["सर्वम्", " सर्वे", " सर्वाणि"], ["सर्वम्", " सर्वे", " सर्वाणि"], ["सर्वेण", " सर्वाभ्याम्", " सर्वैः"], ["सर्वस्मै", " सर्वाभ्याम्", " सर्वेभ्यः"], ["सर्वस्मात्", " सर्वाभ्याम्", " सर्वेभ्यः"], ["सर्वस्य", " सर्वयोः", " सर्वेषाम्"], ["सर्वस्मिन्", " सर्वयोः", " सर्वेषु"], ["सर्वम्", " सर्वे", " सर्वाणि"]]}, {"word": "Asmad (अस्मद्)", "meaning": "I/We", "gender": "common", "ending": " ", "vocative": false, "decl": [["अहम्", " आवाम्", " वयम्"], ["माम् / मा", " आवाम् / नौ", " अस्मान् / नः"], ["मया", " आवाभ्याम्", " अस्माभिः"], ["मह्यम् / मे", " आवाभ्याम् / नौ", " अस्मभ्यम् / नः"], ["मत्", " आवाभ्याम्", " अस्मत्"], ["मम / मे", " आवयोः / नौ", " अस्माकम् / नः"], ["मयि", " आवयोः", " अस्मासु"], ["-", "-", "-"]]}, {"word": "Yusmad (युस्मद्)", "meaning": "You", "gender": "common", "ending": " ", "vocative": false, "decl": [["त्वम्", " युवाम्", " यूयम्"], ["त्वाम् / त्वा", " युवाम् / वाम्", " युष्मान् / वः"], ["त्वया ", "युवाभ्याम्", " युष्माभिः"], ["तुभ्यम् / ते", " युवाभ्याम् / वाम्", " युष्मभ्यम् / वः"], ["त्वत्", " युवाभ्याम्", " युष्मत्"], ["तव / ते", " युवयोः / वाम्", " युष्माकम् / वः"], ["त्वयि", " युवयोः", " युष्मासु"], ["-", "-", "-"]]}];
+</script>
+<script type="module">
+
+import "https://zimjs.org/cdn/019/zim";
+import "https://zimjs.org/cdn/019/zim_game";
+import "https://zimjs.org/cdn/019/zim_pizzazz";
+
+import {
+    auth,
+    db,
+    provider,
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged,
+    collection,
+    addDoc,
+    serverTimestamp
+} from "../../firebase-config.js";
+
+new Frame(FIT, 1024, 768, "#fffaf2", dark, ready);
+
+function ready() {
+
+    Ticker.always();
+
+    const shabdLoginBtn = document.getElementById("shabdLoginBtn");
+    const shabdUserProfile = document.getElementById("shabdUserProfile");
+    const shabdUserAvatar = document.getElementById("shabdUserAvatar");
+    const shabdUserName = document.getElementById("shabdUserName");
+    const shabdLogoutBtn = document.getElementById("shabdLogoutBtn");
+
+    function getDefaultAvatar(name = "User") {
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ffe1a5&color=09264a`;
+    }
+
+    function getSafeGooglePhoto(photoURL) {
+        if (!photoURL) return "";
+        return photoURL
+            .replace("=s96-c", "=s200-c")
+            .replace("=s64-c", "=s200-c")
+            .replace("=s48-c", "=s200-c");
+    }
+
+    shabdLoginBtn.addEventListener("click", async () => {
+        try {
+            await signInWithPopup(auth, provider);
+        } catch (error) {
+            console.error(error);
+            alert("Google login failed.");
+        }
+    });
+
+    shabdLogoutBtn.addEventListener("click", async () => {
+        await signOut(auth);
+    });
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            const safePhoto = getSafeGooglePhoto(user.photoURL) || getDefaultAvatar(user.displayName || "Player");
+
+            shabdLoginBtn.style.display = "none";
+            shabdUserProfile.style.display = "flex";
+
+            shabdUserAvatar.src = safePhoto;
+            shabdUserName.textContent = user.displayName || "Player";
+
+            localStorage.setItem("zatamUserId", user.uid);
+            localStorage.setItem("zatamUserName", user.displayName || "Player");
+            localStorage.setItem("zatamUserEmail", user.email || "");
+            localStorage.setItem("zatamUserPhoto", safePhoto);
+        } else {
+            shabdLoginBtn.style.display = "block";
+            shabdUserProfile.style.display = "none";
+
+            shabdUserAvatar.src = "";
+            shabdUserName.textContent = "";
+
+            localStorage.removeItem("zatamUserId");
+            localStorage.removeItem("zatamUserName");
+            localStorage.removeItem("zatamUserEmail");
+            localStorage.removeItem("zatamUserPhoto");
+        }
+    });
+
+    const CASES = ["Nominative", "Accusative", "Instrumental", "Dative", "Ablative", "Genitive", "Locative", "Vocative"];
+    const ROLES = ["subject", "object", "by, with", "to, for", "from", "of", "in, on, at", "hey"];
+    const NUMBERS = ["Singular", "Dual", "Plural"];
+    const FILTERS = [
+        {label:"All", gender:null, pronoun:null},
+        {label:"Noun - Masculine", gender:"Masculine", pronoun:false},
+        {label:"Noun - Feminine", gender:"Feminine", pronoun:false},
+        {label:"Noun - Neuter", gender:"Neuter", pronoun:false},
+        {label:"Pronoun - Masculine", gender:"Masculine", pronoun:true},
+        {label:"Pronoun - Feminine", gender:"Feminine", pronoun:true},
+        {label:"Pronoun - Neuter", gender:"Neuter", pronoun:true},
+        {label:"Pronoun - Common", gender:"common", pronoun:true}
+    ];
+
+    let filterIndex = 0;
+    let nounIndex = -1;
+    let noun;
+    let cards = [];
+    let slots = [];
+    let solvedRows = [];
+    let solvedCount = 0;
+    let requiredRows = 8;
+    let wrongMoves = 0;
+    let isPlaying = false;
+    let gameOver = false;
+    let scoreUploaded = false;
+    let usedSolve = false;
+
+    const boardW = 880;
+    const rowH = 48;
+    const headerH = 42;
+    const boardH = headerH + rowH*8;
+    const colW = [150, 100, 205, 205, 205];
+    const gap = 4;
+    const cardW = 190;
+    const cardH = 40;
+
+    const boardX = 0;
+    const boardY = 178;
+
+    const bar = new Rectangle(W,40,black).addTo();
+    const arrow = makeIcon({
+        type:"arrowstick",
+        color:white,
+        scale:1.2
+    })
+    const returnButton = new Button({
+        width:60,
+        height:60,
+        backgroundColor:"lighter",
+        rollBackgroundColor:"red",
+        gradient:.3,
+        corner:30,
+        icon:arrow,
+    })
+    .scaleTo(bar,80,80)
+    .loc(5,5)
+    .tap(() => {
+        window.location.href = "../../index.html";
+    });
+    arrow.rotation = 180;
+	new Label("Shabd Puzzle", 36, "Bitcount Grid Double", blue).pos(0,3,CENTER,CENTER,bar);
+
+    /*const infoLabel = new Label({
+        text:"Reorder the jumbled noun declensions. Check each case or check all.",
+        size:20,
+        color:black,
+        align:CENTER
+    }).pos(0,55,CENTER,TOP);*/
+
+    const nounLabel = new Label({
+        text:"Click NEW GAME to begin",
+        size:24,
+        color:purple,
+        bold:true,
+        align:CENTER
+    }).pos(0,55,CENTER,TOP);
+
+    const descLabel = new Label({
+        text:"",
+        size:18,
+        color:black,
+        align:CENTER
+    }).pos(0,90,CENTER,TOP);
+
+    const message = new Label({
+        text:"",
+        size:22,
+        color:orange,
+        bold:true,
+        outlineColor:black,
+        align:CENTER
+    }).pos(0,160,CENTER,TOP);
+
+    const status = new Label({
+        text:"Wrong Checks: ०",
+        size:25,
+        color:red,
+        bold:true,
+        outlineColor:black
+    }).pos(0,125,CENTER,TOP);
+
+    const timer = new Timer({
+        time:0,
+        down:false,
+        colon:true,
+        startPaused:true,
+        size:25,
+        color:black,
+        backgroundColor:yellow,
+        borderColor:black,
+        borderWidth:2,
+        width:135,
+        height:45
+    }).pos(65,140,RIGHT,TOP);
+
+    const board = new Container(boardW, boardH).pos(boardX,200,CENTER,TOP);
+    const cardLayer = new Container(boardW, boardH).addTo(board);
+
+    // Backing board
+    new Rectangle(boardW+18, boardH+18, white, black, 2, 14)
+        .centerReg(board)
+        .alp(.75)
+        .bot();
+
+    const buttonBar = new Container(760,52).pos(0,25,CENTER,BOTTOM);
+
+    const newGameBtn = new Button({
+        label:new Label({
+            text:"NEW GAME",
+            size:18
+        }), 
+        width:150, 
+        height:45, 
+        backgroundColor:purple, 
+        rollBackgroundColor:purple.lighten(.2), 
+        color:white
+    })
+    .loc(0,0,buttonBar)
+    .tap(()=>startGame());
+
+    const filterNames = [
+        "All",
+        "Noun - Masculine",
+        "Noun - Feminine",
+        "Noun - Neuter",
+        "Pronoun - Masculine",
+        "Pronoun - Feminine",
+        "Pronoun - Neuter",
+        "Pronoun - Common"
+    ];
+
+    const filterPane = new Pane({
+        width:360,
+        height:430,
+        title:"Choose Filter",
+        backgroundColor:white,
+        color:black,
+        corner:14
+    });
+
+    filterNames.forEach((name, i) => {
+        new Button({
+            label:new Label({
+                text:name,
+                size:18,
+                color:white
+            }),
+            width:280,
+            height:38,
+            backgroundColor:i === filterIndex ? green : purple,
+            rollBackgroundColor:green,
+            color:white,
+            corner:10
+        })
+        .center(filterPane)
+        .mov(0, -140 + i*42)
+        .tap(() => {
+            filterIndex = i;
+            nounIndex = -1;
+            filterPane.hide();
+            startGame();
+            S.update();
+        });
+    });
+
+    const filterBtn = new Button({
+        label:new Label({
+            text:"FILTER",
+            size:18
+        }),
+        width:130,
+        height:45,
+        backgroundColor:green,
+        rollBackgroundColor:green.lighten(.2),
+        color:white
+    })
+    .loc(165,0,buttonBar)
+    .tap(() => {
+        filterPane.show();
+    });
+
+    const checkBtn = new Button({
+        label:new Label({
+            text:"CHECK ALL",
+            size:18
+        }), 
+        width:150, 
+        height:45, 
+        backgroundColor:orange, 
+        rollBackgroundColor:orange.lighten(.2), 
+        color:white
+    })
+    .loc(310,0,buttonBar)
+    .tap(()=>checkMatrix(0));
+
+    const solveBtn = new Button({
+        label:new Label({
+            text:"SOLVE",
+            size:18
+        }), 
+        width:120, 
+        height:45, 
+        backgroundColor:red, 
+        rollBackgroundColor:red.lighten(.2), 
+        color:white
+    })
+    .loc(475,0,buttonBar)
+    .tap(()=>solveBoard());
+
+    const nextBtn = new Button({
+        label:new Label({
+            text:"NEXT",
+            size:18
+        }), 
+        width:120, 
+        height:45, 
+        backgroundColor:black, 
+        rollBackgroundColor:dark, 
+        color:white
+    })
+    .loc(610,0,buttonBar)
+    .tap(()=>startGame());
+
+    drawEmptyBoard();
+    S.update();
+
+    function toDevanagari(num) {
+        return String(num).replace(/[0-9]/g, d => "०१२३४५६७८९"[Number(d)]);
+    }
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function isPronoun(n) {
+        return String(n.ending).trim().length === 0;
+    }
+
+    function nextNoun() {
+        const filter = FILTERS[filterIndex];
+        for (let tries=0; tries<NOUNS.length; tries++) {
+            nounIndex = (nounIndex + 1) % NOUNS.length;
+            const n = NOUNS[nounIndex];
+            if (filter.gender && n.gender !== filter.gender) continue;
+            if (filter.pronoun !== null && isPronoun(n) !== filter.pronoun) continue;
+            return n;
+        }
+        return NOUNS[0];
+    }
+
+    function drawEmptyBoard() {
+        board.removeAllChildren();
+        new Rectangle(boardW+18, boardH+18, white, black, 2, 14)
+            .centerReg(board)
+            .alp(.75)
+            .bot();
+        cardLayer.addTo(board);
+        cardLayer.removeAllChildren();
+
+        slots = [];
+        let x = 0;
+        drawCell(x, 0, colW[0], headerH, "Check", true); x += colW[0]+gap;
+        drawCell(x, 0, colW[1], headerH, "Role", true); x += colW[1]+gap;
+        NUMBERS.forEach((num, i)=>{
+            drawCell(x, 0, colW[i+2], headerH, num, true);
+            x += colW[i+2]+gap;
+        });
+
+        for (let r=0; r<8; r++) {
+            const y = headerH + r*rowH;
+            let cx = 0;
+            const rowButton = new Button({
+                label:new Label({
+                    text:CASES[r],
+                    size:22,
+                    color:black,
+                    align:LEFT,
+                    valign:CENTER
+                }),
+                width:colW[0],
+                height:rowH-4,
+                backgroundColor:grey.lighten(.25),
+                rollBackgroundColor:grey.lighten(.45),
+                color:black,
+                corner:6
+            }).loc(cx, y+2, board).tap(()=>checkMatrix(r+1));
+            cx += colW[0]+gap;
+            drawCell(cx, y, colW[1], rowH, ROLES[r], false); cx += colW[1]+gap;
+            for (let c=0; c<3; c++) {
+                drawSlot(cx, y, colW[c+2], rowH, r*3+c);
+                cx += colW[c+2]+gap;
+            }
+        }
+
+        cardLayer.top();
+    }
+
+    function drawCell(x, y, w, h, text, header=false) {
+        const cell = new Container(w,h).loc(x,y,board);
+        new Rectangle(w,h, header ? purple.lighten(.45) : grey.lighten(.35), black, 1, 5).addTo(cell);
+        new Label({
+            text:text,
+            size: header ? 17 : 16,
+            color:black,
+            bold:header,
+            align:CENTER,
+            valign:CENTER
+        }).centerReg(cell);
+        return cell;
+    }
+
+    function drawSlot(x, y, w, h, index) {
+        const slot = new Container(w,h).loc(x,y,board);
+        const back = new Rectangle(w,h, "#eeeeee", "#cccccc", 1, 5).addTo(slot);
+        slot.back = back;
+        slot.slotIndex = index;
+        slot.cx = x + w/2;
+        slot.cy = y + h/2;
+        slot.locked = false;
+        slots[index] = slot;
+    }
+
+    function startGame() {
+        noun = nextNoun();
+        isPlaying = true;
+        gameOver = false;
+        scoreUploaded = false;
+        usedSolve = false;
+        wrongMoves = 0;
+        solvedCount = 0;
+        solvedRows = Array(8).fill(false);
+        requiredRows = noun.vocative === false ? 7 : 8;
+
+        drawEmptyBoard();
+        nounLabel.text = `Declensions for ${noun.word} (${noun.meaning})`;
+        descLabel.text = String(noun.ending).trim().length ? `Gender: ${noun.gender}; Ending in: ${noun.ending}` : `Gender: ${noun.gender}; Pronoun`;
+        message.text = "Drag cards to reorder the table.";
+        status.text = "Wrong Checks: ०";
+        timer.stop();
+        timer.time = 0;
+        timer.start();
+
+        const order = Array.from({length:24}, (_,i)=>i);
+        if (noun.vocative === false) {
+            const first21 = order.slice(0,21);
+            shuffle(first21);
+            order.splice(0,24,...first21,21,22,23);
+        } else {
+            shuffle(order);
+        }
+
+        cards = [];
+        order.forEach((answerIndex, slotIndex)=>{
+            const r = Math.floor(answerIndex/3);
+            const c = answerIndex%3;
+            const text = noun.decl[r][c];
+            const card = makeCard(text, answerIndex);
+            card.slotIndex = slotIndex;
+            card.answerIndex = answerIndex;
+            card.locked = false;
+            card.addTo(cardLayer).loc(slots[slotIndex].cx, slots[slotIndex].cy);
+            cards.push(card);
+        });
+
+        cardLayer.top();
+
+        if (noun.vocative === false) {
+            checkMatrix(8, true);
+        }
+
+        S.update();
+    }
+
+    function makeCard(text, answerIndex) {
+        const card = new Container(cardW, cardH).reg(CENTER);
+        const back = new Rectangle(cardW, cardH, blue.darken(.45), white, 2, 10).centerReg(card);
+        const label = new Label({
+            text:text,
+            size:text.length > 14 ? 16 : 18,
+            color:white,
+            bold:true,
+            align:CENTER,
+            valign:CENTER
+        }).centerReg(card);
+        card.back = back;
+        card.label = label;
+        card.cursor = "grab";
+        card.mouseChildren = false;
+        card.drag();
+        card.on("mousedown", ()=>{ if (!card.locked && !gameOver) card.top(); });
+        card.on("pressup", ()=>handleDrop(card));
+        return card;
+    }
+
+    function handleDrop(card) {
+        if (gameOver || card.locked) {
+            moveCardToSlot(card, card.slotIndex);
+            return;
+        }
+        const targetIndex = getSlotAt(card.x, card.y);
+        if (targetIndex == null || slots[targetIndex].locked) {
+            moveCardToSlot(card, card.slotIndex);
+            return;
+        }
+        const other = cards.find(c => c.slotIndex === targetIndex);
+        if (!other || other.locked) {
+            moveCardToSlot(card, card.slotIndex);
+            return;
+        }
+        const oldIndex = card.slotIndex;
+        card.slotIndex = targetIndex;
+        other.slotIndex = oldIndex;
+        moveCardToSlot(card, targetIndex);
+        moveCardToSlot(other, oldIndex);
+    }
+
+    function getSlotAt(x, y) {
+        for (let i=0; i<slots.length; i++) {
+            const slot = slots[i];
+            if (Math.abs(x - slot.cx) <= colW[2]/2 && Math.abs(y - slot.cy) <= rowH/2) {
+                return i;
+            }
+        }
+        return null;
+    }
+
+    function moveCardToSlot(card, slotIndex) {
+        const slot = slots[slotIndex];
+        card.animate({props:{x:slot.cx, y:slot.cy}, time:.18, ease:"quadOut"});
+    }
+
+    function checkMatrix(checkCaseNo=0, silent=false) {
+        if (!isPlaying || gameOver || !noun) return;
+        let wrong = 0;
+        const rowsToCheck = checkCaseNo === 0
+            ? Array.from({length: requiredRows}, (x, i) => i)
+            : [checkCaseNo-1];
+
+        rowsToCheck.forEach(r=>{
+            if (r >= requiredRows) return;
+
+            for (let c=0; c<3; c++) {
+                const slotIndex = r*3+c;
+                const card = cards.find(item => item.slotIndex === slotIndex);
+                if (!card || card.answerIndex !== slotIndex) wrong++;
+            }
+        });
+
+        if (wrong === 0) {
+            rowsToCheck.forEach(r=>lockRow(r));
+            if (!silent) {
+                message.color = green;
+                message.text = checkCaseNo === 0 ? "Excellent — all rows are correct!" : `Successfully solved ${CASES[checkCaseNo-1]}.`;
+            }
+            if (solvedCount >= requiredRows) finishGame();
+        } else {
+            wrongMoves++;
+            status.text = `Wrong Checks: ${toDevanagari(wrongMoves)}`;
+            if (!silent) {
+                message.color = red;
+                message.text = checkCaseNo === 0
+                    ? `${toDevanagari(wrong)} words are in the wrong position. Try again.`
+                    : `${CASES[checkCaseNo-1]}: ${toDevanagari(wrong)} words are in the wrong position.`;
+            }
+        }
+        S.update();
+    }
+
+    function lockRow(r) {
+        if (solvedRows[r]) return;
+        solvedRows[r] = true;
+        if (!(noun.vocative === false && r === 7)) solvedCount++;
+        for (let c=0; c<3; c++) {
+            const slotIndex = r*3+c;
+            slots[slotIndex].locked = true;
+            slots[slotIndex].back.color = green.lighten(.55);
+            slots[slotIndex].back.borderColor = green;
+            const card = cards.find(item => item.slotIndex === slotIndex);
+            if (card) {
+                card.locked = true;
+                card.mouseEnabled = false;
+                card.cursor = "default";
+                card.back.color = blue.darken(.45);
+                card.back.borderColor = white;
+            }
+        }
+    }
+
+    function getTodayDateString() {
+        const today = new Date();
+        return today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    }
+
+    function calculateScore() {
+        const baseScore = 10000;
+        const timePenalty = Math.round(timer.time * 12);
+        const mistakePenalty = wrongMoves * 150;
+        const rowsBonus = requiredRows === 8 ? 0 : -400;
+
+        const score = baseScore + rowsBonus - timePenalty - mistakePenalty;
+        return Math.max(100, Math.min(10000, Math.round(score)));
+    }
+
+    async function uploadScore(finalScore) {
+        if (scoreUploaded) return;
+
+        const user = auth.currentUser;
+
+        if (!user) {
+            alert("Please login before saving your score.");
+            return;
+        }
+
+        scoreUploaded = true;
+
+        const scoreData = {
+            userId: user.uid,
+            playerName: user.displayName || "Player",
+            email: user.email || "",
+            photoURL: user.photoURL || "",
+
+            gameId: "shabd",
+            gameName: "Shabd Puzzle",
+
+            score: finalScore,
+            createdAt: serverTimestamp(),
+            scoreDate: getTodayDateString()
+        };
+
+        try {
+            await addDoc(collection(db, "leaderboard"), scoreData);
+            console.log("Shabd Puzzle score uploaded successfully:", scoreData);
+        } catch (error) {
+            scoreUploaded = false;
+            console.error("Shabd Puzzle score upload failed:", error);
+            alert("Score upload failed. Please try again.");
+        }
+    }
+
+    function finishGame() {
+        if (gameOver) return;
+        gameOver = true;
+        isPlaying = false;
+        timer.pause(true);
+
+        const finalScore = calculateScore();
+
+        if (!usedSolve) {
+            uploadScore(finalScore);
+        }
+
+        message.color = green;
+        message.text = usedSolve
+            ? `शुभम्! Solved by helper — score not submitted.`
+            : `शुभम्! Complete — Score: ${toDevanagari(finalScore)}`;
+
+        const pane = new Pane({
+            width:620,
+            height:330,
+            color:black,
+            backgroundColor:yellow.lighten(.35),
+            close:true
+        });
+
+        new Label({
+            text:`शुभम्! You solved the Shabd Puzzle!
+
+Time: ${timer.text}
+Wrong Checks: ${toDevanagari(wrongMoves)}
+Rows Solved: ${toDevanagari(solvedCount)} / ${toDevanagari(requiredRows)}
+Score: ${toDevanagari(finalScore)}${usedSolve ? "\nScore not submitted because SOLVE was used." : ""}`,
+            size:24,
+            color:black,
+            align:CENTER,
+            valign:CENTER
+        })
+        .center(pane)
+        .mov(0,-35);
+
+        new Button({
+            label:new Label({text:"PLAY AGAIN", size:18}),
+            width:150,
+            height:40,
+            backgroundColor:green,
+            color:white
+        })
+        .pos(0,35,CENTER,BOT,pane)
+        .tap(() => {
+            pane.hide();
+            startGame();
+        });
+
+        pane.show();
+    }
+
+    function solveBoard() {
+        if (!noun) return;
+        usedSolve = true;
+        cards.forEach(card=>{
+            card.slotIndex = card.answerIndex;
+            moveCardToSlot(card, card.answerIndex);
+        });
+        timeout(.25, ()=>checkMatrix(0));
+    }
+}
+</script>
+</head>
+<body>
+    <div class="auth-bar">
+        <button id="shabdLoginBtn">↪ Login</button>
+
+        <div id="shabdUserProfile">
+            <img id="shabdUserAvatar" src="" alt="User Avatar">
+            <span id="shabdUserName"></span>
+            <button id="shabdLogoutBtn">Logout</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double:wght@100..900&display=swap" rel="stylesheet">
+<meta charset="utf-8" />
+<title>Exquisite Corpse - उत्तमशवः</title>
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+
+<style>
+
+    .auth-bar {
+        position: fixed;
+        top: 22px;
+        right: 28px;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #ecLoginBtn,
+    #ecLogoutBtn {
+        background: #0b2b2b;
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 10px 16px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,.2);
+    }
+
+    #ecLogoutBtn {
+        background: #f2b300;
+        padding: 8px 12px;
+    }
+
+    #ecUserProfile {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        background: white;
+        border: 2px solid #0b2b2b;
+        border-radius: 18px;
+        padding: 5px 8px;
+    }
+
+    #ecUserAvatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #f2b300;
+    }
+
+    #ecUserName {
+        max-width: 120px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #0b2b2b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+</style>
+
+<script src="./cmpk-jul.json"></script>
+<script src="https://cdn.jsdelivr.net/npm/@sanskrit-coders/sanscript@1.1.0/sanscript.min.js"></script>
+
+<script type="module">
+    
+import "https://zimjs.org/cdn/019/zim";
+import "https://zimjs.org/cdn/019/zim_game";
+import "https://zimjs.org/cdn/019/zim_pizzazz";
+
+import {
+    auth,
+    db,
+    provider,
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged,
+    collection,
+    addDoc,
+    serverTimestamp
+} from "../../firebase-config.js";
+
+new Frame(FIT, 1024, 768, "#fffaf2", dark, ready);
+
+function ready() {
+
+    const ecLoginBtn = document.getElementById("ecLoginBtn");
+    const ecUserProfile = document.getElementById("ecUserProfile");
+    const ecUserAvatar = document.getElementById("ecUserAvatar");
+    const ecUserName = document.getElementById("ecUserName");
+    const ecLogoutBtn = document.getElementById("ecLogoutBtn");
+
+        function getDefaultAvatar(name = "User") {
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ffe1a5&color=09264a`;
+    }
+
+    function getSafeGooglePhoto(photoURL) {
+        if (!photoURL) return "";
+        return photoURL
+            .replace("=s96-c", "=s200-c")
+            .replace("=s64-c", "=s200-c")
+            .replace("=s48-c", "=s200-c");
+    }
+
+    ecLoginBtn.addEventListener("click", async () => {
+        try {
+            await signInWithPopup(auth, provider);
+        } catch (error) {
+            console.error(error);
+            alert("Google login failed.");
+        }
+    });
+
+    ecLogoutBtn.addEventListener("click", async () => {
+        await signOut(auth);
+    });
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            const safePhoto = getSafeGooglePhoto(user.photoURL) || getDefaultAvatar(user.displayName || "Player");
+
+            ecLoginBtn.style.display = "none";
+            ecUserProfile.style.display = "flex";
+
+            ecUserAvatar.src = safePhoto;
+            ecUserName.textContent = user.displayName || "Player";
+
+            localStorage.setItem("zatamUserId", user.uid);
+            localStorage.setItem("zatamUserName", user.displayName || "Player");
+            localStorage.setItem("zatamUserEmail", user.email || "");
+            localStorage.setItem("zatamUserPhoto", safePhoto);
+        } else {
+            ecLoginBtn.style.display = "block";
+            ecUserProfile.style.display = "none";
+
+            ecUserAvatar.src = "";
+            ecUserName.textContent = "";
+
+            localStorage.removeItem("zatamUserId");
+            localStorage.removeItem("zatamUserName");
+            localStorage.removeItem("zatamUserEmail");
+            localStorage.removeItem("zatamUserPhoto");
+        }
+    });
+
+    const params = new URLSearchParams(window.location.search);
+
+    let setIndex = parseInt(params.get("s"));
+    if (isNaN(setIndex) || !window.wlist || !window.ilist || setIndex < 0 || setIndex >= wlist.length) {
+        setIndex = 0;
+    }
+
+    const showTranslit = params.get("t") == null ? true : Number(params.get("t")) === 1;
+    const hidePresetButtons = params.get("h") == null ? true : Number(params.get("h")) === 1;
+
+    if (!window.wlist || !window.ilist) {
+        new Label({
+            text:"Data file not found. Make sure cmpk-jul.json loads before this file.",
+            size:28,
+            color:red,
+            align:CENTER
+        }).center();
+        S.update();
+        return;
+    }
+
+    let imgs = ilist[setIndex];
+    let words = wlist[setIndex];
+    let lastSection = Math.min(12, imgs.length, words.length);
+
+    const fullW = 504;
+    const fullH = 504;
+    const topH = 174;
+    const midH = 156;
+    const bottomH = 174;
+    const pieceW = 504;
+    const panelX = 410;
+    const panelY = 135;
+
+    let curTop = 1;
+    let curMid = 1;
+    let curBottom = 1;
+
+    let topPiece;
+    let midPiece;
+    let bottomPiece;
+
+    const bar = new Rectangle(W,40,black).addTo();
+    const arrow = makeIcon({type:"arrowstick", color:white, scale:1.2});
+    const returnButton = new Button({
+        width:60,
+        height:60,
+        backgroundColor:"lighter",
+        rollBackgroundColor:"red",
+        gradient:.3,
+        corner:30,
+        icon:arrow,
+    }).scaleTo(bar,80,80).loc(5,5)
+    .tap(() => {
+        window.location.href = "../../index.html";
+    });
+    arrow.rotation = 180;
+    new Label("Exquisite Corpse - उत्तमशवः", 36, "Bitcount Grid Double", blue).pos(0,3,CENTER,CENTER,bar);
+
+    const leftPanel = new Container(280, 650).pos(30, 85, LEFT, TOP);
+    new Rectangle(280, 650, "#bdebf5", "#6caec2", 2, 16).addTo(leftPanel);
+
+    const wordLabel = new Label({
+        text:"",
+        size:18,
+        color:black,
+        bold:true,
+        align:CENTER,
+        valign:CENTER
+    }).pos(0, 30, CENTER, TOP, leftPanel);
+
+    const instruction = new Label({
+        text:"Use the arrows to \n change top, middle, or bottom.\nClick RANDOM to mix all three.",
+        size:17,
+        color:black,
+        align:CENTER
+    }).pos(0, 100, CENTER, TOP, leftPanel);
+
+    const randomButton = new Button({
+        label:new Label({text:"RANDOM", size:24, color:white, bold:true}),
+        width:180,
+        height:60,
+        backgroundColor:purple,
+        rollBackgroundColor:purple.lighten(.2),
+        color:white,
+        corner:20
+    })
+    .pos(0, 190, CENTER, TOP, leftPanel)
+    .tap(randomEC);
+
+    makeControlRow("Top", 295, () => topPrev(), () => topNext());
+    makeControlRow("Middle", 375, () => midPrev(), () => midNext());
+    makeControlRow("Bottom", 455, () => bottomPrev(), () => bottomNext());
+
+    if (!hidePresetButtons) makePresetButtons();
+
+    const stagePanel = new Container(pieceW, fullH)
+        .pos(panelX, panelY, LEFT, TOP);
+
+    new Rectangle(pieceW + 26, fullH + 26, white, "#6caec2", 4, 18)
+        .centerReg(stagePanel)
+        .alp(.9)
+        .bot();
+
+    const imageArea = new Container(pieceW, fullH).loc(0, 0, stagePanel);
+
+    const areaMask = new Shape();
+    areaMask.graphics.rect(0, 0, pieceW, fullH);
+    imageArea.setMask(areaMask);
+
+    const topLayer = new Container(pieceW, topH).loc(0, 0, imageArea);
+    const midLayer = new Container(pieceW, midH).loc(0, topH, imageArea);
+    const bottomLayer = new Container(pieceW, bottomH).loc(0, topH + midH, imageArea);
+
+    drawEdge(topLayer, topH);
+    drawEdge(midLayer, midH);
+    drawEdge(bottomLayer, bottomH);
+
+    topPiece = makePiece(1, "top").addTo(topLayer).loc(0, 0);
+    midPiece = makePiece(1, "mid").addTo(midLayer).loc(0, 0);
+    bottomPiece = makePiece(1, "bottom").addTo(bottomLayer).loc(0, 0);
+
+    updateWord();
+
+    timeout(1, randomEC);
+    S.update();
+
+    function makeControlRow(labelText, y, prevHandler, nextHandler) {
+        new Label({
+            text:labelText,
+            size:20,
+            color:black,
+            bold:true
+        }).pos(0, y, CENTER, TOP, leftPanel);
+
+        new Button({
+            label:new Label({text:"‹", size:30, color:white, bold:true}),
+            width:55,
+            height:42,
+            backgroundColor:blue,
+            rollBackgroundColor:blue.lighten(.25),
+            color:white,
+            corner:12
+        })
+        .pos(62, y + 30, LEFT, TOP, leftPanel)
+        .tap(prevHandler);
+
+        new Button({
+            label:new Label({text:"›", size:30, color:white, bold:true}),
+            width:55,
+            height:42,
+            backgroundColor:blue,
+            rollBackgroundColor:blue.lighten(.25),
+            color:white,
+            corner:12
+        })
+        .pos(162, y + 30, LEFT, TOP, leftPanel)
+        .tap(nextHandler);
+    }
+
+    function makePresetButtons() {
+        const preset = new Container(220, 130).pos(0, 530, CENTER, TOP, leftPanel);
+        loop(lastSection, i => {
+            const id = i + 1;
+            const btn = new Button({
+                label:new Label({
+                    text:words[i],
+                    size:13,
+                    color:white
+                }),
+                width:100,
+                height:28,
+                backgroundColor:green,
+                rollBackgroundColor:green.lighten(.2),
+                color:white,
+                corner:8
+            })
+            .loc((i % 2) * 110, Math.floor(i / 2) * 32, preset)
+            .tap(() => selectEC(id));
+        });
+    }
+
+    function drawEdge(layer, h) {
+        new Rectangle(pieceW, h, clear, "#dddddd", 2).addTo(layer);
+    }
+
+    function makePiece(id, section) {
+        const h = section === "top" ? topH : section === "mid" ? midH : bottomH;
+        const yOffset = section === "top" ? 0 : section === "mid" ? -topH : -(topH + midH);
+
+        const holder = new Container(pieceW, h);
+
+        const mask = new Shape();
+        mask.graphics.rect(0, 0, pieceW, h);
+
+        const pic = new Pic(imgs[id - 1]).addTo(holder);
+
+        pic.on("ready", () => {
+            pic.siz(fullW, fullH);
+            pic.loc(0, yOffset);
+            pic.setMask(mask);
+            S.update();
+        });
+
+        return holder;
+    }
+
+    function animateSection(section, nextID, dir=-1) {
+        let layer, currentPiece, setCurrent;
+
+        if (section === "top") {
+            layer = topLayer;
+            currentPiece = topPiece;
+            setCurrent = p => topPiece = p;
+        } else if (section === "mid") {
+            layer = midLayer;
+            currentPiece = midPiece;
+            setCurrent = p => midPiece = p;
+        } else {
+            layer = bottomLayer;
+            currentPiece = bottomPiece;
+            setCurrent = p => bottomPiece = p;
+        }
+
+        const nextPiece = makePiece(nextID, section)
+            .addTo(layer)
+            .loc(-pieceW * dir, 0);
+
+        nextPiece.animate({
+            props:{x:0},
+            time:.45,
+            ease:"quadOut"
+        });
+
+        if (currentPiece) {
+            currentPiece.animate({
+                props:{x:pieceW * dir},
+                time:.45,
+                ease:"quadOut",
+                call:target => target.removeFrom()
+            });
+        }
+
+        setCurrent(nextPiece);
+    }
+
+    function randomizeSet() {
+        let newSet = setIndex;
+
+        while (newSet === setIndex && wlist.length > 1) {
+            newSet = rand(0, wlist.length - 1);
+        }
+
+        setIndex = newSet;
+        imgs = ilist[setIndex];
+        words = wlist[setIndex];
+        lastSection = Math.min(12, imgs.length, words.length);
+    }
+
+    function randomEC() {
+        randomizeSet();
+
+        let nextTop = curTop;
+        let nextMid = curMid;
+        let nextBottom = curBottom;
+
+        while (nextTop === curTop && lastSection > 1) nextTop = rand(1, lastSection);
+        while (nextMid === curMid && lastSection > 1) nextMid = rand(1, lastSection);
+        while (nextBottom === curBottom && lastSection > 1) nextBottom = rand(1, lastSection);
+
+        animateSection("top", nextTop, -1);
+        timeout(.25, () => animateSection("mid", nextMid, -1));
+        timeout(.5, () => animateSection("bottom", nextBottom, -1));
+
+        curTop = nextTop;
+        curMid = nextMid;
+        curBottom = nextBottom;
+
+        updateWord();
+    }
+
+    function selectEC(id) {
+        if (id === curTop && id === curMid && id === curBottom) return;
+
+        let delay = 0;
+
+        if (id !== curTop) {
+            animateSection("top", id, -1);
+            delay += .25;
+        }
+
+        if (id !== curMid) {
+            timeout(delay, () => animateSection("mid", id, -1));
+            delay += .25;
+        }
+
+        if (id !== curBottom) {
+            timeout(delay, () => animateSection("bottom", id, -1));
+        }
+
+        curTop = curMid = curBottom = id;
+        updateWord();
+    }
+
+    function topNext() {
+        const next = curTop >= lastSection ? 1 : curTop + 1;
+        animateSection("top", next, -1);
+        curTop = next;
+        updateWord();
+    }
+
+    function topPrev() {
+        const next = curTop <= 1 ? lastSection : curTop - 1;
+        animateSection("top", next, 1);
+        curTop = next;
+        updateWord();
+    }
+
+    function midNext() {
+        const next = curMid >= lastSection ? 1 : curMid + 1;
+        animateSection("mid", next, -1);
+        curMid = next;
+        updateWord();
+    }
+
+    function midPrev() {
+        const next = curMid <= 1 ? lastSection : curMid - 1;
+        animateSection("mid", next, 1);
+        curMid = next;
+        updateWord();
+    }
+
+    function bottomNext() {
+        const next = curBottom >= lastSection ? 1 : curBottom + 1;
+        animateSection("bottom", next, -1);
+        curBottom = next;
+        updateWord();
+    }
+
+    function bottomPrev() {
+        const next = curBottom <= 1 ? lastSection : curBottom - 1;
+        animateSection("bottom", next, 1);
+        curBottom = next;
+        updateWord();
+    }
+
+    function updateWord() {
+        let text = "?";
+
+        if (curTop === curMid && curMid === curBottom) {
+            text = words[curMid - 1];
+
+            if (showTranslit && window.Sanscript) {
+                text += " - " + Sanscript.t(text, "devanagari", "itrans");
+            }
+        }
+
+        wordLabel.text = text;
+        S.update();
+    }
+
+}
+</script>
+</head>
+<body>
+    <div class="auth-bar">
+        <button id="ecLoginBtn">↪ Login</button>
+
+        <div id="ecUserProfile">
+            <img id="ecUserAvatar" src="" alt="User Avatar">
+            <span id="ecUserName"></span>
+            <button id="ecLogoutBtn">Logout</button>
+        </div>
+    </div>
+</body>
+</html>

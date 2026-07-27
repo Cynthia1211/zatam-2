@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snakes and Ladders</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      import {
+        auth,
+        db,
+        doc,
+        setDoc,
+        serverTimestamp
+      } from "../../firebase-config.js";
+
+      window.ZATAM_FIREBASE_SCORE_UPLOAD = async (entry) => {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const scoreId = `${user.uid}_${entry.id || `${entry.gameId}_${entry.matchId || Date.now()}`}`;
+
+        await setDoc(doc(db, "leaderboard", scoreId), {
+          userId: user.uid,
+          playerName: user.displayName || entry.name || "Player",
+          email: user.email || "",
+          photoURL: user.photoURL || "",
+          gameId: entry.gameId,
+          gameName: entry.gameName,
+          score: entry.score,
+          moves: entry.moves,
+          matchId: entry.matchId || scoreId,
+          scoreDate: entry.scoreDate,
+          updatedAt: serverTimestamp(),
+          createdAt: entry.createdAt || serverTimestamp()
+        }, { merge: true });
+      };
+    </script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://zimjs.org/cdn/016/zim.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NUMERALE — Zat.am</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FAF6EF;--surface:#FFFFFF;--card:#F5F0E8;
+  --saffron:#E8721A;--saffron-dark:#633806;--saffron-light:#FFF0E4;
+  --text-primary:#2C2C2A;--text-muted:#5F5E5A;
+  --green:#639922;--green-bg:#EAF3DE;
+  --amber:#BA7517;--amber-bg:#FAEEDA;
+  --red:#B82C2C;--border:#D3D1C7;
+  --zatam-navy:#0b2b4f;--zatam-gold:#f6b23b;
+}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;overflow-x:hidden}
+.wrapper{max-width:520px;margin:0 auto;padding:0.75rem 1rem 2rem}
+
+/* HEADER */
+.header{text-align:center;padding:0.75rem 0 0.5rem;border-bottom:0.5px solid var(--border);margin-bottom:0.75rem}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.brand-title{font-size:22px;font-weight:700;letter-spacing:2px;color:var(--saffron);text-transform:uppercase}
+.brand-sub{font-size:11px;color:var(--text-muted);letter-spacing:1px}
+.icon-btn{background:none;border:0.5px solid var(--border);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-primary);font-size:15px;transition:background 0.15s;text-decoration:none}
+.icon-btn:hover{background:var(--card)}
+.btn-group{display:flex;gap:6px}
+
+/* AUTH STRIP */
+.auth-strip{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:7px 12px;margin-bottom:0.75rem;gap:8px}
+.auth-user{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.auth-avatar{width:30px;height:30px;border-radius:50%;border:2px solid var(--zatam-gold);object-fit:cover;flex-shrink:0;background:#ffe1a5}
+.auth-name{font-size:13px;font-weight:600;color:var(--zatam-navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.auth-email{font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.google-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:0.5px solid var(--border);background:var(--surface);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--zatam-navy);white-space:nowrap;transition:background 0.15s;flex-shrink:0}
+.google-btn:hover{background:var(--card)}
+.google-btn svg{width:14px;height:14px;flex-shrink:0}
+.logout-btn{font-size:11px;color:var(--text-muted);background:none;border:0.5px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;flex-shrink:0}
+.logout-btn:hover{background:var(--card)}
+
+/* TABS */
+.tabs{display:flex;margin-bottom:0.75rem;border:0.5px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)}
+.tab{flex:1;padding:8px;text-align:center;font-size:13px;cursor:pointer;border:none;background:none;font-family:inherit;color:var(--text-muted);border-right:0.5px solid var(--border)}
+.tab:last-child{border-right:none}
+.tab.active{background:var(--saffron);color:#fff}
+.section{display:none}.section.active{display:block}
+
+/* HUD */
+.hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:10px 14px}
+.lives{display:flex;gap:5px;align-items:center}
+.heart{font-size:20px;transition:transform 0.2s,filter 0.2s}
+.heart.lost{filter:grayscale(1);opacity:0.35;transform:scale(0.85)}
+.heart.shake-heart{animation:heartShake 0.4s ease}
+@keyframes heartShake{0%,100%{transform:scale(1)}25%{transform:scale(1.3) rotate(-10deg)}50%{transform:scale(0.8)}75%{transform:scale(1.15) rotate(5deg)}}
+.score-display{text-align:right}
+.score-val{font-size:22px;font-weight:700;color:var(--saffron);line-height:1}
+.score-val.bump{animation:scoreBump 0.35s ease}
+@keyframes scoreBump{0%{transform:scale(1)}50%{transform:scale(1.3);color:var(--green)}100%{transform:scale(1)}}
+.score-sub{font-size:10px;color:var(--text-muted);letter-spacing:0.5px;text-transform:uppercase}
+
+/* COMBO */
+.combo-bar{height:6px;background:var(--card);border-radius:3px;margin-bottom:0.75rem;overflow:hidden;border:0.5px solid var(--border)}
+.combo-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--saffron),var(--amber));transition:width 0.5s ease}
+.combo-label{font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:0.5rem;min-height:16px;font-weight:600}
+.combo-label.hot{color:var(--red);animation:pulse 0.7s infinite alternate}
+@keyframes pulse{from{opacity:1}to{opacity:0.5}}
+
+/* PROXIMITY */
+.prox-row{display:flex;align-items:center;gap:8px;margin-bottom:0.75rem}
+.prox-label{font-size:10px;color:var(--text-muted);white-space:nowrap;width:44px;text-align:right;text-transform:uppercase;letter-spacing:0.3px}
+.prox-track{flex:1;height:12px;background:var(--card);border-radius:6px;border:0.5px solid var(--border);overflow:hidden}
+.prox-fill{height:100%;border-radius:6px;transition:width 0.6s ease,background 0.6s;background:var(--border)}
+.prox-glow{animation:proxPulse 0.8s infinite alternate}
+@keyframes proxPulse{from{opacity:1}to{opacity:0.6}}
+.prox-emoji{font-size:18px;width:24px;text-align:center}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:0.75rem}
+.stat-card{background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:8px;text-align:center}
+.stat-num{font-size:18px;font-weight:700;color:var(--saffron)}
+.stat-label{font-size:10px;color:var(--text-muted);margin-top:1px;text-transform:uppercase;letter-spacing:0.3px}
+
+/* GRID */
+.grid{display:flex;flex-direction:column;gap:5px;margin:0 auto 0.9rem;width:fit-content}
+.row{display:flex;gap:5px;align-items:center}
+.row-score{font-size:11px;color:var(--text-muted);width:28px;text-align:left;font-weight:600;margin-left:4px}
+.cell{width:54px;height:60px;border:0.5px solid var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface);position:relative;user-select:none;font-family:'Noto Sans Devanagari',system-ui,sans-serif;transition:border-color 0.2s,background 0.2s;overflow:hidden}
+.cell .deva{font-size:26px;font-weight:700;line-height:1;color:var(--text-primary);position:relative;z-index:1}
+.cell .arrow{font-size:13px;font-weight:700;color:var(--text-muted);margin-top:1px;line-height:1;position:relative;z-index:1}
+.cell.current-row{border-color:var(--saffron)}
+.cell.filled{border-color:var(--saffron-dark)}
+.cell.correct{background:var(--green);border-color:var(--green)}
+.cell.correct .deva,.cell.correct .arrow{color:#fff}
+.cell.present{background:var(--amber);border-color:var(--amber)}
+.cell.present .deva,.cell.present .arrow{color:#fff}
+.cell.absent{background:#B4B2A9;border-color:#B4B2A9}
+.cell.absent .deva,.cell.absent .arrow{color:#fff}
+.cell.pop{animation:cellPop 0.13s ease-out}
+@keyframes cellPop{0%{transform:scale(1.14)}100%{transform:scale(1)}}
+.cell.flip{animation:flipCell 0.42s ease forwards}
+@keyframes flipCell{0%{transform:scaleY(1)}40%{transform:scaleY(0)}60%{transform:scaleY(0)}100%{transform:scaleY(1)}}
+.cell.win-bounce{animation:winBounce 0.5s ease forwards}
+@keyframes winBounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}70%{transform:translateY(-4px)}}
+.row.shake{animation:rowShake 0.35s ease}
+@keyframes rowShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.float-pts{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:13px;font-weight:700;color:var(--green);pointer-events:none;animation:floatUp 0.9s ease forwards;z-index:10;white-space:nowrap}
+@keyframes floatUp{0%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-28px)}}
+
+/* MESSAGE */
+.message-bar{text-align:center;font-size:13px;color:var(--text-muted);min-height:20px;margin-bottom:0.6rem;font-weight:500}
+.message-bar.error{color:var(--red)}
+.message-bar.success{color:var(--green)}
+
+/* LEGEND */
+.legend{display:flex;gap:10px;justify-content:center;margin-bottom:0.9rem;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted)}
+.legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+.dot-green{background:var(--green)}.dot-amber{background:var(--amber)}.dot-gray{background:#B4B2A9}
+
+/* NUMPAD */
+.numpad{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:8px}
+.np-btn{padding:10px 0;border:0.5px solid var(--border);border-radius:8px;background:var(--surface);cursor:pointer;font-family:'Noto Sans Devanagari',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;gap:2px;transition:background 0.1s,transform 0.08s;color:var(--text-primary)}
+.np-btn:hover{background:var(--card)}
+.np-btn:active{transform:scale(0.93)}
+.np-btn .dv{font-size:20px;font-weight:700;line-height:1}
+.np-btn .ar{font-size:11px;color:var(--text-muted);font-family:system-ui,sans-serif}
+.np-btn.absent-key{background:#D3D1C7;border-color:#B4B2A9;color:#888780}
+.np-btn.absent-key .ar{color:#888780}
+.np-btn.present-key{background:var(--amber-bg);border-color:var(--amber)}
+.np-btn.correct-key{background:var(--green-bg);border-color:var(--green)}
+
+/* ACTIONS */
+.action-row{display:flex;gap:8px;margin-bottom:1rem}
+.del-btn{flex:1;padding:10px;border:0.5px solid var(--border);border-radius:8px;background:var(--surface);cursor:pointer;font-family:inherit;font-size:14px;color:var(--text-muted);transition:background 0.1s}
+.del-btn:hover{background:var(--card)}
+.enter-btn{flex:2;padding:10px;border:none;border-radius:8px;background:var(--saffron);color:#fff;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;transition:opacity 0.15s,transform 0.08s}
+.enter-btn:hover:not(:disabled){opacity:0.9}
+.enter-btn:active:not(:disabled){transform:scale(0.97)}
+.enter-btn:disabled{opacity:0.45;cursor:not-allowed}
+
+/* LEADERBOARD */
+.lb-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem}
+.lb-title{font-size:15px;font-weight:700;color:var(--text-primary)}
+.lb-sub{font-size:11px;color:var(--text-muted)}
+.lb-panel{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1rem}
+.lb-table{width:100%;border-collapse:collapse}
+.lb-table th{text-align:left;padding:10px 14px;font-size:12px;color:var(--text-muted);border-bottom:0.5px solid var(--border);background:var(--card);text-transform:uppercase;letter-spacing:0.4px;font-weight:700}
+.lb-table td{padding:10px 14px;border-bottom:0.5px solid var(--border);vertical-align:middle;font-size:13px;font-weight:600}
+.lb-table tbody tr:last-child td{border-bottom:none}
+.lb-table tbody tr:nth-child(1) td{background:#fff9ee}
+.lb-table tbody tr:nth-child(2) td{background:#f7f9ff}
+.lb-table tbody tr:nth-child(3) td{background:#fff8f0}
+.lb-rank-cell{font-size:18px;width:44px;text-align:center}
+.lb-player-cell{display:flex;align-items:center;gap:8px}
+.lb-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--zatam-gold);background:#ffe1a5;flex-shrink:0}
+.lb-player-name{color:var(--zatam-navy);font-size:13px;font-weight:700}
+.lb-player-email{font-size:11px;color:var(--text-muted);font-weight:500}
+.lb-score-cell{color:#b85c00;font-size:14px;font-weight:700;white-space:nowrap;text-align:right}
+.lb-empty{padding:2rem;text-align:center;color:var(--text-muted);font-size:13px}
+.lb-view-more{display:block;margin:12px auto;padding:8px 28px;border-radius:16px;border:0.5px solid var(--border);background:var(--surface);color:var(--text-primary);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.lb-view-more:hover{background:var(--card)}
+.my-rank-card{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:0.75rem}
+.my-rank-row{display:flex;align-items:center;gap:10px}
+.my-rank-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--zatam-gold);background:#ffe1a5;flex-shrink:0}
+.my-rank-info{flex:1;min-width:0}
+.my-rank-name{font-size:14px;font-weight:700;color:var(--zatam-navy)}
+.my-rank-email{font-size:11px;color:var(--text-muted)}
+.my-rank-stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:10px;text-align:center;border-top:0.5px solid var(--border);padding-top:10px;gap:8px}
+.my-rank-stats strong{display:block;font-size:17px;color:var(--zatam-navy);margin-bottom:2px}
+.my-rank-stats span{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;font-weight:600}
+.lb-login-nudge{background:var(--saffron-light);border:0.5px solid var(--saffron);border-radius:10px;padding:12px 14px;margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lb-login-nudge p{font-size:12px;color:var(--saffron-dark);font-weight:600;line-height:1.5}
+.lb-login-google{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;border:none;background:var(--zatam-navy);color:#fff;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0}
+
+/* HOWTO */
+.howto{font-size:13px;color:var(--text-muted);line-height:1.8;background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:1rem}
+.howto h3{font-size:13px;font-weight:700;color:var(--saffron);margin-bottom:5px;margin-top:12px;text-transform:uppercase;letter-spacing:0.5px}
+.howto h3:first-child{margin-top:0}
+.example-row{display:flex;gap:5px;margin:8px 0}
+.ex-cell{width:40px;height:44px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:19px;font-weight:700;font-family:'Noto Sans Devanagari',system-ui,sans-serif;color:#fff;gap:1px}
+.ex-cell .arr{font-size:11px;font-family:system-ui,sans-serif;font-weight:700}
+.ex-cell.correct{background:var(--green)}.ex-cell.present{background:var(--amber)}.ex-cell.absent{background:#B4B2A9}
+.scoring-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+.scoring-table td{padding:4px 8px;border-top:0.5px solid var(--border)}
+.scoring-table td:last-child{text-align:right;font-weight:700;color:var(--saffron)}
+.deva-ref{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:6px;text-align:center;font-size:12px;color:var(--text-muted)}
+.deva-ref span{font-family:'Noto Sans Devanagari',sans-serif;font-size:16px;color:var(--saffron);display:block}
+
+/* WIN */
+.win-overlay{position:fixed;inset:0;background:rgba(250,246,239,0.94);display:flex;align-items:center;justify-content:center;z-index:100;animation:fadeIn 0.25s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.win-card{background:var(--surface);border:0.5px solid var(--border);border-radius:16px;padding:1.75rem;text-align:center;max-width:340px;width:90%;animation:slideUp 0.32s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes slideUp{from{transform:translateY(28px);opacity:0}to{transform:translateY(0);opacity:1}}
+.win-emoji{font-size:52px;margin-bottom:0.5rem;display:block}
+.win-title{font-size:22px;font-weight:700;color:var(--saffron);margin-bottom:0.2rem}
+.win-sub{font-size:13px;color:var(--text-muted);margin-bottom:0.75rem}
+.win-score-big{font-size:42px;font-weight:700;color:var(--text-primary);line-height:1;margin:0.5rem 0 0.2rem}
+.win-score-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.75rem}
+.win-number{font-size:26px;font-weight:700;color:var(--text-primary);margin:0 0 1rem;letter-spacing:3px;font-family:'Noto Sans Devanagari',system-ui,sans-serif;background:var(--card);border-radius:8px;padding:8px 14px;display:inline-block}
+.win-post-status{font-size:12px;margin-bottom:0.75rem;min-height:18px;color:var(--text-muted)}
+.win-post-status.ok{color:var(--green)}.win-post-status.err{color:var(--red)}
+.win-actions{display:flex;gap:8px;justify-content:center}
+.play-again-btn{padding:10px 22px;background:var(--saffron);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.play-again-btn:hover{opacity:0.9}
+.share-btn{padding:10px 18px;background:var(--surface);color:var(--text-primary);border:0.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;cursor:pointer}
+.share-btn:hover{background:var(--card)}
+.hs-banner{background:var(--saffron-light);border:0.5px solid var(--saffron);border-radius:8px;padding:6px 12px;text-align:center;font-size:12px;font-weight:600;color:var(--saffron-dark);margin-bottom:0.75rem;display:none}
+.confetti-container{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden}
+.conf{position:absolute;top:-12px;animation:confFall linear forwards}
+@keyframes confFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(105vh) rotate(600deg);opacity:0}}
+.digit-particle{position:fixed;pointer-events:none;z-index:150;font-family:'Noto Sans Devanagari',system-ui,sans-serif;font-size:18px;font-weight:700;color:var(--saffron);animation:particleFloat 0.8s ease forwards}
+@keyframes particleFloat{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-50px) scale(0.5)}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div class="header-top">
+      <div class="btn-group">
+        <button class="icon-btn" id="btn-new" title="New game">↺</button>
+        <button class="icon-btn" id="btn-howto" title="How to play">?</button>
+      </div>
+      <div>
+        <div class="brand-title">NUMERALE</div>
+        <div class="brand-sub">Decoding Devanagari numerals</div>
+      </div>
+      <div class="btn-group">
+        <button class="icon-btn" id="btn-lb" title="Leaderboard">🏆</button>
+        <a class="icon-btn" href="https://zatam-ver1.vercel.app/" title="Back to Zat.am">🏠</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH STRIP -->
+  <div class="auth-strip">
+    <div class="auth-user" id="auth-user-info" style="display:none">
+      <img class="auth-avatar" id="auth-avatar" src="" alt="avatar">
+      <div style="min-width:0">
+        <div class="auth-name" id="auth-name"></div>
+        <div class="auth-email" id="auth-email"></div>
+      </div>
+    </div>
+    <div id="auth-logged-out" style="flex:1;font-size:12px;color:var(--text-muted)">Sign in to post scores to the global leaderboard</div>
+    <button class="google-btn" id="login-btn">
+      <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Sign in with Google
+    </button>
+    <button class="logout-btn" id="logout-btn" style="display:none">Sign out</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" id="tab-btn-game">Play</button>
+    <button class="tab" id="tab-btn-board">Leaderboard</button>
+    <button class="tab" id="tab-btn-howto">How to play</button>
+  </div>
+
+  <!-- GAME TAB -->
+  <div id="tab-game" class="section active">
+    <div id="hs-banner" class="hs-banner">🌟 New High Score!</div>
+    <div class="hud">
+      <div>
+        <div class="lives" id="lives-row"></div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:3px;text-transform:uppercase;letter-spacing:0.4px">Lives</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:0 10px">
+        <div id="combo-label" class="combo-label"></div>
+        <div class="combo-bar"><div id="combo-fill" class="combo-fill" style="width:0%"></div></div>
+      </div>
+      <div class="score-display">
+        <div class="score-val" id="score-val">0</div>
+        <div class="score-sub">Score</div>
+      </div>
+    </div>
+    <div class="prox-row">
+      <div class="prox-label">Warmth</div>
+      <div class="prox-track"><div id="prox-fill" class="prox-fill" style="width:0%"></div></div>
+      <div id="prox-emoji" class="prox-emoji">🧊</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="sc-played">0</div><div class="stat-label">Played</div></div>
+      <div class="stat-card"><div class="stat-num" id="sc-wins">0</div><div class="stat-label">Won</div></div>
+      <div class="stat-card"><div class="stat-num" id="sc-streak">0</div><div class="stat-label">Streak</div></div>
+      <div class="stat-card"><div class="stat-num" id="sc-best">0</div><div class="stat-label">Best</div></div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="message-bar" id="msg"></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot dot-green"></div>Right spot</div>
+      <div class="legend-item"><div class="legend-dot dot-amber"></div>Wrong spot + direction</div>
+      <div class="legend-item"><div class="legend-dot dot-gray"></div>Not in answer</div>
+    </div>
+    <div class="numpad" id="numpad"></div>
+    <div class="action-row">
+      <button class="del-btn" id="del-btn">⌫ Delete</button>
+      <button class="enter-btn" id="enter-btn">Enter ↵</button>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD TAB -->
+  <div id="tab-board" class="section">
+    <div class="my-rank-card" id="my-rank-card" style="display:none">
+      <div class="my-rank-row">
+        <img class="my-rank-avatar" id="my-rank-avatar" src="" alt="me">
+        <div class="my-rank-info">
+          <div class="my-rank-name" id="my-rank-name">—</div>
+          <div class="my-rank-email" id="my-rank-email"></div>
+        </div>
+      </div>
+      <div class="my-rank-stats">
+        <div><strong id="my-rank-pos">—</strong><span>Rank</span></div>
+        <div><strong id="my-rank-score">0 ⭐</strong><span>Points</span></div>
+        <div><strong id="my-rank-game">—</strong><span>Game</span></div>
+      </div>
+    </div>
+    <div class="lb-login-nudge" id="lb-login-nudge">
+      <p>🏆 Sign in to post your Numerale scores to the global leaderboard!</p>
+      <button class="lb-login-google" id="lb-login-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Sign in
+      </button>
+    </div>
+    <div class="lb-header-row">
+      <div class="lb-title">🏆 Numerale — Global Scores</div>
+      <div class="lb-sub" id="lb-last-updated"></div>
+    </div>
+    <div class="lb-panel">
+      <table class="lb-table">
+        <thead><tr><th style="width:44px">Rank</th><th>Player</th><th style="width:80px;text-align:right">Points</th></tr></thead>
+        <tbody id="lb-body"><tr><td colspan="3" class="lb-empty">Loading…</td></tr></tbody>
+      </table>
+      <button class="lb-view-more" id="lb-view-more" style="display:none">View more</button>
+    </div>
+  </div>
+
+  <!-- HOW TO PLAY TAB -->
+  <div id="tab-howto" class="section">
+    <div class="howto">
+      <h3>How to play</h3>
+      <p>Guess a 5-digit number between <strong>10000</strong> and <strong>99999</strong> in Devanagari script. You have <strong>6 attempts</strong> and <strong>3 lives</strong>.</p>
+      <h3>Color feedback</h3>
+      <div class="example-row">
+        <div class="ex-cell correct">६</div><div class="ex-cell absent">०</div><div class="ex-cell absent">९</div><div class="ex-cell absent">५</div><div class="ex-cell absent">८</div>
+      </div>
+      <p><span style="color:var(--green);font-weight:600">Green</span> — right digit, right position.</p>
+      <div class="example-row" style="margin-top:8px">
+        <div class="ex-cell absent">३</div>
+        <div class="ex-cell present"><span>२</span><span class="arr">→</span></div>
+        <div class="ex-cell absent">७</div><div class="ex-cell absent">१</div><div class="ex-cell absent">४</div>
+      </div>
+      <p><span style="color:var(--amber);font-weight:600">Yellow</span> — right digit, wrong spot. Arrow: <strong>→</strong> belongs further right, <strong>←</strong> further left.</p>
+      <p style="margin-top:4px"><span style="color:#888780;font-weight:600">Gray</span> — not in the answer.</p>
+      <h3>🔥 Combo multiplier</h3>
+      <p>Chain green hits across guesses to multiply your points up to ×5!</p>
+      <h3>🌡️ Warmth bar</h3>
+      <p>More green/yellow digits = hotter bar. Use it to gauge how close you are.</p>
+      <h3>💀 Lives</h3>
+      <p>3 hearts. Lose one when a guess has zero correct or present digits.</p>
+      <h3>🏆 Scoring</h3>
+      <table class="scoring-table">
+        <tr><td>Each green digit</td><td>+100 × combo</td></tr>
+        <tr><td>Each yellow digit</td><td>+30 × combo</td></tr>
+        <tr><td>Solve in 1 guess</td><td>+2000 bonus</td></tr>
+        <tr><td>Solve in 2</td><td>+1000 bonus</td></tr>
+        <tr><td>Solve in 3</td><td>+500 bonus</td></tr>
+        <tr><td>Solve in 4</td><td>+200 bonus</td></tr>
+        <tr><td>Solve in 5</td><td>+50 bonus</td></tr>
+      </table>
+      <h3>Devanagari numerals</h3>
+      <div class="deva-ref">
+        <div>0<span>०</span></div><div>1<span>१</span></div><div>2<span>२</span></div>
+        <div>3<span>३</span></div><div>4<span>४</span></div><div>5<span>५</span></div>
+        <div>6<span>६</span></div><div>7<span>७</span></div><div>8<span>८</span></div>
+        <div>9<span>९</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WIN OVERLAY -->
+<div class="win-overlay" id="win-overlay" style="display:none">
+  <div class="win-card">
+    <span class="win-emoji" id="win-emoji">🎉</span>
+    <div class="win-title" id="win-title">Well done!</div>
+    <div class="win-sub" id="win-sub"></div>
+    <div class="win-score-big" id="win-score-big">0</div>
+    <div class="win-score-label">points</div>
+    <div class="win-number" id="win-number"></div>
+    <div class="win-post-status" id="win-post-status"></div>
+    <div class="win-actions">
+      <button class="share-btn" id="share-btn">↗ Share</button>
+      <button class="play-again-btn" id="play-again-btn">Play again</button>
+    </div>
+  </div>
+</div>
+<div class="confetti-container" id="confetti-container"></div>
+
+<!-- ═══ GAME LOGIC — plain script, runs immediately ═══ -->
+<script>
+const DEVA=['०','१','२','३','४','५','६','७','८','९'];
+const MAX_ROWS=6,DIGITS=5,MAX_LIVES=3;
+let secret='',currentRow=0,currentInput=[],gameOver=false,guesses=[];
+let lives=MAX_LIVES,score=0,combo=1,consecutiveCorrects=0;
+let stats=JSON.parse(localStorage.getItem('nm_en_stats')||'{"played":0,"wins":0,"streak":0,"best":0}');
+
+// Audio
+let audioCtx=null;
+function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playTone(freq,dur,type,vol){try{const c=getAudio(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type=type||'sine';o.frequency.value=freq;g.gain.setValueAtTime(vol||0.14,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+(dur||0.08));o.start(c.currentTime);o.stop(c.currentTime+(dur||0.08));}catch(e){}}
+function playClick(){playTone(440,0.05,'triangle',0.08)}
+function playCorrect(){playTone(660,0.1,'sine',0.13);setTimeout(()=>playTone(880,0.1,'sine',0.09),100);}
+function playPresent(){playTone(520,0.08,'sine',0.1)}
+function playAbsent(){playTone(220,0.1,'sawtooth',0.05)}
+function playCombo(){[660,770,880,1100].forEach((f,i)=>setTimeout(()=>playTone(f,0.1,'sine',0.13),i*60));}
+function playLoseLive(){playTone(200,0.3,'sawtooth',0.16);setTimeout(()=>playTone(150,0.3,'sawtooth',0.11),200);}
+function playWin(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.2,'sine',0.17),i*100));}
+function playLose(){[300,250,200].forEach((f,i)=>setTimeout(()=>playTone(f,0.25,'sawtooth',0.11),i*150));}
+
+function toDeva(n){return String(n).split('').map(d=>DEVA[+d]).join('')}
+function randSecret(){return String(Math.floor(Math.random()*90000)+10000)}
+function setMsg(txt,type){const m=document.getElementById('msg');m.textContent=txt;m.className='message-bar'+(type?' '+type:'');}
+
+function buildGrid(){
+  const g=document.getElementById('grid');g.innerHTML='';
+  for(let r=0;r<MAX_ROWS;r++){
+    const row=document.createElement('div');row.className='row';row.id='row-'+r;
+    for(let c=0;c<DIGITS;c++){
+      const cell=document.createElement('div');
+      cell.className='cell'+(r===0?' current-row':'');
+      cell.id='cell-'+r+'-'+c;
+      cell.innerHTML='<span class="deva"></span><span class="arrow"></span>';
+      row.appendChild(cell);
+    }
+    const rs=document.createElement('div');rs.className='row-score';rs.id='row-score-'+r;
+    row.appendChild(rs);g.appendChild(row);
+  }
+}
+
+function buildNumpad(){
+  const np=document.getElementById('numpad');np.innerHTML='';
+  for(let d=0;d<10;d++){
+    const btn=document.createElement('button');
+    btn.className='np-btn';btn.id='npbtn-'+d;
+    btn.innerHTML='<span class="dv">'+DEVA[d]+'</span><span class="ar">'+d+'</span>';
+    btn.addEventListener('click',()=>pressDigit(d));
+    np.appendChild(btn);
+  }
+}
+
+function renderLives(){
+  const row=document.getElementById('lives-row');row.innerHTML='';
+  for(let i=0;i<MAX_LIVES;i++){
+    const h=document.createElement('span');
+    h.className='heart'+(i>=lives?' lost':'');h.id='heart-'+i;h.textContent='❤️';
+    row.appendChild(h);
+  }
+}
+
+function loseLife(){
+  lives--;
+  const h=document.getElementById('heart-'+lives);
+  if(h){h.classList.add('shake-heart');setTimeout(()=>h.classList.add('lost'),400);}
+  playLoseLive();
+}
+
+function pressDigit(d){
+  if(gameOver||currentInput.length>=DIGITS)return;
+  playClick();currentInput.push(d);updateCurrentRow();
+  const cell=document.getElementById('cell-'+currentRow+'-'+(currentInput.length-1));
+  if(cell){cell.classList.remove('pop');void cell.offsetWidth;cell.classList.add('pop');}
+}
+
+function deleteLast(){
+  if(gameOver||currentInput.length===0)return;
+  currentInput.pop();updateCurrentRow();
+}
+
+function updateCurrentRow(){
+  for(let c=0;c<DIGITS;c++){
+    const cell=document.getElementById('cell-'+currentRow+'-'+c);if(!cell)return;
+    const deva=cell.querySelector('.deva');
+    if(currentInput[c]!==undefined){deva.textContent=DEVA[currentInput[c]];cell.classList.add('filled');}
+    else{deva.textContent='';cell.classList.remove('filled');}
+    cell.querySelector('.arrow').textContent='';
+  }
+}
+
+function evaluate(g,s){
+  const ga=g.split('').map(Number),sa=s.split('').map(Number);
+  const res=Array(DIGITS).fill('absent');
+  const su=Array(DIGITS).fill(false),gu=Array(DIGITS).fill(false);
+  for(let i=0;i<DIGITS;i++){if(ga[i]===sa[i]){res[i]='correct';su[i]=gu[i]=true;}}
+  for(let i=0;i<DIGITS;i++){
+    if(gu[i])continue;
+    for(let j=0;j<DIGITS;j++){if(!su[j]&&ga[i]===sa[j]){res[i]='present';su[j]=gu[i]=true;break;}}
+  }
+  return res;
+}
+
+function getArrow(guessStr,result,col){
+  if(result[col]!=='present')return'';
+  const d=+guessStr[col],sa=secret.split('').map(Number),ga=guessStr.split('').map(Number);
+  const uS=Array(DIGITS).fill(false);
+  for(let i=0;i<DIGITS;i++){if(ga[i]===sa[i])uS[i]=true;}
+  for(let j=0;j<DIGITS;j++){if(!uS[j]&&sa[j]===d)return col<j?'→':'←';}
+  return'';
+}
+
+function updateProx(result){
+  const pct=result.filter(r=>r==='correct'||r==='present').length/DIGITS;
+  const fill=document.getElementById('prox-fill'),emoji=document.getElementById('prox-emoji');
+  fill.style.width=Math.round(pct*100)+'%';
+  if(pct===0){fill.style.background='#D3D1C7';emoji.textContent='🧊';fill.classList.remove('prox-glow');}
+  else if(pct<=0.2){fill.style.background='#7EC8E3';emoji.textContent='❄️';fill.classList.remove('prox-glow');}
+  else if(pct<=0.4){fill.style.background='#90EE90';emoji.textContent='🌱';fill.classList.remove('prox-glow');}
+  else if(pct<=0.6){fill.style.background='#FFD700';emoji.textContent='☀️';fill.classList.add('prox-glow');}
+  else if(pct<=0.8){fill.style.background='#FFA500';emoji.textContent='🔥';fill.classList.add('prox-glow');}
+  else{fill.style.background='#E8721A';emoji.textContent='🌋';fill.classList.add('prox-glow');}
+}
+
+function updateCombo(result){
+  const greens=result.filter(r=>r==='correct').length;
+  if(greens>0){consecutiveCorrects+=greens;combo=Math.min(Math.floor(consecutiveCorrects/2)+1,5);}
+  else{consecutiveCorrects=0;combo=Math.max(combo-1,1);}
+  document.getElementById('combo-fill').style.width=Math.min((consecutiveCorrects/10)*100,100)+'%';
+  const lbl=document.getElementById('combo-label');
+  if(combo>=3){lbl.textContent='🔥 ×'+combo+' Combo!';lbl.className='combo-label hot';if(combo>=4)playCombo();}
+  else if(combo===2){lbl.textContent='⚡ ×2 Combo';lbl.className='combo-label';}
+  else{lbl.textContent='';lbl.className='combo-label';}
+  return combo;
+}
+
+function addScore(pts,rowEl){
+  if(!pts)return;score+=pts;
+  const sv=document.getElementById('score-val');sv.textContent=score;
+  sv.classList.remove('bump');void sv.offsetWidth;sv.classList.add('bump');
+  if(rowEl){const fp=document.createElement('div');fp.className='float-pts';fp.textContent='+'+pts;rowEl.style.position='relative';rowEl.appendChild(fp);setTimeout(()=>fp.remove(),900);}
+}
+
+function spawnParticle(cell,digit){
+  const rect=cell.getBoundingClientRect();
+  const el=document.createElement('div');el.className='digit-particle';
+  el.textContent=DEVA[digit];el.style.left=(rect.left+rect.width/2-9)+'px';el.style.top=(rect.top-5)+'px';
+  document.body.appendChild(el);setTimeout(()=>el.remove(),800);
+}
+
+function revealRow(rowIdx,guessStr,result){
+  const rowEl=document.getElementById('row-'+rowIdx);
+  const mult=updateCombo(result);
+  const rowPts=Math.round(result.reduce((s,r)=>s+(r==='correct'?100:r==='present'?30:0),0)*mult);
+  const sounds=result.map(r=>r==='correct'?playCorrect:r==='present'?playPresent:playAbsent);
+  for(let c=0;c<DIGITS;c++){
+    const cell=document.getElementById('cell-'+rowIdx+'-'+c);
+    cell.querySelector('.deva').textContent=DEVA[+guessStr[c]];
+    cell.classList.remove('current-row','filled','pop');
+    setTimeout(()=>{
+      cell.classList.add('flip');
+      setTimeout(()=>{
+        cell.classList.add(result[c]);cell.classList.remove('flip');
+        if(result[c]==='present')cell.querySelector('.arrow').textContent=getArrow(guessStr,result,c);
+        sounds[c]();
+        if(result[c]==='correct')spawnParticle(cell,+guessStr[c]);
+      },215);
+    },c*90);
+  }
+  setTimeout(()=>{
+    if(rowPts>0){const rs=document.getElementById('row-score-'+rowIdx);if(rs)rs.textContent='+'+rowPts;addScore(rowPts,rowEl);}
+    updateProx(result);
+    if(result.every(r=>r==='absent'))loseLife();
+  },DIGITS*90+300);
+}
+
+function updateKeyboard(guessStr,result){
+  for(let c=0;c<DIGITS;c++){
+    const d=+guessStr[c],btn=document.getElementById('npbtn-'+d);if(!btn)continue;
+    const cur=btn.className;
+    if(result[c]==='correct'||cur.includes('correct-key'))btn.className='np-btn correct-key';
+    else if(result[c]==='present'&&!cur.includes('correct-key'))btn.className='np-btn present-key';
+    else if(result[c]==='absent'&&!cur.includes('correct-key')&&!cur.includes('present-key'))btn.className='np-btn absent-key';
+  }
+}
+
+function launchConfetti(){
+  const ct=document.getElementById('confetti-container');
+  const cols=['#E8721A','#633806','#BA7517','#639922','#D3D1C7','#FAEEDA'];
+  for(let i=0;i<80;i++){
+    const el=document.createElement('div');el.className='conf';
+    const sz=5+Math.random()*8;
+    el.style.cssText='left:'+Math.random()*100+'%;width:'+sz+'px;height:'+sz+'px;background:'+cols[Math.floor(Math.random()*cols.length)]+';border-radius:'+(Math.random()>.5?'50%':'2px')+';animation-duration:'+(1.3+Math.random()*2)+'s;animation-delay:'+Math.random()*.5+'s';
+    ct.appendChild(el);
+  }
+  setTimeout(()=>ct.innerHTML='',3500);
+}
+
+function showWin(won,guessNum,isHS){
+  const titles=['Genius!','Magnificent!','Impressive!','Splendid!','Great!','Phew!'];
+  const emojis=['🏆','🎉','✨','😊','👍','😅'];
+  document.getElementById('win-emoji').textContent=won?emojis[Math.min(guessNum-1,5)]:'😔';
+  document.getElementById('win-title').textContent=won?(isHS?'🌟 New Record!':titles[Math.min(guessNum-1,5)]):'Better luck next time!';
+  document.getElementById('win-sub').textContent=won?'Solved in '+guessNum+' guess'+(guessNum>1?'es':'')+'!':'The answer was:';
+  document.getElementById('win-score-big').textContent=score.toLocaleString();
+  document.getElementById('win-number').textContent=toDeva(+secret)+' ('+secret+')';
+  document.getElementById('win-post-status').textContent='';
+  document.getElementById('win-post-status').className='win-post-status';
+  document.getElementById('win-overlay').style.display='flex';
+}
+
+function updateStatDisplay(){
+  document.getElementById('sc-played').textContent=stats.played;
+  document.getElementById('sc-wins').textContent=stats.wins;
+  document.getElementById('sc-streak').textContent=stats.streak;
+  document.getElementById('sc-best').textContent=(stats.best||0).toLocaleString();
+}
+
+function switchTab(name){
+  ['game','board','howto'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('active',t===name);
+    document.getElementById('tab-btn-'+t).classList.toggle('active',t===name);
+  });
+  if(name==='board'&&window._renderLeaderboard)window._renderLeaderboard();
+}
+
+function newGame(){
+  secret=randSecret();currentRow=0;currentInput=[];gameOver=false;guesses=[];
+  lives=MAX_LIVES;score=0;combo=1;consecutiveCorrects=0;
+  buildGrid();buildNumpad();setMsg('');renderLives();
+  document.getElementById('score-val').textContent='0';
+  document.getElementById('combo-fill').style.width='0%';
+  document.getElementById('combo-label').textContent='';
+  document.getElementById('combo-label').className='combo-label';
+  document.getElementById('prox-fill').style.width='0%';
+  document.getElementById('prox-fill').classList.remove('prox-glow');
+  document.getElementById('prox-emoji').textContent='🧊';
+  document.getElementById('win-overlay').style.display='none';
+  document.getElementById('hs-banner').style.display='none';
+  document.getElementById('enter-btn').disabled=false;
+}
+
+function submitGuess(){
+  if(gameOver)return;
+  if(currentInput.length<DIGITS){
+    const row=document.getElementById('row-'+currentRow);
+    row.classList.remove('shake');void row.offsetWidth;row.classList.add('shake');
+    setMsg('Enter all 5 digits','error');return;
+  }
+  const guessStr=currentInput.join('');
+  const result=evaluate(guessStr,secret);
+  guesses.push({guess:guessStr,result});
+  revealRow(currentRow,guessStr,result);
+  updateKeyboard(guessStr,result);
+  const won=result.every(r=>r==='correct');
+  const rowDone=currentRow;
+  currentRow++;currentInput=[];setMsg('');
+  setTimeout(()=>{
+    if(won){
+      const bonuses=[2000,1000,500,200,50,0];
+      score+=(bonuses[rowDone]||0);
+      document.getElementById('score-val').textContent=score;
+      gameOver=true;stats.played++;stats.wins++;stats.streak++;
+      const isHS=score>stats.best;if(isHS)stats.best=score;
+      localStorage.setItem('nm_en_stats',JSON.stringify(stats));
+      updateStatDisplay();
+      if(isHS)document.getElementById('hs-banner').style.display='block';
+      for(let c=0;c<DIGITS;c++){const cell=document.getElementById('cell-'+rowDone+'-'+c);setTimeout(()=>cell&&cell.classList.add('win-bounce'),c*70);}
+      setTimeout(()=>{playWin();launchConfetti();showWin(true,rowDone+1,isHS);if(window._onWin)window._onWin(score,rowDone+1);},350);
+    } else if(lives<=0||currentRow>=MAX_ROWS){
+      gameOver=true;stats.played++;stats.streak=0;
+      localStorage.setItem('nm_en_stats',JSON.stringify(stats));
+      updateStatDisplay();
+      setTimeout(()=>{playLose();showWin(false,0,false);},200);
+    } else {
+      const nextCells=document.querySelectorAll('#row-'+currentRow+' .cell');
+      nextCells.forEach(c=>c.classList.add('current-row'));
+    }
+    document.getElementById('enter-btn').disabled=gameOver;
+  },DIGITS*90+450);
+}
+
+function shareResult(){
+  const lines=guesses.map(g=>g.result.map(r=>r==='correct'?'🟩':r==='present'?'🟨':'⬜').join(''));
+  const text='NUMERALE\n'+lines.join('\n')+'\nScore: '+score+'\nzatam-ver1.vercel.app';
+  if(navigator.share)navigator.share({text}).catch(()=>{});
+  else{navigator.clipboard&&navigator.clipboard.writeText(text);setMsg('Copied!','success');}
+}
+
+// Wire all buttons with addEventListener (no inline onclick)
+document.getElementById('btn-new').addEventListener('click',newGame);
+document.getElementById('btn-howto').addEventListener('click',()=>switchTab('howto'));
+document.getElementById('btn-lb').addEventListener('click',()=>switchTab('board'));
+document.getElementById('tab-btn-game').addEventListener('click',()=>switchTab('game'));
+document.getElementById('tab-btn-board').addEventListener('click',()=>switchTab('board'));
+document.getElementById('tab-btn-howto').addEventListener('click',()=>switchTab('howto'));
+document.getElementById('del-btn').addEventListener('click',deleteLast);
+document.getElementById('enter-btn').addEventListener('click',submitGuess);
+document.getElementById('share-btn').addEventListener('click',shareResult);
+document.getElementById('play-again-btn').addEventListener('click',newGame);
+document.addEventListener('keydown',e=>{
+  if(e.key>='0'&&e.key<='9')pressDigit(+e.key);
+  else if(e.key==='Backspace')deleteLast();
+  else if(e.key==='Enter')submitGuess();
+});
+
+updateStatDisplay();
+newGame();
+</script>
+
+<!-- ═══ FIREBASE — redirect auth (works on Vercel / cross-domain) ═══ -->
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
+import{
+  getAuth,GoogleAuthProvider,
+  signInWithPopup,
+  signOut,onAuthStateChanged
+}from'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
+import{getFirestore,collection,addDoc,serverTimestamp,getDocs,query,orderBy,limit}from'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+
+const app=initializeApp({
+  apiKey:'AIzaSyB6gCO3IOjDSCHJNK08C8MEw47Wlwf2_AE',
+  authDomain:'zatam-to-zim.firebaseapp.com',
+  projectId:'zatam-to-zim',
+  storageBucket:'zatam-to-zim.firebasestorage.app',
+  messagingSenderId:'1003568725487',
+  appId:'1:1003568725487:web:3398e0dc55ece1d3548a1a'
+});
+const auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
+
+const GAME_ID='numerale',GAME_NAME='Numerale';
+let currentUser=null,allScores=[],lbVisible=7;
+
+function esc(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function avatar(n){return'https://ui-avatars.com/api/?name='+encodeURIComponent(n||'P')+'&background=ffe1a5&color=09264a';}
+function safePhoto(u){return u?u.replace(/=s\d+-c/,'=s200-c'):'';}
+function today(){return new Date().toISOString().split('T')[0];}
+function setImg(el,src,fallback){el.src=src;el.onerror=()=>{el.onerror=null;el.src=fallback;};}
+
+// Show a "signing in…" state on the button while redirect is in flight
+function setLoginPending(pending){
+  const btn=document.getElementById('login-btn');
+  const lb=document.getElementById('lb-login-btn');
+  if(pending){
+    btn.textContent='Signing in…';btn.disabled=true;
+    lb.textContent='Signing in…';lb.disabled=true;
+  } else {
+    btn.innerHTML='<svg viewBox="0 0 24 24" style="width:14px;height:14px;flex-shrink:0"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Sign in with Google';
+    btn.disabled=false;
+    lb.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Sign in';
+    lb.disabled=false;
+  }
+}
+
+function updateAuthUI(user){
+  const loginBtn=document.getElementById('login-btn');
+  const logoutBtn=document.getElementById('logout-btn');
+  const userInfo=document.getElementById('auth-user-info');
+  const loggedOut=document.getElementById('auth-logged-out');
+  const myCard=document.getElementById('my-rank-card');
+  const nudge=document.getElementById('lb-login-nudge');
+  if(user){
+    const photo=safePhoto(user.photoURL)||avatar(user.displayName);
+    setImg(document.getElementById('auth-avatar'),photo,avatar(user.displayName));
+    document.getElementById('auth-name').textContent=user.displayName||'Player';
+    document.getElementById('auth-email').textContent=user.email||'';
+    userInfo.style.display='flex';loggedOut.style.display='none';
+    loginBtn.style.display='none';logoutBtn.style.display='block';
+    myCard.style.display='block';nudge.style.display='none';
+    setImg(document.getElementById('my-rank-avatar'),photo,avatar(user.displayName));
+    document.getElementById('my-rank-name').textContent=user.displayName||'Player';
+    document.getElementById('my-rank-email').textContent=user.email||'';
+  } else {
+    userInfo.style.display='none';loggedOut.style.display='block';
+    loginBtn.style.display='flex';logoutBtn.style.display='none';
+    myCard.style.display='none';nudge.style.display='flex';
+    setLoginPending(false);
+  }
+}
+
+// Popup auth — same pattern as 2048.html
+async function doLogin(){
+  try{
+    await signInWithPopup(auth,provider);
+  }catch(e){
+    console.error('Google login error:',e.code,e.message);
+    alert('Google login failed: '+e.message);
+  }
+}
+async function doLogout(){try{await signOut(auth);}catch(e){console.error(e);}}
+
+document.getElementById('login-btn').addEventListener('click',doLogin);
+document.getElementById('logout-btn').addEventListener('click',doLogout);
+document.getElementById('lb-login-btn').addEventListener('click',doLogin);
+
+async function loadLeaderboard(){
+  try{
+    const q=query(collection(db,'leaderboard'),orderBy('score','desc'),limit(100));
+    const snap=await getDocs(q);
+    allScores=[];
+    snap.forEach(d=>allScores.push({id:d.id,...d.data()}));
+    allScores=allScores.filter(s=>s.gameId===GAME_ID);
+    lbVisible=7;renderLeaderboard();
+    document.getElementById('lb-last-updated').textContent='Updated just now';
+  }catch(e){
+    console.error('Leaderboard error:',e);
+    document.getElementById('lb-body').innerHTML='<tr><td colspan="3" class="lb-empty">Could not load — check your connection.</td></tr>';
+  }
+}
+
+function renderLeaderboard(){
+  const body=document.getElementById('lb-body');
+  const vm=document.getElementById('lb-view-more');
+  if(!allScores.length){
+    body.innerHTML='<tr><td colspan="3" class="lb-empty">No Numerale scores yet — be the first! 🌟</td></tr>';
+    vm.style.display='none';updateMyRank([]);return;
+  }
+  const medals=['🥇','🥈','🥉'];
+  body.innerHTML=allScores.slice(0,lbVisible).map((p,i)=>{
+    const ph=safePhoto(p.photoURL)||avatar(p.playerName);
+    const fb=avatar(p.playerName||'Player');
+    return'<tr>'
+      +'<td class="lb-rank-cell">'+(i<3?medals[i]:i+1)+'</td>'
+      +'<td><div class="lb-player-cell">'
+      +'<img class="lb-avatar" src="'+esc(ph)+'" onerror="this.onerror=null;this.src=\''+esc(fb)+'\'">'
+      +'<div><div class="lb-player-name">'+esc(p.playerName||'Player')+'</div>'
+      +'<div class="lb-player-email">'+esc(p.email||'')+'</div></div></div></td>'
+      +'<td class="lb-score-cell">'+Number(p.score||0).toLocaleString()+' ⭐</td>'
+      +'</tr>';
+  }).join('');
+  vm.style.display=allScores.length>lbVisible?'block':'none';
+  updateMyRank(allScores);
+}
+
+function updateMyRank(scores){
+  if(!currentUser)return;
+  const idx=scores.findIndex(s=>s.userId===currentUser.uid);
+  document.getElementById('my-rank-pos').textContent=idx>=0?idx+1:'—';
+  document.getElementById('my-rank-score').textContent=idx>=0?Number(scores[idx].score||0).toLocaleString()+' ⭐':'0 ⭐';
+  document.getElementById('my-rank-game').textContent=idx>=0?GAME_NAME:'—';
+}
+
+document.getElementById('lb-view-more').addEventListener('click',()=>{lbVisible+=5;renderLeaderboard();});
+
+async function postScore(finalScore,guessCount){
+  if(!currentUser)return false;
+  try{
+    await addDoc(collection(db,'leaderboard'),{
+      userId:currentUser.uid,
+      playerName:currentUser.displayName||'Player',
+      email:currentUser.email||'',
+      photoURL:safePhoto(currentUser.photoURL)||'',
+      score:finalScore,gameName:GAME_NAME,gameId:GAME_ID,
+      guesses:guessCount,scoreDate:today(),createdAt:serverTimestamp()
+    });
+    return true;
+  }catch(e){console.error('Post score error:',e);return false;}
+}
+
+window._renderLeaderboard=renderLeaderboard;
+window._onWin=async(finalScore,guessCount)=>{
+  const status=document.getElementById('win-post-status');
+  if(!currentUser){
+    status.innerHTML='<a href="#" id="wl" style="color:var(--saffron)">Sign in with Google</a> to save your score!';
+    document.getElementById('wl').addEventListener('click',e=>{e.preventDefault();doLogin();});
+    return;
+  }
+  status.textContent='Posting to leaderboard…';
+  const ok=await postScore(finalScore,guessCount);
+  if(ok){
+    status.textContent='✅ Score posted to global leaderboard!';
+    status.className='win-post-status ok';
+    await loadLeaderboard();
+  }else{
+    status.textContent='⚠️ Could not post. Check connection.';
+    status.className='win-post-status err';
+  }
+};
+
+onAuthStateChanged(auth,async user=>{
+  currentUser=user;
+  updateAuthUI(user);
+  await loadLeaderboard();
+});
+</script>
+</body>
+</html>

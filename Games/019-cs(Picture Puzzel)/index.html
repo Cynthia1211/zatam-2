@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Picture Puzzle - Zat.am</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="game-header">
+    <a class="brand" href="../../index.html" aria-label="Back to Zat.am home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span><b><em>zat.</em>am</b><small>शब्दम् मम प्रेरणम्</small></span>
+    </a>
+    <div class="header-actions">
+      <a class="icon-link" href="../../index.html" title="Home" aria-label="Home">⌂</a>
+      <div class="language-switch" role="group" aria-label="Language">
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="sa">सं</button>
+      </div>
+      <button class="icon-button" id="soundButton" title="Sound" aria-label="Toggle sound">♪</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div>
+        <p class="eyebrow" data-i18n="eyebrow">LOOK · THINK · SOLVE</p>
+        <h1 data-i18n="title">Picture Puzzle</h1>
+        <p class="intro-copy" data-i18n="subtitle">Rebuild the gurukula scene, one piece at a time.</p>
+      </div>
+      <div class="difficulty" role="group" aria-label="Difficulty">
+        <span data-i18n="difficulty">Difficulty</span>
+        <button class="difficulty-btn" data-size="3" data-i18n="easy">Easy</button>
+        <button class="difficulty-btn active" data-size="4" data-i18n="medium">Medium</button>
+        <button class="difficulty-btn" data-size="5" data-i18n="hard">Hard</button>
+      </div>
+    </section>
+
+    <section class="game-shell">
+      <aside class="control-panel">
+        <div class="stat-grid">
+          <div class="stat"><span data-i18n="time">Time</span><strong id="timer">00:00</strong></div>
+          <div class="stat"><span data-i18n="moves">Moves</span><strong id="moves">0</strong></div>
+          <div class="stat"><span data-i18n="score">Score</span><strong id="score">0</strong></div>
+        </div>
+
+        <div class="progress-block">
+          <div><span data-i18n="progress">Progress</span><strong id="progressText">0%</strong></div>
+          <div class="progress-track"><span id="progressBar"></span></div>
+        </div>
+
+        <div class="action-list">
+          <button class="action primary" id="newGameButton"><span>↻</span><span data-i18n="newGame">New puzzle</span></button>
+          <button class="action" id="hintButton"><span>✦</span><span data-i18n="hint">Show a hint</span></button>
+          <button class="action" id="previewButton"><span>◉</span><span data-i18n="preview">Hold to preview</span></button>
+          <button class="action" id="shuffleButton"><span>⇄</span><span data-i18n="shuffle">Shuffle pieces</span></button>
+        </div>
+
+        <p class="save-status" id="saveStatus" data-i18n="saveHint">Sign in to save your best score.</p>
+        <a class="leaderboard-link" href="../../leaderboard.html" data-i18n="leaderboard">View leaderboard →</a>
+      </aside>
+
+      <div class="play-area">
+        <div class="board-wrap">
+          <div id="puzzleBoard" class="puzzle-board" role="grid" aria-label="Picture puzzle board"></div>
+          <img class="preview-image" id="previewImage" src="assets/gurukula.png" alt="Completed gurukula puzzle">
+          <div class="board-start" id="startOverlay">
+            <div class="start-icon">अ</div>
+            <h2 data-i18n="readyTitle">Ready to assemble?</h2>
+            <p data-i18n="readyCopy">Drag one piece onto another to swap them.</p>
+            <button id="startButton" data-i18n="start">Start puzzle</button>
+          </div>
+        </div>
+        <div class="play-note">
+          <span id="boardMessage" data-i18n="boardMessage">Drag pieces, tap two pieces, or use arrow keys and Enter.</span>
+          <span class="correct-count"><b id="correctCount">0</b>/<span id="pieceCount">16</span> <span data-i18n="placed">placed</span></span>
+        </div>
+      </div>
+
+      <aside class="puzzle-gallery-panel">
+        <div class="puzzle-picker-block">
+          <div class="picker-heading">
+            <span data-i18n="choosePuzzle">Choose puzzle</span>
+            <strong id="selectedPuzzleName">Gurukula</strong>
+          </div>
+          <div class="puzzle-picker" id="puzzlePicker" aria-label="Choose puzzle image"></div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="modal" id="winModal" hidden>
+    <div class="modal-card">
+      <div class="celebration" aria-hidden="true">✦ अ ✦</div>
+      <p class="eyebrow" data-i18n="completeEyebrow">PUZZLE COMPLETE</p>
+      <h2 data-i18n="congratulations">Congratulations!</h2>
+      <p id="winSummary"></p>
+      <div class="modal-actions">
+        <button id="playAgainButton" data-i18n="playAgain">Play again</button>
+        <a href="../../leaderboard.html" data-i18n="leaderboard">View leaderboard →</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>

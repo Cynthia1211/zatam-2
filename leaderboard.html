@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zat.am - Leaderboard</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: #fffaf2;
+      color: #09264a;
+    }
+
+    header {
+      height: 76px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      border-bottom: 1px solid #eadfce;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .logo-mark {
+      width: 58px;
+      height: 42px;
+      position: relative;
+    }
+
+    .circle {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border: 2px solid;
+      border-radius: 50%;
+      opacity: 0.75;
+    }
+
+    .c1 { border-color: #f6b23b; left: 0; top: 5px; }
+    .c2 { border-color: #e86c5b; left: 14px; top: 0; }
+    .c3 { border-color: #7188a8; left: 24px; top: 12px; }
+
+    .logo-text h1 {
+      font-size: 28px;
+      line-height: 24px;
+      font-weight: 800;
+    }
+
+    .logo-text span:nth-child(1) { color: #f16945; }
+    .logo-text span:nth-child(2) { color: #2f6dff; }
+    .logo-text span:nth-child(3) { color: #111; }
+
+    .logo-text p {
+      font-size: 12px;
+      color: #39415c;
+      margin-top: 4px;
+    }
+
+    nav {
+      display: flex;
+      gap: 42px;
+      font-weight: 600;
+      color: #18284a;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: inherit;
+      padding: 28px 0;
+      position: relative;
+    }
+
+    nav a.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 18px;
+      width: 100%;
+      height: 3px;
+      background: #f6b23b;
+      border-radius: 999px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .lang-btn,
+    .login-btn {
+      height: 40px;
+      border-radius: 14px;
+      padding: 0 18px;
+      font-size: 17px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lang-btn {
+      background: white;
+      border: 1.5px solid #222;
+      color: #111;
+    }
+
+    .login-btn {
+      background: #0b2b4f;
+      color: white;
+      border: none;
+    }
+
+    .user-profile {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: white;
+      border: 1.5px solid #0b2b4f;
+      border-radius: 16px;
+      padding: 5px 8px 5px 5px;
+    }
+
+    .user-profile img {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #f6b23b;
+      background: #ffe1a5;
+    }
+
+    #userName {
+      max-width: 120px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0b2b4f;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #logoutBtn {
+      background: #f6b23b;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 7px 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    #logoutBtn:hover {
+      background: #ef6945;
+    }
+
+    .page {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 34px 42px 40px;
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      margin-bottom: 24px;
+    }
+
+    .trophy {
+      font-size: 92px;
+    }
+
+    .hero h2 {
+      font-family: Georgia, serif;
+      font-size: 48px;
+      color: #0b2b4f;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      font-size: 17px;
+      line-height: 1.5;
+      color: #24394f;
+      font-weight: 600;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 330px;
+      gap: 28px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      min-width: 135px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid #e1dfda;
+      background: white;
+      color: #0b2b4f;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+    }
+
+    .tab.active {
+      background: #0b2b4f;
+      color: white;
+    }
+
+
+
+    .date-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .date-btn {
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid #e1dfda;
+      background: white;
+      color: #0b2b4f;
+      font-weight: 800;
+      padding: 0 18px;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+    }
+
+    .date-btn.active {
+      background: #f6b23b;
+      color: white;
+      border-color: #f6b23b;
+    }
+
+    .date-picker-label {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0b2b4f;
+    }
+
+    #leaderboardDate {
+      height: 40px;
+      border-radius: 12px;
+      border: 1.5px solid #0b2b4f;
+      padding: 0 14px;
+      font-weight: 700;
+      color: #0b2b4f;
+      background: white;
+      cursor: pointer;
+    }
+
+
+    .leaderboard-card,
+    .side-card,
+    .info-card {
+      background: white;
+      border: 1px solid #eadfce;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .leaderboard-card {
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      padding: 16px 18px;
+      font-size: 14px;
+      color: #263755;
+      border-bottom: 1px solid #eee5d8;
+      background: white;
+    }
+
+    td {
+      padding: 16px 18px;
+      border-bottom: 1px solid #f0e9de;
+      vertical-align: middle;
+      font-weight: 700;
+    }
+
+    tbody tr:nth-child(1) { background: #fff5df; }
+    tbody tr:nth-child(2) { background: #f7f9ff; }
+    tbody tr:nth-child(3) { background: #fff8ed; }
+
+    .rank {
+      font-size: 22px;
+      width: 80px;
+      text-align: center;
+    }
+
+    .player-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #ffe1a5;
+      border: 2px solid #f6b23b;
+    }
+
+    .player-name {
+      color: #0b2b4f;
+      font-size: 16px;
+    }
+
+    .player-email {
+      font-size: 12px;
+      color: #65738a;
+      font-weight: 500;
+      margin-top: 3px;
+    }
+
+    .game-name {
+      color: #24394f;
+      font-size: 14px;
+    }
+
+    .points {
+      color: #b85c00;
+      font-size: 17px;
+      white-space: nowrap;
+    }
+
+    .view-more {
+      display: block;
+      margin: 16px auto;
+      padding: 10px 36px;
+      border-radius: 20px;
+      border: 1px solid #ddd;
+      background: white;
+      color: #0b2b4f;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .side-card {
+      padding: 18px;
+    }
+
+    .side-card h3 {
+      margin-bottom: 14px;
+      color: #0b2b4f;
+      font-size: 17px;
+    }
+
+    .profile-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .profile-row img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #f6b23b;
+      background: #ffe1a5;
+    }
+
+    .profile-row h4 {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .profile-row p {
+      font-size: 12px;
+      color: #65738a;
+      word-break: break-all;
+    }
+
+    .my-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 18px;
+      text-align: center;
+      border-top: 1px solid #eee5d8;
+      padding-top: 14px;
+      gap: 8px;
+    }
+
+    .my-stats strong {
+      display: block;
+      font-size: 19px;
+      color: #0b2b4f;
+      margin-bottom: 4px;
+    }
+
+    .my-stats span {
+      font-size: 12px;
+      color: #65738a;
+      font-weight: 700;
+    }
+
+    .filter-row,
+    .point-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 13px;
+      font-weight: 700;
+      color: #263755;
+      cursor: pointer;
+    }
+
+    .filter-row.active {
+      background: #eef1ff;
+      margin: 0 -8px;
+      padding: 8px;
+      border-radius: 8px;
+    }
+
+    .point-row strong {
+      color: #315fd9;
+    }
+
+    .bottom-info {
+      margin-top: 26px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .info-card {
+      padding: 18px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .info-icon {
+      font-size: 32px;
+    }
+
+    .info-card h4 {
+      color: #8b4b10;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .info-card p {
+      font-size: 12px;
+      color: #24394f;
+      line-height: 1.4;
+      font-weight: 600;
+    }
+
+    .empty {
+      padding: 30px;
+      text-align: center;
+      color: #65738a;
+    }
+
+    @media (max-width: 1000px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .bottom-info {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      nav {
+        gap: 20px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      header {
+        height: auto;
+        padding: 16px;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      nav {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .page {
+        padding: 24px 16px;
+      }
+
+      .hero {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .hero h2 {
+        font-size: 38px;
+      }
+
+      .bottom-info {
+        grid-template-columns: 1fr;
+      }
+
+      th:nth-child(3),
+      td:nth-child(3) {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <a class="logo" href="index.html">
+      <div class="logo-mark">
+        <div class="circle c1"></div>
+        <div class="circle c2"></div>
+        <div class="circle c3"></div>
+      </div>
+
+      <div class="logo-text">
+        <h1>
+          <span>za</span><span>t</span><span>.am</span>
+        </h1>
+        <p>शब्दम् मम प्रेरणम्</p>
+      </div>
+    </a>
+
+    <nav>
+      <a href="index.html">Games</a>
+      <a href="About.html">About</a>
+      <a href="Resources.html">Resources</a>
+      <a href="leaderboard.html" class="active">Leaderboard</a>
+      <a href="Contact.html">Contact</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="lang-btn" id="langBtn" >🌐 EN / SA</button>
+
+      <button class="login-btn" id="loginBtn">↪ Login</button>
+
+      <div class="user-profile" id="userProfile">
+        <img
+          id="userAvatar"
+          src="https://ui-avatars.com/api/?name=User&background=ffe1a5&color=09264a"
+          alt="User Avatar"
+        >
+        <span id="userName"></span>
+        <button id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div class="trophy">🏆</div>
+      <div>
+        <h2>Leaderboard</h2>
+        <p>
+          Compete, Learn & Climb the Ranks!<br>
+          Top players across all Sanskrit learning games.
+        </p>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div>
+        <div class="tabs">
+          <button class="tab active" data-game="all">📊 All Games</button>
+          <button class="tab" data-game="classic15">🧩 Classic 15</button>
+          <button class="tab" data-game="ticTacToe">❌ Tic Tac Toe</button>
+          <button class="tab" data-game="rps">✂️ RPS</button>
+          <button class="tab" data-game="2048">🔢 2048</button>
+          <button class="tab" data-game="sudoku">🔢 Sudoku</button>
+          <button class="tab" data-game="picturePuzzle">🖼 Picture Puzzle</button>
+        </div>
+
+        <div class="date-controls">
+          <button class="date-btn active" data-date-mode="all">🏆 All Time</button>
+          <button class="date-btn" data-date-mode="today">📅 Today</button>
+          <label class="date-picker-label" for="leaderboardDate">Choose Date:</label>
+          <input type="date" id="leaderboardDate">
+        </div>
+
+        <div class="leaderboard-card">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Game</th>
+                <th>Points</th>
+              </tr>
+            </thead>
+
+            <tbody id="leaderboardBody">
+              <tr>
+                <td colspan="4" class="empty">Loading leaderboard...</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <button class="view-more" id="viewMoreBtn">View More</button>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <div class="side-card">
+          <h3>My Rank</h3>
+
+          <div class="profile-row">
+            <img
+              id="myPhoto"
+              src="https://ui-avatars.com/api/?name=You&background=ffe1a5&color=09264a"
+              alt="My Avatar"
+            >
+            <div>
+              <h4 id="myName">You</h4>
+              <p id="myEmail">Please login</p>
+            </div>
+          </div>
+
+          <div class="my-stats">
+            <div>
+              <strong id="myRank">--</strong>
+              <span>Rank</span>
+            </div>
+
+            <div>
+              <strong id="myScore">0 ⭐</strong>
+              <span>Points</span>
+            </div>
+
+            <div>
+              <strong id="myGame">--</strong>
+              <span>Game</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3>🎮 Filter by Game</h3>
+          <div class="filter-row active" data-side-game="all"><span>All Games</span><span>All</span></div>
+          <div class="filter-row" data-side-game="classic15"><span>Classic 15 Puzzle</span><span>All</span></div>
+          <div class="filter-row" data-side-game="rps"><span>Rock, Paper, Scissors</span><span>All</span></div>
+          <div class="filter-row" data-side-game="ticTacToe"><span>Tic Tac Toe</span><span>All</span></div>
+          <div class="filter-row" data-side-game="memory"><span>Memory Match</span><span>All</span></div>
+          <div class="filter-row" data-side-game="laddersSnakes"><span>Ladders & Snakes</span><span>All</span></div>
+          <div class="filter-row" data-side-game="2048"><span>2048</span><span>All</span></div>
+          <div class="filter-row" data-side-game="sudoku"><span>Sudoku</span><span>All</span></div>
+          <div class="filter-row" data-side-game="picturePuzzle"><span>Picture Puzzle</span><span>All</span></div>
+        </div>
+
+        <div class="side-card">
+          <h3>⭐ How Points Work</h3>
+          <div class="point-row"><span>Win Game</span><strong>+100</strong></div>
+          <div class="point-row"><span>Complete Level</span><strong>+50</strong></div>
+          <div class="point-row"><span>Daily Bonus</span><strong>+20</strong></div>
+          <div class="point-row"><span>Win Streak 3+</span><strong>+30</strong></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="bottom-info">
+      <div class="info-card">
+        <div class="info-icon">🎓</div>
+        <div>
+          <h4>Learn Sanskrit</h4>
+          <p>Improve your vocabulary and language skills.</p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">🎮</div>
+        <div>
+          <h4>Play & Practice</h4>
+          <p>Interactive games make learning fun.</p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">🏆</div>
+        <div>
+          <h4>Track Progress</h4>
+          <p>Compete and improve your scores.</p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">👥</div>
+        <div>
+          <h4>Community</h4>
+          <p>Join learners and share achievements.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import {
+      auth,
+      db,
+      provider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged,
+      collection,
+      getDocs,
+      query,
+      orderBy,
+      limit
+    } from "./firebase-config.js";
+
+    const loginBtn = document.getElementById("loginBtn");
+    const userProfile = document.getElementById("userProfile");
+    const userAvatar = document.getElementById("userAvatar");
+    const userName = document.getElementById("userName");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const leaderboardBody = document.getElementById("leaderboardBody");
+    const viewMoreBtn = document.getElementById("viewMoreBtn");
+
+    const myPhoto = document.getElementById("myPhoto");
+    const myName = document.getElementById("myName");
+    const myEmail = document.getElementById("myEmail");
+    const myRank = document.getElementById("myRank");
+    const myScore = document.getElementById("myScore");
+    const myGame = document.getElementById("myGame");
+
+    const tabButtons = document.querySelectorAll(".tab");
+    const sideFilterRows = document.querySelectorAll(".filter-row");
+    const dateButtons = document.querySelectorAll(".date-btn");
+    const leaderboardDate = document.getElementById("leaderboardDate");
+
+    let currentUser = null;
+    let currentGameFilter = "all";
+    let currentDateMode = "all";
+    let selectedDate = getTodayDateString();
+    let allScores = [];
+    let visibleCount = 7;
+
+    const langBtn = document.getElementById("langBtn");
+
+    let currentLanguage =
+        localStorage.getItem("zatamLanguage") || "en";
+
+    
+    const translations = {
+        en: {
+            games: "Games",
+            about: "About",
+            resources: "Resources",
+            leaderboard: "Leaderboard",
+            contact: "Contact",
+            title: "Leaderboard",
+            subtitle:"Compete, Learn & Climb the Ranks!<br>Top players across all Sanskrit learning games.",
+            allGames: "📊 All Games",
+            classic15: "🧩 Classic 15",
+            ticTacToe: "❌ Tic Tac Toe",
+            rps: "✂️ RPS",
+            game2048: "🔢 2048",
+            sudoku: "🔢 Sudoku",
+            picturePuzzle: "🖼 Picture Puzzle",
+
+            rank: "Rank",
+            player: "Player",
+            game: "Game",
+            points: "Points",
+            allTime: "🏆 All Time",
+            today: "📅 Today",
+            chooseDate: "Choose Date:",
+
+            myRank: "My Rank",
+
+            login: "↪ Login",
+            logout: "Logout",
+
+            pleaseLogin: "Please login",
+
+            filterByGame: "🎮 Filter by Game",
+
+            howPoints: "⭐ How Points Work",
+
+            winGame: "Win Game",
+            completeLevel: "Complete Level",
+            dailyBonus: "Daily Bonus",
+            winStreak: "Win Streak 3+",
+
+            langButton: "🌐 EN / SA"
+            },
+
+        sa: {
+            games: "क्रीडाः",
+            about: "विषये",
+            resources: "संसाधनानि",
+            leaderboard: "श्रेष्ठसूची",
+            contact: "सम्पर्कः",
+            title: "श्रेष्ठसूची",
+            subtitle:"स्पर्धां कुरु, शिक्षस्व, स्थानं वर्धय।<br>सर्वासु संस्कृतक्रीडासु श्रेष्ठाः क्रीडकाः।",
+
+            allGames: "📊 सर्वाः क्रीडाः",
+            classic15: "🧩 १५ प्रहेलिका",
+            ticTacToe: "❌ त्रिरेखा",
+            rps: "✂️ शिला पत्रम्",
+            game2048: "🔢 २०४८",
+            sudoku: "🔢 सुडोकू",
+            picturePuzzle: "🖼 चित्र-समस्या",
+
+            rank: "स्थानम्",
+            player: "क्रीडकः",
+            game: "क्रीडा",
+            points: "अङ्काः",
+            allTime: "🏆 सर्वकालिकम्",
+            today: "📅 अद्य",
+            chooseDate: "दिनाङ्कं चिनुत:",
+
+            myRank: "मम स्थानम्",
+
+            login: "↪ प्रवेशः",
+            logout: "निर्गमः",
+
+            pleaseLogin: "कृपया प्रवेशं कुरु",
+
+            filterByGame: "🎮 क्रीडया छानय",
+
+            howPoints: "⭐ अङ्काः कथं कार्यं कुर्वन्ति",
+
+            winGame: "क्रीडायां जयः",
+            completeLevel: "स्तरं समाप्तम्",
+            dailyBonus: "दैनिक लाभः",
+            winStreak: "जयश्रृङ्खला ३+",
+
+            langButton: "🌐 SA / EN"
+        }
+    };
+
+    function getTodayDateString() {
+      const today = new Date();
+      return today.toISOString().split("T")[0];
+    }
+
+    function getLocalDateStringFromTimestamp(value) {
+      if (!value) return "";
+
+      let dateObj = null;
+
+      if (typeof value.toDate === "function") {
+        dateObj = value.toDate();
+      } else if (value instanceof Date) {
+        dateObj = value;
+      } else {
+        dateObj = new Date(value);
+      }
+
+      if (!dateObj || Number.isNaN(dateObj.getTime())) return "";
+
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const day = String(dateObj.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    }
+
+    function getScoreDate(item) {
+      return item.scoreDate || getLocalDateStringFromTimestamp(item.createdAt);
+    }
+
+    function getDefaultAvatar(name = "User") {
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ffe1a5&color=09264a`;
+    }
+
+    function getSafeGooglePhoto(photoURL) {
+      if (!photoURL) return "";
+
+      return photoURL
+        .replace("=s96-c", "=s200-c")
+        .replace("=s64-c", "=s200-c")
+        .replace("=s48-c", "=s200-c");
+    }
+
+    function setAvatar(imgElement, user) {
+      const name = user?.displayName || "User";
+      const googlePhoto = getSafeGooglePhoto(user?.photoURL);
+
+      imgElement.alt = name;
+      imgElement.src = googlePhoto || getDefaultAvatar(name);
+
+      imgElement.onerror = () => {
+        imgElement.onerror = null;
+        imgElement.src = getDefaultAvatar(name);
+      };
+    }
+
+    function getPlayerAvatar(photoURL, playerName) {
+      const safePhoto = getSafeGooglePhoto(photoURL);
+
+      if (safePhoto) {
+        return safePhoto;
+      }
+
+      return getDefaultAvatar(playerName || "Player");
+    }
+
+    loginBtn.addEventListener("click", async () => {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        console.log("Login success:", result.user);
+      } catch (error) {
+        console.error("Login error code:", error.code);
+        console.error("Login error message:", error.message);
+        alert("Login failed: " + error.code);
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+
+      if (user) {
+        loginBtn.style.display = "none";
+        userProfile.style.display = "flex";
+
+        setAvatar(userAvatar, user);
+        setAvatar(myPhoto, user);
+
+        userName.textContent = user.displayName || "Player";
+        myName.textContent = user.displayName || "You";
+        myEmail.textContent = user.email || "";
+
+        localStorage.setItem("zatamUserId", user.uid);
+        localStorage.setItem("zatamUserName", user.displayName || "Player");
+        localStorage.setItem("zatamUserEmail", user.email || "");
+        localStorage.setItem("zatamUserPhoto", getSafeGooglePhoto(user.photoURL) || getDefaultAvatar(user.displayName || "Player"));
+      } else {
+        loginBtn.style.display = "flex";
+        userProfile.style.display = "none";
+
+        userAvatar.src = getDefaultAvatar("User");
+        userName.textContent = "";
+
+        myPhoto.src = getDefaultAvatar("You");
+        myName.textContent = "You";
+        myEmail.textContent = "Please login";
+        myRank.textContent = "--";
+        myScore.textContent = "0 ⭐";
+        myGame.textContent = "--";
+
+        localStorage.removeItem("zatamUserId");
+        localStorage.removeItem("zatamUserName");
+        localStorage.removeItem("zatamUserEmail");
+        localStorage.removeItem("zatamUserPhoto");
+      }
+
+      await loadLeaderboard();
+    });
+
+    async function loadLeaderboard() {
+      try {
+        const q = query(
+          collection(db, "leaderboard"),
+          orderBy("score", "desc"),
+          limit(500)
+        );
+
+        const snapshot = await getDocs(q);
+
+        allScores = [];
+
+        snapshot.forEach((docSnap) => {
+          allScores.push({
+            id: docSnap.id,
+            ...docSnap.data()
+          });
+        });
+
+        renderLeaderboard();
+      } catch (error) {
+        console.error("Leaderboard loading error:", error);
+
+        leaderboardBody.innerHTML = `
+          <tr>
+            <td colspan="4" class="empty">
+              Failed to load leaderboard. Please check Firestore rules or field names.
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function renderLeaderboard() {
+      const filteredScores = getFilteredScores();
+
+      leaderboardBody.innerHTML = "";
+
+      if (filteredScores.length === 0) {
+        leaderboardBody.innerHTML = `
+          <tr>
+            <td colspan="4" class="empty">No leaderboard data yet.</td>
+          </tr>
+        `;
+
+        viewMoreBtn.style.display = "none";
+        updateMyRank(filteredScores);
+        return;
+      }
+
+      const visibleScores = filteredScores.slice(0, visibleCount);
+
+      visibleScores.forEach((player, index) => {
+        const rank = index + 1;
+        const medal = getRankDisplay(rank);
+
+        const playerName = player.playerName || player.name || "Player";
+        const email = player.email || "";
+        const score = player.score || player.points || 0;
+        const gameName = player.gameName || "Unknown Game";
+        const photoURL = player.photoURL || "";
+        const avatarURL = getPlayerAvatar(photoURL, playerName);
+
+        leaderboardBody.innerHTML += `
+          <tr>
+            <td class="rank">${medal}</td>
+
+            <td>
+              <div class="player-cell">
+                <img
+                  class="avatar"
+                  src="${avatarURL}"
+                  alt="${escapeHTML(playerName)}"
+                  onerror="this.onerror=null;this.src='${getDefaultAvatar(playerName)}';"
+                >
+
+                <div>
+                  <div class="player-name">${escapeHTML(playerName)}</div>
+                  <div class="player-email">${escapeHTML(email)}</div>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="game-name">${escapeHTML(gameName)}</div>
+            </td>
+
+            <td class="points">${Number(score).toLocaleString()} ⭐</td>
+          </tr>
+        `;
+      });
+
+      viewMoreBtn.style.display = filteredScores.length > visibleCount ? "block" : "none";
+
+      updateMyRank(filteredScores);
+    }
+
+    function getFilteredScores() {
+      return allScores.filter((item) => {
+        const matchesGame =
+          currentGameFilter === "all" || item.gameId === currentGameFilter;
+
+        const matchesDate =
+          currentDateMode === "all" || getScoreDate(item) === selectedDate;
+
+        return matchesGame && matchesDate;
+      });
+    }
+
+    function updateMyRank(filteredScores) {
+      if (!currentUser) {
+        return;
+      }
+
+      const currentUserId = currentUser.uid;
+
+      const userIndex = filteredScores.findIndex((item) => {
+        return item.userId === currentUserId || item.uid === currentUserId;
+      });
+
+      if (userIndex === -1) {
+        myRank.textContent = "--";
+        myScore.textContent = "0 ⭐";
+        myGame.textContent = "--";
+        return;
+      }
+
+      const myData = filteredScores[userIndex];
+
+      myRank.textContent = userIndex + 1;
+      myScore.textContent = `${Number(myData.score || myData.points || 0).toLocaleString()} ⭐`;
+      myGame.textContent = getShortGameName(myData.gameName || "--");
+    }
+
+    function getRankDisplay(rank) {
+      if (rank === 1) return "🥇";
+      if (rank === 2) return "🥈";
+      if (rank === 3) return "🥉";
+      return rank;
+    }
+
+    function getShortGameName(gameName) {
+      if (gameName.includes("Classic")) return "Puzzle";
+      if (gameName.includes("Tic")) return "Tic";
+      if (gameName.includes("Rock")) return "RPS";
+      if (gameName.includes("2048")) return "2048";
+      if (gameName.includes("Sudoku")) return "Sudoku";
+      if (gameName.includes("Picture")) return "Picture";
+      return gameName;
+    }
+
+function setGameFilter(gameId) {
+  currentGameFilter = gameId;
+  visibleCount = 7;
+
+  tabButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.game === gameId);
+  });
+
+  sideFilterRows.forEach((row) => {
+    row.classList.toggle("active", row.dataset.sideGame === gameId);
+  });
+
+  renderLeaderboard();
+}
+
+function setDateFilter(mode, dateValue = getTodayDateString()) {
+  currentDateMode = mode;
+  selectedDate = dateValue;
+  visibleCount = 7;
+
+  leaderboardDate.value = selectedDate;
+
+  dateButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.dateMode === mode);
+  });
+
+  renderLeaderboard();
+}
+
+dateButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const mode = button.dataset.dateMode;
+
+    if (mode === "all") {
+      setDateFilter("all", leaderboardDate.value || getTodayDateString());
+    } else {
+      setDateFilter("today", getTodayDateString());
+    }
+  });
+});
+
+leaderboardDate.addEventListener("change", () => {
+  if (!leaderboardDate.value) return;
+  setDateFilter("custom", leaderboardDate.value);
+});
+
+tabButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setGameFilter(button.dataset.game);
+  });
+});
+
+sideFilterRows.forEach((row) => {
+  row.addEventListener("click", () => {
+    setGameFilter(row.dataset.sideGame);
+  });
+});
+
+    viewMoreBtn.addEventListener("click", () => {
+      visibleCount += 5;
+      renderLeaderboard();
+    });
+
+    function escapeHTML(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function updateLanguage() {
+        const t = translations[currentLanguage];
+
+        const navLinks = document.querySelectorAll("nav a");
+
+        navLinks[0].textContent = t.games;
+        navLinks[1].textContent = t.about;
+        navLinks[2].textContent = t.resources;
+        navLinks[3].textContent = t.leaderboard;
+        navLinks[4].textContent = t.contact;
+
+    document.querySelector(".hero h2").innerHTML =
+        t.title;
+
+    document.querySelector(".hero p").innerHTML =
+        t.subtitle;
+
+    document.querySelector('[data-game="all"]').textContent =
+        t.allGames;
+
+    document.querySelector('[data-game="classic15"]').textContent =
+        t.classic15;
+
+    document.querySelector('[data-game="ticTacToe"]').textContent =
+        t.ticTacToe;
+
+    document.querySelector('[data-game="rps"]').textContent =
+        t.rps;
+
+    document.querySelector('[data-game="2048"]').textContent =
+        t.game2048;
+
+    document.querySelector('[data-game="sudoku"]').textContent =
+        t.sudoku;
+
+    document.querySelector('[data-game="picturePuzzle"]').textContent =
+        t.picturePuzzle;
+
+    const headers = document.querySelectorAll("th");
+
+    headers[0].textContent = t.rank;
+    headers[1].textContent = t.player;
+    headers[2].textContent = t.game;
+    headers[3].textContent = t.points;
+
+    document.querySelectorAll(".side-card h3")[0].textContent =
+    t.myRank;
+
+    document.querySelectorAll(".side-card h3")[1].textContent =
+        t.filterByGame;
+
+    document.querySelectorAll(".side-card h3")[2].textContent =
+        t.howPoints;
+
+    document.querySelectorAll(".point-row span")[0].textContent =
+        t.winGame;
+
+    document.querySelectorAll(".point-row span")[1].textContent =
+        t.completeLevel;
+
+    document.querySelectorAll(".point-row span")[2].textContent =
+        t.dailyBonus;
+
+    document.querySelectorAll(".point-row span")[3].textContent =
+        t.winStreak;
+
+    document.querySelector('[data-date-mode="all"]').textContent =
+        t.allTime;
+
+    document.querySelector('[data-date-mode="today"]').textContent =
+        t.today;
+
+    document.querySelector(".date-picker-label").textContent =
+        t.chooseDate;
+
+    langBtn.textContent = t.langButton;
+
+    if (!currentUser) {
+        myEmail.textContent = t.pleaseLogin;
+    }
+
+    localStorage.setItem(
+        "zatamLanguage",
+        currentLanguage
+    );
+    }
+
+    langBtn.addEventListener("click", () => {
+    currentLanguage =
+        currentLanguage === "en"
+        ? "sa"
+        : "en";
+
+    updateLanguage();
+    });
+
+    leaderboardDate.value = selectedDate;
+    updateLanguage();
+
+  </script>
+</body>
+</html>
