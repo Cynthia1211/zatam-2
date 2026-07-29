@@ -127,7 +127,7 @@
   const today = new Date().toISOString().split("T")[0];
   const gameId = "2048";
   const recordId = `${user.uid}_${gameId}_${today}`;
-  const scoreRef = doc(db, "leaderboard", recordId);
+  const scoreRef = doc(db, "leaderboard-zatamgame", recordId);
 
   try {
     const existingScore = await getDoc(scoreRef);

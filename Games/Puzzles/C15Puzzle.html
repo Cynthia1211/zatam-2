@@ -371,7 +371,7 @@ function ready() {
 
     const gameId = "classic15";
     const recordId = `${user.uid}_${gameId}_${today}`;
-    const scoreRef = doc(db, "leaderboard", recordId);
+    const scoreRef = doc(db, "leaderboard-zatamgame", recordId);
 
     try {
         const existingScore = await getDoc(scoreRef);

@@ -722,7 +722,7 @@ function ready() {
         };
 
         try {
-            await addDoc(collection(db, "leaderboard"), scoreData);
+            await addDoc(collection(db, "leaderboard-zatamgame"), scoreData);
             console.log("Memory Connect score uploaded successfully:", scoreData);
         } catch (error) {
             scoreUploaded = false;
