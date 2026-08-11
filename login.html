@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Zat.am - Login</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(
+          circle at 85% 18%,
+          rgba(255, 192, 70, 0.32) 0 80px,
+          transparent 82px
+        ),
+        radial-gradient(
+          circle at 12% 88%,
+          rgba(246, 178, 59, 0.18) 0 135px,
+          transparent 137px
+        ),
+        linear-gradient(
+          125deg,
+          #fff2db 0%,
+          #fffaf2 50%,
+          #ffe7bb 100%
+        );
+
+      color: #09264a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+    }
+
+    .page-shell {
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #0b2b4f;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .back-link:hover {
+      color: #ef6945;
+    }
+
+    .auth-card {
+      width: 100%;
+      background: rgba(255, 250, 242, 0.96);
+      border: 1.5px solid #eadfce;
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 24px 55px rgba(11, 43, 79, 0.18);
+      backdrop-filter: blur(8px);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .logo-mark {
+      width: 58px;
+      height: 42px;
+      position: relative;
+    }
+
+    .circle {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border: 2px solid;
+      border-radius: 50%;
+      opacity: 0.75;
+    }
+
+    .c1 {
+      border-color: #f6b23b;
+      left: 0;
+      top: 5px;
+    }
+
+    .c2 {
+      border-color: #e86c5b;
+      left: 14px;
+      top: 0;
+    }
+
+    .c3 {
+      border-color: #7188a8;
+      left: 24px;
+      top: 12px;
+    }
+
+    .logo-text h1 {
+      font-size: 28px;
+      line-height: 24px;
+      font-weight: 800;
+    }
+
+    .logo-text span:nth-child(1) {
+      color: #f16945;
+    }
+
+    .logo-text span:nth-child(2) {
+      color: #2f6dff;
+    }
+
+    .logo-text span:nth-child(3) {
+      color: #111;
+    }
+
+    .logo-text p {
+      font-size: 12px;
+      color: #39415c;
+      margin-top: 5px;
+    }
+
+    .portal-label {
+      display: inline-block;
+      background: #fff0b8;
+      color: #0b2b4f;
+      border-radius: 999px;
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-family: Georgia, serif;
+      font-size: 38px;
+      line-height: 1;
+      color: #0b2b4f;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #465b70;
+      font-size: 15px;
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+
+    .google-btn {
+      width: 100%;
+      height: 52px;
+      border: 1.5px solid #d9d9d9;
+      background: white;
+      color: #162b50;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 7px 0 rgba(11, 43, 79, 0.08);
+      transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+    }
+
+    .google-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 18px rgba(11, 43, 79, 0.12);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0 18px;
+      color: #627086;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: #ddd6ca;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #fff0b8;
+      border-radius: 999px;
+      padding: 4px;
+      margin-bottom: 22px;
+    }
+
+    .tab-btn {
+      height: 42px;
+      border: none;
+      border-radius: 999px;
+      background: transparent;
+      color: #2e4b75;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: white;
+      color: #0b2b4f;
+      border: 2px solid #0b2b4f;
+      box-shadow: 0 4px 10px rgba(11, 43, 79, 0.1);
+    }
+
+    .form-panel {
+      display: none;
+    }
+
+    .form-panel.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 800;
+      color: #132d55;
+      margin-bottom: 8px;
+    }
+
+    .form-group input {
+      width: 100%;
+      height: 52px;
+      border: 1.5px solid #d4d7df;
+      border-radius: 14px;
+      padding: 0 15px;
+      background: #fffaf2;
+      color: #09264a;
+      font-size: 16px;
+      outline: none;
+      transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+    }
+
+    .form-group input:focus {
+      border-color: #f6b23b;
+      box-shadow: 0 0 0 4px rgba(246, 178, 59, 0.18);
+    }
+
+    .password-row {
+      position: relative;
+    }
+
+    .password-row input {
+      padding-right: 76px;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: #315b8a;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .forgot-row {
+      text-align: right;
+      margin-top: -4px;
+      margin-bottom: 16px;
+    }
+
+    .forgot-btn {
+      background: none;
+      border: none;
+      color: #315b8a;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .submit-btn {
+      width: 100%;
+      min-height: 52px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(90deg, #f6b23b, #ff9d3f);
+      color: #111827;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 9px 0 rgba(218, 131, 31, 0.22);
+      transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 18px rgba(218, 131, 31, 0.26);
+    }
+
+    .submit-btn:disabled,
+    .google-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .message {
+      display: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .message.visible {
+      display: block;
+    }
+
+    .message.error {
+      background: #ffe5e1;
+      border: 1px solid #ef9b8e;
+      color: #8d291c;
+    }
+
+    .message.success {
+      background: #e5f8ec;
+      border: 1px solid #8fd4a8;
+      color: #176033;
+    }
+
+    .helper-text {
+      margin-top: 15px;
+      color: #647184;
+      font-size: 12px;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 16px;
+      }
+
+      .auth-card {
+        padding: 25px 20px;
+        border-radius: 20px;
+      }
+
+      h2 {
+        font-size: 34px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="page-shell">
+
+    <a href="./index.html" class="back-link">
+      ← Back to Home
+    </a>
+
+    <section class="auth-card">
+
+      <div class="logo">
+        <div class="logo-mark">
+          <div class="circle c1"></div>
+          <div class="circle c2"></div>
+          <div class="circle c3"></div>
+        </div>
+
+        <div class="logo-text">
+          <h1>
+            <span>za</span><span>t</span><span>.am</span>
+          </h1>
+          <p>शब्दम् मम प्रेरणम्</p>
+        </div>
+      </div>
+
+      <h2 id="pageTitle">Sign in</h2>
+
+      <p class="subtitle" id="pageSubtitle">
+        Sign in to save your scores and continue playing.
+      </p>
+
+      <div class="message" id="messageBox" role="alert"></div>
+
+      <button type="button" class="google-btn" id="googleBtn">
+        G&nbsp;&nbsp; Continue with Google
+      </button>
+
+      <div class="divider">OR USE EMAIL</div>
+
+      <div class="tabs">
+        <button
+          type="button"
+          class="tab-btn active"
+          id="signInTab"
+        >
+          Sign in
+        </button>
+
+        <button
+          type="button"
+          class="tab-btn"
+          id="signUpTab"
+        >
+          Sign up
+        </button>
+      </div>
+
+      <!-- Sign in form -->
+      <form class="form-panel active" id="signInForm">
+
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input
+            type="email"
+            id="loginEmail"
+            autocomplete="email"
+            placeholder="you@example.com"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+
+          <div class="password-row">
+            <input
+              type="password"
+              id="loginPassword"
+              autocomplete="current-password"
+              placeholder="Your password"
+              required
+            >
+
+            <button
+              type="button"
+              class="toggle-password"
+              data-target="loginPassword"
+            >
+              Show
+            </button>
+          </div>
+        </div>
+
+        <div class="forgot-row">
+          <button
+            type="button"
+            class="forgot-btn"
+            id="forgotPasswordBtn"
+          >
+            Forgot password?
+          </button>
+        </div>
+
+        <button type="submit" class="submit-btn" id="signInBtn">
+          Sign in
+        </button>
+      </form>
+
+      <!-- Sign up form -->
+      <form class="form-panel" id="signUpForm">
+
+        <div class="form-group">
+          <label for="registerName">Username</label>
+          <input
+            type="text"
+            id="registerName"
+            autocomplete="name"
+            placeholder="Your username"
+            minlength="2"
+            maxlength="30"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="registerEmail">Email</label>
+          <input
+            type="email"
+            id="registerEmail"
+            autocomplete="email"
+            placeholder="you@example.com"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="registerPassword">Password</label>
+
+          <div class="password-row">
+            <input
+              type="password"
+              id="registerPassword"
+              autocomplete="new-password"
+              placeholder="At least 6 characters"
+              minlength="6"
+              required
+            >
+
+            <button
+              type="button"
+              class="toggle-password"
+              data-target="registerPassword"
+            >
+              Show
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm password</label>
+
+          <div class="password-row">
+            <input
+              type="password"
+              id="confirmPassword"
+              autocomplete="new-password"
+              placeholder="Enter your password again"
+              minlength="6"
+              required
+            >
+
+            <button
+              type="button"
+              class="toggle-password"
+              data-target="confirmPassword"
+            >
+              Show
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="signUpBtn">
+          Create account
+        </button>
+      </form>
+
+    </section>
+  </main>
+
+  <script type="module">
+    import {
+      auth,
+      db,
+      provider,
+
+      signInWithPopup,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      sendPasswordResetEmail,
+      updateProfile,
+
+      doc,
+      setDoc,
+      serverTimestamp
+    } from "./firebase-config.js";
+
+    const googleBtn = document.getElementById("googleBtn");
+
+    const signInTab = document.getElementById("signInTab");
+    const signUpTab = document.getElementById("signUpTab");
+
+    const signInForm = document.getElementById("signInForm");
+    const signUpForm = document.getElementById("signUpForm");
+
+    const pageTitle = document.getElementById("pageTitle");
+    const pageSubtitle = document.getElementById("pageSubtitle");
+
+    const messageBox = document.getElementById("messageBox");
+
+    const signInBtn = document.getElementById("signInBtn");
+    const signUpBtn = document.getElementById("signUpBtn");
+
+    const forgotPasswordBtn =
+      document.getElementById("forgotPasswordBtn");
+
+    function showMessage(message, type = "error") {
+      messageBox.textContent = message;
+      messageBox.className = `message visible ${type}`;
+    }
+
+    function clearMessage() {
+      messageBox.textContent = "";
+      messageBox.className = "message";
+    }
+
+    function setLoading(button, loading, defaultText) {
+      button.disabled = loading;
+      button.textContent = loading ? "Please wait..." : defaultText;
+    }
+
+    function openSignIn() {
+      clearMessage();
+
+      signInTab.classList.add("active");
+      signUpTab.classList.remove("active");
+
+      signInForm.classList.add("active");
+      signUpForm.classList.remove("active");
+
+      pageTitle.textContent = "Sign in";
+      pageSubtitle.textContent =
+        "Sign in to save your scores and continue playing.";
+    }
+
+    function openSignUp() {
+      clearMessage();
+
+      signUpTab.classList.add("active");
+      signInTab.classList.remove("active");
+
+      signUpForm.classList.add("active");
+      signInForm.classList.remove("active");
+
+      pageTitle.textContent = "Sign up";
+      pageSubtitle.textContent =
+        "Create an account to save your scores and progress.";
+    }
+
+    function getProviderNames(user) {
+      return user.providerData
+        .map(item => item.providerId)
+        .filter(Boolean);
+    }
+
+    async function saveUserDocuments(user, providerName, username) {
+      const safeUsername =
+        username ||
+        user.displayName ||
+        user.email?.split("@")[0] ||
+        "Player";
+
+      const privateRef = doc(
+        db,
+        "users",
+        user.uid,
+        "private",
+        "account"
+      );
+
+      const publicRef = doc(
+        db,
+        "users",
+        user.uid,
+        "public",
+        "profile"
+      );
+
+      await setDoc(
+        privateRef,
+        {
+          email: user.email || "",
+          isAdmin: false,
+          createdAt: serverTimestamp()
+        },
+        { merge: true }
+      );
+
+      await setDoc(
+        publicRef,
+        {
+          username: safeUsername,
+          displayName: safeUsername,
+          photoURL: user.photoURL || "",
+          provider: providerName,
+          providers: getProviderNames(user),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        },
+        { merge: true }
+      );
+    }
+
+    function saveLocalUser(user) {
+      const username =
+        user.displayName ||
+        user.email?.split("@")[0] ||
+        "Player";
+
+      localStorage.setItem("zatamUserId", user.uid);
+      localStorage.setItem("zatamUserName", username);
+      localStorage.setItem("zatamUserEmail", user.email || "");
+      localStorage.setItem("zatamUserPhoto", user.photoURL || "");
+    }
+
+    function redirectHome() {
+      window.location.href = "./index.html";
+    }
+
+    function getFriendlyError(error) {
+      switch (error.code) {
+        case "auth/invalid-email":
+          return "Please enter a valid email address.";
+
+        case "auth/missing-password":
+          return "Please enter your password.";
+
+        case "auth/invalid-credential":
+        case "auth/wrong-password":
+        case "auth/user-not-found":
+          return "The email or password is incorrect.";
+
+        case "auth/email-already-in-use":
+          return "An account already exists with this email. Please sign in using Google.";
+
+        case "auth/weak-password":
+          return "Please choose a password with at least 6 characters.";
+
+        case "auth/popup-closed-by-user":
+          return "The Google sign-in window was closed.";
+
+        case "auth/popup-blocked":
+          return "The browser blocked the Google sign-in window.";
+
+        case "auth/unauthorized-domain":
+          return "This website domain is not authorized for Firebase login.";
+
+        case "auth/too-many-requests":
+          return "Too many attempts. Please try again later.";
+
+        case "auth/network-request-failed":
+          return "Network error. Please check your connection.";
+
+        default:
+          return "Authentication failed. Please try again.";
+      }
+    }
+
+    signInTab.addEventListener("click", openSignIn);
+    signUpTab.addEventListener("click", openSignUp);
+
+    document
+      .querySelectorAll(".toggle-password")
+      .forEach(button => {
+        button.addEventListener("click", () => {
+          const input =
+            document.getElementById(button.dataset.target);
+
+          const showing = input.type === "text";
+
+          input.type = showing ? "password" : "text";
+          button.textContent = showing ? "Show" : "Hide";
+        });
+      });
+
+    googleBtn.addEventListener("click", async () => {
+      clearMessage();
+      setLoading(googleBtn, true, "G  Continue with Google");
+
+      try {
+        const credential =
+          await signInWithPopup(auth, provider);
+
+        const user = credential.user;
+
+        await saveUserDocuments(
+          user,
+          "google",
+          user.displayName || "Player"
+        );
+
+        saveLocalUser(user);
+        redirectHome();
+
+      } catch (error) {
+        console.error("Google login error:", error);
+        showMessage(getFriendlyError(error));
+
+      } finally {
+        setLoading(
+          googleBtn,
+          false,
+          "G  Continue with Google"
+        );
+      }
+    });
+
+    signInForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      clearMessage();
+
+      const email =
+        document.getElementById("loginEmail")
+          .value
+          .trim();
+
+      const password =
+        document.getElementById("loginPassword")
+          .value;
+
+      setLoading(signInBtn, true, "Sign in");
+
+      try {
+        const credential =
+          await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+
+        const user = credential.user;
+
+        await saveUserDocuments(
+          user,
+          "password",
+          user.displayName ||
+          email.split("@")[0]
+        );
+
+        saveLocalUser(user);
+        redirectHome();
+
+      } catch (error) {
+        console.error("Email login error:", error);
+        showMessage(getFriendlyError(error));
+
+      } finally {
+        setLoading(signInBtn, false, "Sign in");
+      }
+    });
+
+    signUpForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      clearMessage();
+
+      const username =
+        document.getElementById("registerName")
+          .value
+          .trim();
+
+      const email =
+        document.getElementById("registerEmail")
+          .value
+          .trim();
+
+      const password =
+        document.getElementById("registerPassword")
+          .value;
+
+      const confirmPassword =
+        document.getElementById("confirmPassword")
+          .value;
+
+      if (username.length < 2) {
+        showMessage(
+          "Please enter a username with at least 2 characters."
+        );
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showMessage("The passwords do not match.");
+        return;
+      }
+
+      setLoading(signUpBtn, true, "Create account");
+
+      try {
+        const credential =
+          await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+
+        const user = credential.user;
+
+        await updateProfile(user, {
+          displayName: username
+        });
+
+        await user.reload();
+
+        const updatedUser = auth.currentUser;
+
+        await saveUserDocuments(
+          updatedUser,
+          "password",
+          username
+        );
+
+        saveLocalUser(updatedUser);
+        redirectHome();
+
+      } catch (error) {
+        console.error("Registration error:", error);
+        showMessage(getFriendlyError(error));
+
+      } finally {
+        setLoading(signUpBtn, false, "Create account");
+      }
+    });
+
+    forgotPasswordBtn.addEventListener("click", async () => {
+      clearMessage();
+
+      const email =
+        document.getElementById("loginEmail")
+          .value
+          .trim();
+
+      if (!email) {
+        showMessage(
+          "Enter your email address first, then select Forgot password."
+        );
+        return;
+      }
+
+      try {
+        await sendPasswordResetEmail(auth, email);
+
+        showMessage(
+          "Password reset email sent. Please check your inbox.",
+          "success"
+        );
+
+      } catch (error) {
+        console.error("Password reset error:", error);
+        showMessage(getFriendlyError(error));
+      }
+    });
+  </script>
+
+</body>
+</html>

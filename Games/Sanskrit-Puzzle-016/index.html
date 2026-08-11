@@ -11,6 +11,7 @@
 </style>
 </head>
 <body>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script type="module">
 import "https://zimjs.org/cdn/019/zim";
 import "https://zimjs.org/cdn/019/zim_pizzazz";
@@ -18,10 +19,15 @@ import "https://zimjs.org/cdn/019/zim_pizzazz";
 import {
     auth,
     db,
+    onAuthStateChanged,
     collection,
     addDoc,
-    serverTimestamp
-} from "../../firebase-config.js";
+    serverTimestamp,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc
+} from "./firebase-config.js";
 
 
 const DEV = '०१२३४५६७८९';
@@ -35,25 +41,60 @@ const mksvg = inner => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
 );
 const NF = 'font-family="Noto Sans Devanagari,serif"';
 
-const THEMES = [
-  { id:'easy', emoji:'🔤', name:'Easy', sa:'सरलः', puzzles:[
-    mksvg('<text x="16" y="108" font-size="74" '+NF+' fill="#2B2250">अ</text><text x="136" y="108" font-size="96" '+NF+' fill="#E8527A">आ</text><text x="256" y="100" font-size="86" '+NF+' fill="#1B998B">इ</text><text x="16" y="228" font-size="86" '+NF+' fill="#FFA630">ई</text><text x="136" y="220" font-size="86" '+NF+' fill="#57B894">उ</text><text x="256" y="220" font-size="86" '+NF+' fill="#8B5CF6">ऊ</text><text x="16" y="340" font-size="86" '+NF+' fill="#EF4444">ऋ</text><text x="136" y="340" font-size="86" '+NF+' fill="#3B82F6">ए</text>'),
-    mksvg('<text x="16" y="108" font-size="74" '+NF+' fill="#2B2250">ऐ</text><text x="136" y="108" font-size="96" '+NF+' fill="#E8527A">ओ</text><text x="256" y="100" font-size="86" '+NF+' fill="#1B998B">औ</text><text x="16" y="228" font-size="86" '+NF+' fill="#FFA630">अं</text><text x="136" y="220" font-size="86" '+NF+' fill="#57B894">अः</text><text x="256" y="220" font-size="86" '+NF+' fill="#8B5CF6">ॠ</text><text x="16" y="340" font-size="86" '+NF+' fill="#EF4444">ऌ</text><text x="136" y="340" font-size="86" '+NF+' fill="#3B82F6">ॡ</text>')
-  ]},
-  { id:'medium', emoji:'📝', name:'Medium', sa:'मध्यमः', puzzles:[
-    mksvg('<text x="16" y="108" font-size="74" '+NF+' fill="#2B2250">क</text><text x="136" y="108" font-size="96" '+NF+' fill="#E8527A">ख</text><text x="256" y="100" font-size="86" '+NF+' fill="#1B998B">ग</text><text x="16" y="228" font-size="86" '+NF+' fill="#FFA630">घ</text><text x="136" y="220" font-size="86" '+NF+' fill="#57B894">ङ</text><text x="256" y="220" font-size="86" '+NF+' fill="#8B5CF6">च</text><text x="16" y="340" font-size="86" '+NF+' fill="#EF4444">छ</text><text x="136" y="340" font-size="86" '+NF+' fill="#3B82F6">ज</text>'),
-    mksvg('<text x="16" y="108" font-size="74" '+NF+' fill="#2B2250">झ</text><text x="136" y="108" font-size="96" '+NF+' fill="#E8527A">ञ</text><text x="256" y="100" font-size="86" '+NF+' fill="#1B998B">ट</text><text x="16" y="228" font-size="86" '+NF+' fill="#FFA630">ठ</text><text x="136" y="220" font-size="86" '+NF+' fill="#57B894">ड</text><text x="256" y="220" font-size="86" '+NF+' fill="#8B5CF6">ढ</text><text x="16" y="340" font-size="86" '+NF+' fill="#EF4444">ण</text><text x="136" y="340" font-size="86" '+NF+' fill="#3B82F6">त</text>'),
-    mksvg('<text x="16" y="108" font-size="74" '+NF+' fill="#2B2250">थ</text><text x="136" y="108" font-size="96" '+NF+' fill="#E8527A">द</text><text x="256" y="100" font-size="86" '+NF+' fill="#1B998B">ध</text><text x="16" y="228" font-size="86" '+NF+' fill="#FFA630">न</text><text x="136" y="220" font-size="86" '+NF+' fill="#57B894">प</text><text x="256" y="220" font-size="86" '+NF+' fill="#8B5CF6">फ</text><text x="16" y="340" font-size="86" '+NF+' fill="#EF4444">ब</text><text x="136" y="340" font-size="86" '+NF+' fill="#3B82F6">भ</text>')
-  ]},
-  { id:'hard', emoji:'🏆', name:'Hard', sa:'कठिनः', puzzles:[
-    mksvg('<text x="55" y="135" font-size="76" '+NF+' fill="#2B2250">गजः</text><text x="90" y="315" font-size="125">🐘</text>'),
-    mksvg('<text x="38" y="135" font-size="70" '+NF+' fill="#2B2250">सिंहः</text><text x="90" y="315" font-size="125">🦁</text>'),
-    mksvg('<text x="38" y="135" font-size="70" '+NF+' fill="#2B2250">मयूरः</text><text x="90" y="315" font-size="125">🦚</text>'),
-    mksvg('<text x="22" y="135" font-size="66" '+NF+' fill="#2B2250">कमलम्</text><text x="90" y="315" font-size="125">🪷</text>'),
-    mksvg('<text x="42" y="135" font-size="70" '+NF+' fill="#2B2250">फलम्</text><text x="90" y="315" font-size="125">🍎</text>'),
-    mksvg('<text x="38" y="135" font-size="70" '+NF+' fill="#2B2250">वृक्षः</text><text x="90" y="315" font-size="125">🌳</text>')
-  ]}
-];
+
+
+
+let WORDS = [];
+let currentIndex = 0;
+let currentWord = null;
+
+
+async function loadWords() {
+
+return new Promise((resolve, reject) => {
+
+    Papa.parse("assets/BP padakoSaH - All words.csv", {
+
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+
+        complete(results) {
+
+            WORDS = results.data
+    .filter(row => row.page)
+    .map(row => {
+        const values = Object.values(row);
+
+        const png = values.find(v =>
+            typeof v === "string" &&
+            v.includes("raw.githubusercontent.com")
+        );
+
+        return {
+            ...row,
+            image: png
+        };
+    })
+    .filter(row => row.image);
+
+            console.log("CSV Loaded");
+            console.log(WORDS[0]);
+console.log(Object.keys(WORDS[0]));
+
+            resolve();
+        },
+
+        error(err) {
+            reject(err);
+        }
+
+    });
+
+});
+
+}
+
 
 const TC = [
   {f:'#FFA630',s:'#b8751a',t:'#fff'},
@@ -70,23 +111,56 @@ const TC = [
 const SOLVED = [1,2,3,4,5,6,7,8,0];
 let brd = [], blank = 8;
 
+const SOLVED_4 = [
+  1,2,3,4,
+  5,6,7,8,
+  9,10,11,12,
+  13,14,15,0
+];
+
+let puzzleSize = 3;
+
 const nb = i => {
-  const r=Math.floor(i/3), c=i%3, a=[];
-  if(r>0)a.push(i-3); if(r<2)a.push(i+3);
-  if(c>0)a.push(i-1); if(c<2)a.push(i+1);
+  const size = puzzleSize;
+  const r = Math.floor(i / size);
+  const c = i % size;
+  const a = [];
+
+  if(r > 0) a.push(i - size);
+  if(r < size - 1) a.push(i + size);
+  if(c > 0) a.push(i - 1);
+  if(c < size - 1) a.push(i + 1);
+
   return a;
 };
-const isSolved = () => brd.every((v,i) => v===SOLVED[i]);
+const isSolved = () => {
+  const solved = puzzleSize === 4 ? SOLVED_4 : SOLVED;
+  return brd.every((v, i) => v === solved[i]);
+};
 
 function doShuffle(){
-  brd=SOLVED.slice(); blank=8; let last=-1;
-  for(let k=0;k<220;k++){
-    let n=nb(blank).filter(x=>x!==last);
-    if(!n.length) n=nb(blank);
-    const nx=n[Math.floor(Math.random()*n.length)];
-    [brd[blank],brd[nx]]=[brd[nx],brd[blank]];
-    last=blank; blank=nx;
+
+  const solved = puzzleSize === 4 ? SOLVED_4 : SOLVED;
+
+  brd = solved.slice();
+  blank = brd.length - 1;
+
+  let last = -1;
+
+  for(let k = 0; k < (puzzleSize === 4 ? 300 : 220); k++){
+
+    let n = nb(blank).filter(x => x !== last);
+
+    if(!n.length) n = nb(blank);
+
+    const nx = n[Math.floor(Math.random() * n.length)];
+
+    [brd[blank], brd[nx]] = [brd[nx], brd[blank]];
+
+    last = blank;
+    blank = nx;
   }
+
   if(isSolved()) doShuffle();
 }
 
@@ -94,18 +168,37 @@ function doShuffle(){
 const FW = 1280;
 const FH = 820;
 const CELL = 122;
-const TP = 120;
-const GAP = 1;
+const TP = 122;
+const GAP = 0;
 const GX = (FW-CELL*3)/2;
 const GY = 255;
-const gxy = i => ({ x: GX+(i%3)*CELL+GAP,  y: GY+Math.floor(i/3)*CELL+GAP });
+
+function getCellSize(){
+    return puzzleSize === 4 ? 90 : CELL;
+}
+
+function getGridX(){
+    const size = getCellSize() * puzzleSize;
+    return (FW - size) / 2;
+}
+
+const gxy = i => ({
+    x: getGridX() + (i % puzzleSize) * getCellSize() + GAP,
+    y: GY + Math.floor(i / puzzleSize) * getCellSize() + GAP
+});
 
 
-let curTheme=THEMES[0], curSVG=THEMES[0].puzzles[0], puzzleImg=null;
+
+let puzzleImg = null;
 let moves=0, elapsed=0, timerTick=null;
 let muted=false, curLang='en';
 
-let tileCons = []; 
+
+let tileMap = {};
+
+let boardContainer = null;
+let boardBuilt = false;
+
 
 let titleEN;
 let titleSA;
@@ -128,7 +221,9 @@ let scoreUploaded = false;
 
 function ready(){
   Ticker.always();
-  S.enableMouseOver(20);
+
+  
+  S.enableMouseOver(30);
 
   /* background blobs */
   new Circle(420,'rgba(255,166,48,0.13)').loc(-110,-110);
@@ -181,6 +276,9 @@ S.addChild(subtitleLbl);
 
   buildStats();
   buildBoardDecor();
+  boardContainer = new createjs.Container();
+S.addChild(boardContainer);
+
   buildButtons();
   buildLegend();
 
@@ -207,52 +305,105 @@ backBtn.on("click", () => {
     window.location.href = "../../index.html";
 });
 
-let user = auth.currentUser;
+/* ── PROFILE ── */
+
+const profileX = FW - 85;
+const profileY = 50;
 
 const profileBg = new Circle(48, white)
-    .loc(FW - 85, 50);
+    .loc(profileX, profileY);
 
 profileBg.borderColor = "#DDDDDD";
 profileBg.borderWidth = 2;
 
-if (user && user.photoURL) {
+S.addChild(profileBg);
 
-    const profilePic = new Pic(user.photoURL)
-        .siz(42,42)
-        .center(profileBg);
 
-} else {
+// Profile content
+let profileItem = null;
 
-    new Label({
-        text:"👤",
-        size:24,
-        color:"#2B2250"
-    }).center(profileBg);
+function updateProfile(user) {
 
+    // Remove only the previous icon/photo
+    if (profileItem) {
+        profileItem.removeFrom();
+        profileItem = null;
+    }
+
+    // Get initial
+    let initial = "U";
+
+    if (user && user.displayName) {
+        initial = user.displayName.charAt(0).toUpperCase();
+    }
+
+    // Show initial first
+    profileItem = new Label({
+        text: initial,
+        size: 28,
+        font: "Arial",
+        bold: true,
+        color: "#2B2250"
+    });
+
+    profileItem.centerReg();
+    profileItem.loc(profileX, profileY);
+    profileItem.mouseEnabled = false;
+
+    S.addChild(profileItem);
+
+    // If Firebase has a photo, replace initial with photo
+    if (user && user.photoURL) {
+
+        const photo = new Pic(user.photoURL);
+
+        photo.on("ready", () => {
+
+            if (profileItem) {
+                profileItem.removeFrom();
+            }
+
+            profileItem = photo
+                .siz(42, 42)
+                .centerReg()
+                .loc(profileX, profileY);
+
+            profileItem.mouseEnabled = false;
+
+            S.addChild(profileItem);
+
+            S.update();
+        });
+    }
+
+    S.update();
 }
 
 
-// profileBg.cursor = "pointer";
+// Firebase user
+onAuthStateChanged(auth, (user) => {
+    updateProfile(user);
+});
 
-// profileBg.on("click", () => {
 
-//     if(auth.currentUser){
+profileBg.cursor = "pointer";
 
-//         window.location.href = "../../profile.html";
+profileBg.on("click", () => {
 
-//     }else{
+    if (auth.currentUser) {
+        window.location.href = "../../profile.html";
+    } else {
+        window.location.href = "../../login.html";
+    }
 
-//         window.location.href = "../../login.html";
-
-//     }
-
-// });
-profileBg.cursor = "default";
+});
 
   foot = new Label({text:'Learn Sanskrit Through Play', size:13, font:'Baloo 2', color:'#9a93b8'});
   foot.x = (FW - foot.getBounds().width)/2|0; foot.y = FH-26; S.addChild(foot);
 
-  newGame();
+  loadWords().then(() => {
+    newGame();
+});
   S.update();
 }
 
@@ -260,44 +411,78 @@ profileBg.cursor = "default";
 
 
 /* ── CHIPS ── */
-function buildChips(){
-    const y = 117;
-const cW = 135;
-const cH = 45;
-const gap = 14;
+function buildChips() {
 
-  const total = THEMES.length*(cW+gap)-gap;
-  const sx = (FW-total)/2|0;
-  chipBtns=[];
-  THEMES.forEach((t,i)=>{
-    const act = i===0;
-    const btn = new Button({
-      label: new Label({text:t.emoji+' '+t.name, size:20, font:'Baloo 2', bold:true, color:act?white:'#2B2250'}),
-      width:cW, height:cH,
-      backgroundColor: act?'#1B998B':white,
-      rollBackgroundColor: act?'#17877b':'#efefef',
-      borderColor:'rgba(43,34,80,0.15)', borderWidth:1,
-      corner:cH/2,
-      shadowColor:'rgba(43,34,80,0.14)', shadowBlur:6
-    }).loc(sx+i*(cW+gap), y);
+chipBtns = [];
 
-    btn.label.scale = 1.8;
-btn.label.center(btn);
-btn.label.y -= 1;
+const y = 120;
+const startX = FW/2 - 60;
 
+// ---------- 3x3 ----------
+const btn3 = new Button({
+    width: 90,
+    height: 44,
+    corner: 13,
+    backgroundColor: white,
+    rollBackgroundColor: "#efefef",
+    borderColor: "rgba(43,34,80,0.1)",
+    borderWidth: 1,
+    label: new Label({
+        text: "3×3",
+        size: 20,
+        bold: true,
+        color: "#1B998B"
+    })
+}).loc(startX, y);
 
-    btn._ti = i;
-    btn.on('click',()=>{
-      chipBtns.forEach((c,j)=>{
-        c.backgroundColor = j===btn._ti ? '#1B998B' : white;
-        c.rollBackgroundColor = j===btn._ti ? '#17877b' : '#efefef';
-        c.label.color = j===btn._ti ? white : '#2B2250';
-      });
-      curTheme = THEMES[btn._ti];
-      newGame();
-    });
-    chipBtns.push(btn);
-  });
+btn3.on("click", () => {
+
+    puzzleSize = 3;
+
+    boardBuilt = false;
+    boardSlots = [];
+    tileMap = {};
+   
+
+    boardContainer.removeAllChildren();
+
+    newGame();
+});
+
+chipBtns.push(btn3);
+
+// ---------- 4x4 ----------
+const btn4 = new Button({
+    width: 90,
+    height: 44,
+    corner: 13,
+    backgroundColor: white,
+    rollBackgroundColor: "#efefef",
+    borderColor: "rgba(43,34,80,0.1)",
+    borderWidth: 1,
+    label: new Label({
+        text: "4×4",
+        size: 20,
+        bold: true,
+        color: "#1B998B"
+    })
+}).loc(startX + 105, y);
+btn4.on("click", () => {
+
+    puzzleSize = 4;
+
+    boardBuilt = false;
+    boardSlots = [];
+    tileMap = {};
+   
+
+    boardContainer.removeAllChildren();
+
+    newGame();
+});
+
+chipBtns.push(btn4);
+
 }
 
 function buildStats(){
@@ -413,167 +598,274 @@ function buildBoardDecor(){
   new Rectangle(CELL*3+4,CELL*3+4,'#FFF8EC',null,0,22).loc(GX-2,GY-2);
 }
 
+let boardSlots = [];
+let blankHighlight = null;
+let puzzleBackground = null;
 
 function drawBoard(){
-  tileCons.forEach(c=>{ if(c.parent) c.parent.removeChild(c); });
-  tileCons = [];
+
+    boardContainer.removeAllChildren();
 
 
-  for(let i=0;i<9;i++){
-    const {x,y}=gxy(i);
-    const slot = new createjs.Shape();
-    slot.graphics.beginFill('rgba(43,34,80,0.055)').drawRoundRect(x,y,TP,TP,14).endFill();
-    S.addChild(slot);
-    tileCons.push(slot); 
-  }
+    puzzleBackground = new createjs.Bitmap(puzzleImg);
 
-  for(let i=0;i<9;i++){
-    const id = brd[i];
-    if(id===0) continue;
+const bgSize = getCellSize() * puzzleSize;
 
-    const {x,y} = gxy(i);
-    const ci  = (id-1) % TC.length;
-    const col = TC[ci];
+puzzleBackground.scaleX = bgSize / puzzleImg.width;
+puzzleBackground.scaleY = bgSize / puzzleImg.height;
 
-    const c = new createjs.Container();
-    c.x = x; c.y = y;
-    c._idx = i;   
+puzzleBackground.x = getGridX();
+puzzleBackground.y = GY;
+puzzleBackground.alpha = 0.06;
 
-    const sh = new createjs.Shape();
-    sh.graphics.beginFill(col.s).drawRoundRect(3,7,TP,TP,14).endFill();
-    c.addChild(sh);
-
-    const face = new createjs.Shape();
-    face.graphics.setStrokeStyle(2.5).beginStroke(col.f)
-        .beginFill('#FFFFFF').drawRoundRect(0,0,TP,TP,14).endFill();
-    c.addChild(face);
-
-    const bar = new createjs.Shape();
-    bar.graphics.beginFill(col.f)
-    .drawRoundRect(0,0,TP,20,12).endFill();
-    c.addChild(bar);
-    const bfix = new createjs.Shape();
-    bfix.graphics.beginFill(col.f)
-    .drawRect(0,12,TP,12).endFill();
-    c.addChild(bfix);
-
- 
-
-const LETTERS = {
-    easy: ["अ","आ","इ","ई","उ","ऊ","ए","ऐ"],
-    medium: ["क","ख","ग","घ","ङ","च","छ","ज"],
-    hard: ["ग","ज","स","ि","ं","ह","ः","🦁"]
-};
-
-const letters = LETTERS[curTheme.id];
-
-const txt = new createjs.Text(
-    letters[id-1],
-    'bold 72px "Noto Sans Devanagari","Mangal",sans-serif',
-    col.f
-);
-
-txt.textAlign = "center";
-txt.textBaseline = "middle";
-
-txt.x = TP / 2;
-txt.y = 66;
-
-c.addChild(txt);
-
-    /* number badge */
-    const bdg = new createjs.Shape();
-    bdg.graphics.beginFill(col.f).drawRoundRect(TP-27,4,23,19,5).endFill();
-    c.addChild(bdg);
-    const num = new createjs.Text(td(id), 'bold 13px "Baloo 2",sans-serif', col.t);
-    num.x=TP-15; num.y=8; num.textAlign='center';
-    c.addChild(num);
+boardContainer.addChild(puzzleBackground);
 
 
+    boardSlots = [];
+    tileMap = {};
+    boardBuilt = false;
 
+    const size = getCellSize();
+    const total = puzzleSize * puzzleSize;
 
-    c.cursor = 'pointer';
-    (function(con){
-      con.on('mouseover', function(){
-        if(nb(blank).indexOf(con._idx)===-1) return;
-        con.scaleX = 1.07; con.scaleY = 1.07;
-        S.update();
-      });
-      con.on('mouseout', function(){
-        con.scaleX = 1; con.scaleY = 1;
-        S.update();
-      });
-      con.on('click', function(){
-        doMove(con._idx);
-      });
-    })(c);
+    // Board slots
+    for(let i = 0; i < total; i++){
 
-    S.addChild(c);
-    tileCons.push(c);
-  }
+        const {x,y} = gxy(i);
 
-  S.update();
+        const slot = new createjs.Shape();
+
+        slot.graphics
+            .beginStroke("#e8e8e8")
+            .setStrokeStyle(1)
+            .drawRect(x, y, size, size);
+
+        boardContainer.addChild(slot);
+        boardSlots.push(slot);
+    }
+    blankHighlight = new createjs.Shape();
+
+blankHighlight.graphics
+    .beginFill("#FFF4C2")
+    .beginStroke("#FFA630")
+    .setStrokeStyle(3)
+    .drawRoundRect(3, 3, size - 6, size - 6, 10);
+
+const blankPos = gxy(blank);
+
+blankHighlight.x = blankPos.x;
+blankHighlight.y = blankPos.y;
+
+boardContainer.addChild(blankHighlight);
+
+    // Tiles
+    for(let i = 0; i < total; i++){
+
+        const id = brd[i];
+
+        if(id === 0) continue;
+
+        const {x,y} = gxy(i);
+
+        const c = new createjs.Container();
+
+        c.x = x;
+        c.y = y;
+        c._idx = i;
+
+        const piece = id - 1;
+
+        const tile = new createjs.Bitmap(puzzleImg);
+
+        const sw = puzzleImg.width / puzzleSize;
+        const sh = puzzleImg.height / puzzleSize;
+
+        tile.sourceRect = new createjs.Rectangle(
+            (piece % puzzleSize) * sw,
+            Math.floor(piece / puzzleSize) * sh,
+            sw,
+            sh
+        );
+
+        tile.scaleX = size / sw;
+        tile.scaleY = size / sh;
+
+        c.tile = tile;
+        c.addChild(tile);
+
+        const hit = new createjs.Shape();
+        hit.graphics.beginFill("#000").drawRect(0, 0, size, size);
+
+        c.hitArea = hit;
+        c.mouseChildren = false;
+        c.cursor = "pointer";
+
+        c.on("mousedown", function(){
+            doMove(c._idx);
+        });
+
+        tileMap[id] = {
+            container: c,
+            bitmap: tile
+        };
+
+        boardContainer.addChild(c);
+    }
+
+    boardBuilt = true;
 }
 
+
+function updateBoard(){
+
+    const size = getCellSize();
+
+    const sw = puzzleImg.width / puzzleSize;
+    const sh = puzzleImg.height / puzzleSize;
+    if(blankHighlight){
+
+    const blankPos = gxy(blank);
+
+    blankHighlight.x = blankPos.x;
+    blankHighlight.y = blankPos.y;
+}
+
+    for(let i = 0; i < brd.length; i++){
+
+        const id = brd[i];
+
+        if(id === 0) continue;
+
+        const tileObj = tileMap[id];
+
+        if(!tileObj) continue;
+
+        const c = tileObj.container;
+        const tile = tileObj.bitmap;
+
+        c.x = gxy(i).x;
+        c.y = gxy(i).y;
+        c._idx = i;
+
+        const piece = id - 1;
+
+        tile.sourceRect = new createjs.Rectangle(
+            (piece % puzzleSize) * sw,
+            Math.floor(piece / puzzleSize) * sh,
+            sw,
+            sh
+        );
+
+        tile.scaleX = size / sw;
+        tile.scaleY = size / sh;
+    }
+}
+
+
+let isAnimating = false;
 
 function doMove(clickedIdx){
-  if(brd[clickedIdx]===0) return;
-  if(nb(blank).indexOf(clickedIdx)===-1) return;
 
-  let tc = null;
-  for(let k=0;k<tileCons.length;k++){
-    if(tileCons[k]._idx===clickedIdx){ tc=tileCons[k]; break; }
-  }
-  if(!tc) return;
+    if (isAnimating) return;
 
-  const dest = gxy(blank);
+if(brd[clickedIdx]===0) return;
+if(nb(blank).indexOf(clickedIdx)===-1) return;
 
-  brd[blank] = brd[clickedIdx];
-  brd[clickedIdx] = 0;
-  blank = clickedIdx;
+const tileId = brd[clickedIdx];
 
-  moves++;
-  movesLbl.text = td(moves);
-  startTimer();
-  playClick();
+const tileObj = tileMap[tileId];
 
-  tc._idx = -1;
+if(!tileObj) return;
 
-  
-  createjs.Tween.get(tc)
-    .to({scaleX:0.92, scaleY:0.92}, 50, createjs.Ease.quadOut)
-    .to({x:dest.x, y:dest.y, scaleX:1, scaleY:1}, 130, createjs.Ease.quadOut)
-    .call(function(){
-      drawBoard();              
-      if(isSolved()) onWin();
-    });
+const tc = tileObj.container;
 
-  S.update();
+if(!tc) return;
+
+const oldBlank = blank;
+
+brd[blank] = brd[clickedIdx];
+brd[clickedIdx] = 0;
+blank = clickedIdx;
+
+if (blankHighlight) {
+    const blankPos = gxy(blank);
+    blankHighlight.x = blankPos.x;
+    blankHighlight.y = blankPos.y;
 }
+
+
+
+moves++;
+movesLbl.text = td(moves);
+
+startTimer();
+playClick();
+
+isAnimating = true;
+
+createjs.Tween.get(tc)
+.to({
+    x: gxy(oldBlank).x,
+    y: gxy(oldBlank).y,
+    scaleX: 0.97,
+    scaleY: 0.97
+}, 90, createjs.Ease.quadOut)
+
+.to({
+    scaleX: 1,
+    scaleY: 1
+}, 70, createjs.Ease.quadOut)
+    .call(function(){
+
+tc.x = gxy(oldBlank).x;
+tc.y = gxy(oldBlank).y;
+tc._idx = oldBlank;
+tileMap[tileId].container = tc;
+
+isAnimating = false;
+
+
+if(isSolved()){
+    onWin();
+}
+
+});
+
+}
+
 
 /* ── BUTTONS ── */
 function buildButtons(){
     const by = GY + CELL*3 + 35;
   newBtn = new Button({
-    label: new Label({text:'🔄 New Game', size:22, font:'Baloo 2', bold:true, color:white}),
-    width:192, height:54,
+    label: new Label({
+    text:"🔄 New Game",
+    size:15,
+    bold:true,
+    color:white,
+    align:CENTER
+}),
+    width:208, height:54,
     backgroundColor:'#1B998B', rollBackgroundColor:'#57B894',
     corner:15, shadowColor:'rgba(0,0,0,0.22)', shadowBlur:8
   }).loc(FW/2-212, by);
+ 
+  newBtn.label.x += 20;
   newBtn.on('click', newGame);
 
   hintBtn = new Button({
-label: new Label({
-    text:'👀 Show Picture',
-    size:22,
-    font:'Baloo 2',
+    label: new Label({
+    text:"👀 Show Picture",
+    size:15,
     bold:true,
-    color:'#2B2250'
+    color:"#2B2250",
+    align:CENTER
 }),
     width:208, height:54,
     backgroundColor:'#FFD23F', rollBackgroundColor:'#FFA630',
     corner:18, shadowColor:'rgba(0,0,0,0.22)', shadowBlur:8
   }).loc(FW/2+16, by);
+  
   hintBtn.on('click', showHint);
 }
 
@@ -595,22 +887,51 @@ const lx = FW/2-108+i*40;
 function newGame(){
 
   
-  tileCons.forEach(c=>{ if(c._idx !== undefined) createjs.Tween.removeTweens(c); });
-  tileCons.forEach(c=>{ if(c.parent) c.parent.removeChild(c); });
-  tileCons=[];
+
+
 
   closeHint();
-  const ps = curTheme.puzzles;
-  curSVG = ps[Math.floor(Math.random()*ps.length)];
-  doShuffle();
+currentIndex++;
+
+if(currentIndex >= WORDS.length)
+    currentIndex = 0;
+
+currentWord = WORDS[currentIndex];
+  console.log(currentWord.image);
+
+
+  console.log(currentWord);
+console.log(Object.keys(currentWord));
+  console.log(currentWord);
+console.log(currentWord["Imaage link"]);
+
+
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+
+  img.onload = () => {
+    puzzleImg = img;
+
+    console.log("Loaded:", currentWord.image);
+    console.log("Size:", img.width, img.height);
+
+    drawBoard();
+};
+
+img.onerror = () => {
+    console.error("Couldn't load:", currentWord.image);
+};
+
+
+doShuffle();
+img.src = currentWord.image;
   moves=0; movesLbl.text=td(0);
   resetTimer();
 
   scoreUploaded = false;
 
-  const img = new Image();
-  img.onload = () => { puzzleImg=img; drawBoard(); };
-  img.src = curSVG;
+
 }
 
 /* ── TIMER ── */
@@ -620,7 +941,7 @@ function startTimer(){
   timerTick = Ticker.add(()=>{
     elapsed = Math.floor((Date.now()-t0)/1000);
     timeLbl.text = ft(elapsed);
-    S.update();
+    
   });
 }
 function stopTimer(){ if(timerTick){ Ticker.remove(timerTick); timerTick=null; } }
@@ -672,17 +993,12 @@ function toggleLang(){
     ? "क्रीडया संस्कृतम्"
     : "Learn Sanskrit Through Play";
 
-    chipBtns.forEach((b,i)=>{
-        b.label.text =
-            THEMES[i].emoji +
-            " " +
-            (sa ? THEMES[i].sa : THEMES[i].name);
-    });
+
 titleEN.visible = !sa;
 titleSA.visible = sa;
 
-    newGame();     
-    S.update();
+       
+   
 }
 
 
@@ -696,8 +1012,21 @@ function showHint(){
     corner:24, close:true, shadowColor:'rgba(43,34,80,0.4)', shadowBlur:26});
   if(puzzleImg){
     const bm = new createjs.Bitmap(puzzleImg);
-    bm.scaleX = bm.scaleY = 282/360; bm.x=-141; bm.y=-154;
-    hintPane.addChild(bm);
+
+const maxSize = 250;
+
+const scale = Math.min(
+    maxSize / puzzleImg.width,
+    maxSize / puzzleImg.height
+);
+
+bm.scaleX = scale;
+bm.scaleY = scale;
+
+bm.x = -(puzzleImg.width * scale) / 2;
+bm.y = -(puzzleImg.height * scale) / 2 - 20;
+
+hintPane.addChild(bm);
   }
   new Label({text: curLang==='sa' ? 'यह वह चित्रम् अस्ति!' : "This is the picture you're building!",
     size:13, font:'Baloo 2', color:'#1B998B', bold:true, align:CENTER})
@@ -743,11 +1072,11 @@ function confettiShower() {
             }, rand(1800,3000), createjs.Ease.quadIn)
             .call(() => {
                 piece.removeFrom();
-                S.update();
+                
             });
     }
 
-    S.update();
+   
 }
 
 
@@ -763,40 +1092,64 @@ if(!user){
 if(scoreUploaded) return;
 scoreUploaded = true;
 
-    const scoreData = {
+const gameId = "sanskritPuzzle";
+const today = new Date().toISOString().split("T")[0];
+const docId = `${user.uid}_${gameId}_${today}`;
 
-        userId: user.uid,
-        playerName: user.displayName || "Player",
-        email: user.email || "",
-        photoURL: user.photoURL || "",
+const scoreRef = doc(db, "leaderboard-zatamgame", docId);
 
-        gameId: "sanskritPuzzle",
-        gameName: "Sanskrit Puzzle",
+const scoreData = {
 
-        score: score,
+    userId: user.uid,
+    playerName: user.displayName || "Player",
+    email: user.email || "",
+    photoURL: user.photoURL || "",
 
-        createdAt: serverTimestamp(),
-        scoreDate: new Date().toISOString().split("T")[0]
+    gameId: gameId,
+    gameName: "Sanskrit Puzzle",
 
-    };
+    score: score,
 
-    try{
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    scoreDate: today
 
-        await addDoc(
-            collection(db,"leaderboard"),
-            scoreData
-        );
+};
 
-        console.log("Score uploaded!", scoreData);
+try{
 
-    }catch(error){
-      scoreUploaded = false;
+    const scoreSnap = await getDoc(scoreRef);
 
-        console.error(error);
+    if(!scoreSnap.exists()){
 
-        alert("Score upload failed.");
+        await setDoc(scoreRef, scoreData);
+
+    }else{
+
+        const oldScore = scoreSnap.data().score;
+
+        if(score > oldScore){
+
+            await updateDoc(scoreRef,{
+                score: score,
+                updatedAt: serverTimestamp()
+            });
+
+        }
 
     }
+
+    console.log("Score uploaded!", scoreData);
+
+}catch(error){
+
+    scoreUploaded = false;
+
+    console.error(error);
+
+    alert("Score upload failed.");
+
+}
 
 }
 
@@ -882,7 +1235,7 @@ label: curLang === "sa"
 
     pane.show();
 
-    S.update();
+   
 }
 
 /* ── KEYBOARD ── */
@@ -899,3 +1252,5 @@ window.addEventListener('keydown', e=>{
 </script>
 </body>
 </html>
+
+

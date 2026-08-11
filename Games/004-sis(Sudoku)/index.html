@@ -106,6 +106,7 @@
         doc,
         getDoc,
         setDoc,
+        updateDoc,
         serverTimestamp
       } from "../../firebase-config.js";
 
@@ -527,28 +528,35 @@
         }
         scoreUploaded = true;
         try {
-          const scoreRef = doc(db, "leaderboard", `sudoku_${currentUser.uid}`);
+          const today = todayString();
+          const gameId = "sudoku";
+          const scoreRef = doc(db, "leaderboard-zatamgame", `${currentUser.uid}_${gameId}_${today}`);
           const existingScore = await getDoc(scoreRef);
-          const previousBest = existingScore.exists() ? Number(existingScore.data().score || 0) : 0;
-          const isNewBest = finalScore >= previousBest;
           const scoreData = {
             userId: currentUser.uid,
             playerName: currentUser.displayName || "Player",
             email: currentUser.email || "",
             photoURL: currentUser.photoURL || "",
-            gameId: "sudoku",
+            gameId,
             gameName: "Sudoku",
-            score: isNewBest ? finalScore : previousBest,
-            lastScore: finalScore,
+            score: finalScore,
+            scoreDate: today,
             updatedAt: serverTimestamp(),
-            scoreDate: todayString()
           };
 
           if (!existingScore.exists()) {
-            scoreData.createdAt = serverTimestamp();
+            await setDoc(scoreRef, {
+              ...scoreData,
+              createdAt: serverTimestamp()
+            });
+            saveStatus.textContent = translations[currentLanguage].saved;
+            return;
           }
 
-          await setDoc(scoreRef, scoreData, { merge: true });
+          const previousBest = Number(existingScore.data()?.score || 0);
+          if (finalScore > previousBest) {
+            await updateDoc(scoreRef, scoreData);
+          }
           saveStatus.textContent = translations[currentLanguage].saved;
         } catch (error) {
           scoreUploaded = false;

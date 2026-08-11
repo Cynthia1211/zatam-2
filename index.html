@@ -1731,8 +1731,6 @@
   <script type="module">
     import {
       auth,
-      provider,
-      signInWithPopup,
       signOut,
       onAuthStateChanged
     } from "./firebase-config.js";
@@ -2082,13 +2080,8 @@
       emptyState.style.display = visibleCount === 0 ? "block" : "none";
     }
 
-    loginBtn.addEventListener("click", async () => {
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (error) {
-        console.error("Login error:", error);
-        showModal(translations[currentLanguage].loginFailed);
-      }
+    loginBtn.addEventListener("click", () => {
+      window.location.href = "./login.html";
     });
 
     logoutBtn.addEventListener("click", async () => {

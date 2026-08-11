@@ -5,6 +5,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
   serverTimestamp
 } from "../../firebase-config.js";
 
@@ -268,6 +269,11 @@ function formatTime(value) {
   return `${minutes}:${secs}`;
 }
 
+function todayString() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
 function startGame() {
   if (running) return;
   running = true;
@@ -409,28 +415,35 @@ async function uploadScore(finalScore) {
   if (scoreUploaded || !currentUser) return;
   scoreUploaded = true;
   try {
-    const scoreRef = doc(db, "leaderboard", `picturePuzzle_${currentUser.uid}`);
+    const today = todayString();
+    const gameId = "picturePuzzle";
+    const scoreRef = doc(db, "leaderboard-zatamgame", `${currentUser.uid}_${gameId}_${today}`);
     const existing = await getDoc(scoreRef);
-    const previousBest = existing.exists() ? Number(existing.data().score || 0) : 0;
     const scoreData = {
       userId: currentUser.uid,
       playerName: currentUser.displayName || "Player",
       email: currentUser.email || "",
       photoURL: currentUser.photoURL || "",
-      gameId: "picturePuzzle",
+      gameId,
       gameName: "Picture Puzzle",
-      difficulty: size === 3 ? "Easy" : size === 4 ? "Medium" : "Hard",
-      score: Math.max(previousBest, finalScore),
-      lastScore: finalScore,
-      moves,
-      seconds,
-      hintsUsed,
-      shufflesUsed,
+      score: finalScore,
+      scoreDate: today,
       updatedAt: serverTimestamp(),
-      scoreDate: new Date().toISOString().slice(0, 10)
     };
-    if (!existing.exists()) scoreData.createdAt = serverTimestamp();
-    await setDoc(scoreRef, scoreData, { merge: true });
+
+    if (!existing.exists()) {
+      await setDoc(scoreRef, {
+        ...scoreData,
+        createdAt: serverTimestamp()
+      });
+      saveStatus.textContent = t("saved");
+      return;
+    }
+
+    const previousBest = Number(existing.data()?.score || 0);
+    if (finalScore > previousBest) {
+      await updateDoc(scoreRef, scoreData);
+    }
     saveStatus.textContent = t("saved");
   } catch (error) {
     scoreUploaded = false;

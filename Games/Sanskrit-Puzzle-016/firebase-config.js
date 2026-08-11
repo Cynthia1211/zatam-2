@@ -2,24 +2,28 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/fireba
 
 import {
   getAuth,
-  GoogleAuthProvider
+  GoogleAuthProvider,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 import {
   getFirestore,
   collection,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB6gCO3IOjDSCHJNK08C8MEw47Wlwf2_AE",
-  authDomain: "zatam-to-zim.firebaseapp.com",
-  projectId: "zatam-to-zim",
-  storageBucket: "zatam-to-zim.firebasestorage.app",
-  messagingSenderId: "1003568725487",
-  appId: "1:1003568725487:web:3398e0dc55ece1d3548a1a",
-  measurementId: "G-Q5GM8ZN9TG"
+  apiKey: "AIzaSyC8nm8zQR6fiC_3mTQ3hURXNJPR6faKYOU",
+  authDomain: "zat-am-main.firebaseapp.com",
+  projectId: "zat-am-main",
+  storageBucket: "zat-am-main.appspot.com",
+  messagingSenderId: "1071341524876",
+  appId: "1:1071341524876:web:1908319951cd8f50b2e8a9"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -31,5 +35,10 @@ export const provider = new GoogleAuthProvider();
 export {
   collection,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  onAuthStateChanged
 };

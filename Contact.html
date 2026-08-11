@@ -1,879 +1,781 @@
 <!doctype html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zat.am - Contact</title>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script type="text/javascript">
-    (function () {
-      emailjs.init({
-        publicKey: 'L2ZiBhjpwKli5cihX',
-      });
-    })();
-  </script>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    body {
-      background: #fffaf2;
-      color: #09264a;
-    }
-
-    header {
-      height: 76px;
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 32px;
-      border-bottom: 1px solid #eadfce;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .logo-mark {
-      width: 58px;
-      height: 42px;
-      position: relative;
-    }
-
-    .circle {
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      border: 2px solid;
-      border-radius: 50%;
-      opacity: 0.75;
-    }
-
-    .c1 {
-      border-color: #f6b23b;
-      left: 0;
-      top: 5px;
-    }
-
-    .c2 {
-      border-color: #e86c5b;
-      left: 14px;
-      top: 0;
-    }
-
-    .c3 {
-      border-color: #7188a8;
-      left: 24px;
-      top: 12px;
-    }
-
-    .logo-text h1 {
-      font-size: 28px;
-      line-height: 24px;
-      font-weight: 800;
-    }
-
-    .logo-text span:nth-child(1) {
-      color: #f16945;
-    }
-
-    .logo-text span:nth-child(2) {
-      color: #2f6dff;
-    }
-
-    .logo-text span:nth-child(3) {
-      color: #111;
-    }
-
-    .logo-text p {
-      font-size: 12px;
-      color: #39415c;
-      margin-top: 4px;
-    }
-
-    nav {
-      display: flex;
-      gap: 42px;
-      font-weight: 600;
-      color: #18284a;
-    }
-
-    nav a {
-      text-decoration: none;
-      color: inherit;
-      padding: 28px 0;
-      position: relative;
-    }
-
-    nav a.active::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      bottom: 18px;
-      width: 100%;
-      height: 3px;
-      background: #f6b23b;
-      border-radius: 999px;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .lang-btn,
-    .login-btn {
-      height: 40px;
-      border-radius: 14px;
-      padding: 0 18px;
-      font-size: 17px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .lang-btn {
-      background: white;
-      border: 1.5px solid #222;
-      color: #111;
-    }
-
-    .login-btn {
-      background: #0b2b4f;
-      color: white;
-      border: none;
-    }
-
-    .user-profile {
-      display: none;
-      align-items: center;
-      gap: 10px;
-      background: white;
-      border: 1.5px solid #0b2b4f;
-      border-radius: 16px;
-      padding: 5px 8px 5px 5px;
-    }
-
-    .user-profile img {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #f6b23b;
-      background: #ffe1a5;
-    }
-
-    #userName {
-      max-width: 120px;
-      font-size: 14px;
-      font-weight: 700;
-      color: #0b2b4f;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    #logoutBtn {
-      background: #f6b23b;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 7px 10px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 13px;
-    }
-
-    #logoutBtn:hover {
-      background: #ef6945;
-    }
-
-    .page {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 34px 42px 48px;
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 1fr 320px;
-      align-items: center;
-      gap: 30px;
-      padding: 34px 42px;
-      margin-bottom: 26px;
-      background: linear-gradient(90deg,
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zat.am - Contact</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      body {
+        background: #fffaf2;
+        color: #09264a;
+      }
+      header {
+        height: 76px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 32px;
+        border-bottom: 1px solid #eadfce;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: inherit;
+      }
+      .logo-mark {
+        width: 58px;
+        height: 42px;
+        position: relative;
+      }
+      .circle {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border: 2px solid;
+        border-radius: 50%;
+        opacity: 0.75;
+      }
+      .c1 {
+        border-color: #f6b23b;
+        left: 0;
+        top: 5px;
+      }
+      .c2 {
+        border-color: #e86c5b;
+        left: 14px;
+        top: 0;
+      }
+      .c3 {
+        border-color: #7188a8;
+        left: 24px;
+        top: 12px;
+      }
+      .logo-text h1 {
+        font-size: 28px;
+        line-height: 24px;
+        font-weight: 800;
+      }
+      .logo-text span:nth-child(1) {
+        color: #f16945;
+      }
+      .logo-text span:nth-child(2) {
+        color: #2f6dff;
+      }
+      .logo-text span:nth-child(3) {
+        color: #111;
+      }
+      .logo-text p {
+        font-size: 12px;
+        color: #39415c;
+        margin-top: 4px;
+      }
+      nav {
+        display: flex;
+        gap: 42px;
+        font-weight: 600;
+        color: #18284a;
+      }
+      nav a {
+        text-decoration: none;
+        color: inherit;
+        padding: 28px 0;
+        position: relative;
+      }
+      nav a.active::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 18px;
+        width: 100%;
+        height: 3px;
+        background: #f6b23b;
+        border-radius: 999px;
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .lang-btn,
+      .login-btn {
+        height: 40px;
+        border-radius: 14px;
+        padding: 0 18px;
+        font-size: 17px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .lang-btn {
+        background: white;
+        border: 1.5px solid #222;
+        color: #111;
+      }
+      .login-btn {
+        background: #0b2b4f;
+        color: white;
+        border: none;
+      }
+      .user-profile {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        background: white;
+        border: 1.5px solid #0b2b4f;
+        border-radius: 16px;
+        padding: 5px 8px 5px 5px;
+      }
+      .user-profile img {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #f6b23b;
+        background: #ffe1a5;
+      }
+      #userName {
+        max-width: 120px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #0b2b4f;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #logoutBtn {
+        background: #f6b23b;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 7px 10px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      #logoutBtn:hover {
+        background: #ef6945;
+      }
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 34px 42px 48px;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        align-items: center;
+        gap: 30px;
+        padding: 34px 42px;
+        margin-bottom: 26px;
+        background: linear-gradient(
+          90deg,
           #fff5e7 0%,
           #fff9f0 52%,
-          #fff2df 100%);
-      border: 1px solid #eadfce;
-      border-radius: 18px;
-      overflow: hidden;
-    }
-
-    .hero h2 {
-      font-family: Georgia, serif;
-      font-size: 48px;
-      line-height: 1.05;
-      color: #0b2b4f;
-      margin-bottom: 12px;
-    }
-
-    .underline {
-      width: 44px;
-      height: 4px;
-      background: #f6b23b;
-      border-radius: 999px;
-      margin-bottom: 14px;
-    }
-
-    .hero p {
-      color: #24394f;
-      font-size: 17px;
-      line-height: 1.55;
-      font-weight: 600;
-    }
-
-    .hero-art {
-      min-height: 210px;
-      position: relative;
-      display: grid;
-      place-items: center;
-    }
-
-    .sun {
-      width: 36px;
-      height: 36px;
-      background: #ffc046;
-      border-radius: 50%;
-      position: absolute;
-      top: 18px;
-      right: 60px;
-    }
-
-    .mountain {
-      width: 260px;
-      height: 120px;
-      border-radius: 100px 100px 18px 18px;
-      background: linear-gradient(135deg, #b9dfd6, #6eb5b8);
-      position: absolute;
-      bottom: 10px;
-      right: 20px;
-      opacity: 0.9;
-    }
-
-    .hero-card {
-      width: 82px;
-      height: 78px;
-      background: #ffc247;
-      border: 3px solid #0b2b4f;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      font-size: 42px;
-      font-weight: 800;
-      color: #111;
-      position: absolute;
-      bottom: 20px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
-    }
-
-    .card1 {
-      left: 20px;
-      transform: rotate(-8deg);
-    }
-
-    .card2 {
-      left: 112px;
-      background: #fff9ef;
-      transform: rotate(0deg);
-    }
-
-    .card3 {
-      left: 204px;
-      background: #c8d98c;
-      transform: rotate(8deg);
-    }
-
-    .section-title {
-      font-family: Georgia, serif;
-      font-size: 32px;
-      color: #0b2b4f;
-      margin: 4px 0 16px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-    }
-
-    .two-col {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 22px;
-      align-items: start;
-    }
-
-    .card {
-      background: white;
-      border: 1px solid #eadfce;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      padding: 22px;
-    }
-
-    .card:hover {
-      transform: translateY(-2px);
-      transition: transform 0.2s ease;
-    }
-
-    .icon {
-      font-size: 38px;
-      margin-bottom: 12px;
-    }
-
-    .card h3 {
-      color: #0b2b4f;
-      font-size: 20px;
-      margin-bottom: 9px;
-    }
-
-    .card p,
-    .card li {
-      color: #24394f;
-      line-height: 1.55;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .card ul {
-      padding-left: 18px;
-    }
-
-    .pill {
-      display: inline-block;
-      padding: 5px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      margin-bottom: 12px;
-    }
-
-    .yellow-pill {
-      background: #ffd766;
-      color: #7a5500;
-    }
-
-    .green-pill {
-      background: #a6e8bd;
-      color: #176033;
-    }
-
-    .blue-pill {
-      background: #bad6ff;
-      color: #154d93;
-    }
-
-    .purple-pill {
-      background: #e4c8ff;
-      color: #67379b;
-    }
-
-    .primary-btn {
-      background: #0b2b4f;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 11px 16px;
-      font-weight: 800;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-    }
-
-    .secondary-btn {
-      background: white;
-      color: #1b2d44;
-      border: 1px solid #e8cda5;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-weight: 800;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-    }
-
-    .cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .info-strip {
-      margin-top: 24px;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-
-    .mini-card {
-      background: white;
-      border: 1px solid #eadfce;
-      border-radius: 16px;
-      padding: 18px;
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-
-    .mini-card .mini-icon {
-      font-size: 30px;
-    }
-
-    .mini-card h4 {
-      color: #8b4b10;
-      margin-bottom: 5px;
-      font-size: 15px;
-    }
-
-    .mini-card p {
-      font-size: 12px;
-      color: #24394f;
-      line-height: 1.4;
-      font-weight: 600;
-    }
-
-    label {
-      display: block;
-      color: #0b2b4f;
-      font-weight: 800;
-      margin-bottom: 7px;
-      font-size: 14px;
-    }
-
-    input,
-    textarea,
-    select {
-      width: 100%;
-      border: 1.5px solid #eadfce;
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin-bottom: 14px;
-      font-size: 15px;
-      background: #fffdf8;
-      color: #09264a;
-    }
-
-    textarea {
-      min-height: 150px;
-      resize: vertical;
-    }
-
-    .notice {
-      display: none;
-      margin-top: 12px;
-      background: #fff5df;
-      border: 1px solid #f6d08c;
-      color: #7a5500;
-      padding: 12px;
-      border-radius: 12px;
-      font-weight: 700;
-    }
-
-    @media (max-width: 1000px) {
-      nav {
+          #fff2df 100%
+        );
+        border: 1px solid #eadfce;
+        border-radius: 18px;
+        overflow: hidden;
+      }
+      .hero h2 {
+        font-family: Georgia, serif;
+        font-size: 48px;
+        line-height: 1.05;
+        color: #0b2b4f;
+        margin-bottom: 12px;
+      }
+      .underline {
+        width: 44px;
+        height: 4px;
+        background: #f6b23b;
+        border-radius: 999px;
+        margin-bottom: 14px;
+      }
+      .hero p {
+        color: #24394f;
+        font-size: 17px;
+        line-height: 1.55;
+        font-weight: 600;
+      }
+      .hero-art {
+        min-height: 210px;
+        position: relative;
+        display: grid;
+        place-items: center;
+      }
+      .sun {
+        width: 36px;
+        height: 36px;
+        background: #ffc046;
+        border-radius: 50%;
+        position: absolute;
+        top: 18px;
+        right: 60px;
+      }
+      .mountain {
+        width: 260px;
+        height: 120px;
+        border-radius: 100px 100px 18px 18px;
+        background: linear-gradient(135deg, #b9dfd6, #6eb5b8);
+        position: absolute;
+        bottom: 10px;
+        right: 20px;
+        opacity: 0.9;
+      }
+      .hero-card {
+        width: 82px;
+        height: 78px;
+        background: #ffc247;
+        border: 3px solid #0b2b4f;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 42px;
+        font-weight: 800;
+        color: #111;
+        position: absolute;
+        bottom: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
+      }
+      .card1 {
+        left: 20px;
+        transform: rotate(-8deg);
+      }
+      .card2 {
+        left: 112px;
+        background: #fff9ef;
+        transform: rotate(0deg);
+      }
+      .card3 {
+        left: 204px;
+        background: #c8d98c;
+        transform: rotate(8deg);
+      }
+      .section-title {
+        font-family: Georgia, serif;
+        font-size: 32px;
+        color: #0b2b4f;
+        margin: 4px 0 16px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
         gap: 20px;
       }
-
-      .hero {
-        grid-template-columns: 1fr;
-      }
-
-      .grid,
-      .info-strip {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
       .two-col {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 22px;
+        align-items: start;
       }
-    }
-
-    @media (max-width: 700px) {
-      header {
-        height: auto;
-        padding: 16px;
-        flex-wrap: wrap;
-        gap: 14px;
+      .card {
+        background: white;
+        border: 1px solid #eadfce;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        padding: 22px;
       }
-
-      nav {
-        order: 3;
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
+      .card:hover {
+        transform: translateY(-2px);
+        transition: transform 0.2s ease;
       }
-
-      .page {
-        padding: 24px 16px;
-      }
-
-      .hero {
-        padding: 26px 20px;
-      }
-
-      .hero h2 {
+      .icon {
         font-size: 38px;
+        margin-bottom: 12px;
       }
-
-      .grid,
+      .card h3 {
+        color: #0b2b4f;
+        font-size: 20px;
+        margin-bottom: 9px;
+      }
+      .card p,
+      .card li {
+        color: #24394f;
+        line-height: 1.55;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .card ul {
+        padding-left: 18px;
+      }
+      .pill {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        margin-bottom: 12px;
+      }
+      .yellow-pill {
+        background: #ffd766;
+        color: #7a5500;
+      }
+      .green-pill {
+        background: #a6e8bd;
+        color: #176033;
+      }
+      .blue-pill {
+        background: #bad6ff;
+        color: #154d93;
+      }
+      .purple-pill {
+        background: #e4c8ff;
+        color: #67379b;
+      }
+      .primary-btn {
+        background: #0b2b4f;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 11px 16px;
+        font-weight: 800;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+      }
+      .secondary-btn {
+        background: white;
+        color: #1b2d44;
+        border: 1px solid #e8cda5;
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-weight: 800;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+      }
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 16px;
+      }
       .info-strip {
-        grid-template-columns: 1fr;
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
       }
-    }
-  </style>
-</head>
-
-<body>
-  <header>
-    <a class="logo" href="index.html">
-      <div class="logo-mark">
-        <div class="circle c1"></div>
-        <div class="circle c2"></div>
-        <div class="circle c3"></div>
-      </div>
-      <div class="logo-text">
-        <h1><span>za</span><span>t</span><span>.am</span></h1>
-        <p>शब्दम् मम प्रेरणम्</p>
-      </div>
-    </a>
-    <nav>
-      <a href="index.html" data-i18n="navGames">Games</a>
-      <a href="About.html" data-i18n="navAbout">About</a>
-      <a href="Resources.html" data-i18n="navResources">Resources</a>
-      <a href="leaderboard.html" data-i18n="navLeaderboard">Leaderboard</a>
-      <a href="Contact.html" class="active" data-i18n="navContact">Contact</a>
-    </nav>
-    <div class="header-actions">
-      <button class="lang-btn" id="langBtn">🌐 EN / SA</button>
-      <button class="login-btn" id="loginBtn" data-i18n="login">
-        ↪ Login
-      </button>
-      <div class="user-profile" id="userProfile">
-        <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=ffe1a5&color=09264a"
-          alt="User Avatar" /><span id="userName"></span><button id="logoutBtn">Logout</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="page">
-    <section class="hero">
-      <div>
-        <h2 data-i18n="heroTitle">Contact Us</h2>
-        <div class="underline"></div>
-        <p data-i18n="heroDesc">
-          Have feedback, a bug report, or an idea for a new Sanskrit game?
-          Send a message and help improve Zat.am.
-        </p>
-      </div>
-      <div class="hero-art">
-        <div class="sun"></div>
-        <div class="mountain"></div>
-        <div class="hero-card card1">न</div>
-        <div class="hero-card card2">म</div>
-        <div class="hero-card card3">ः</div>
-      </div>
-    </section>
-    <section class="two-col">
-      <article class="card">
-        <h2 class="section-title" data-i18n="formTitle">Send a Message</h2>
-        <form id="contactForm">
-          <label for="name" data-i18n="nameLabel">Name</label><input id="name" name="name" type="text"
-            placeholder="Your name" required /><label for="email" data-i18n="emailLabel">Email</label><input id="email"
-            name="email" type="email" placeholder="you@example.com" required /><label for="topic"
-            data-i18n="topicLabel">Topic</label><select id="topic" name="topic">
-            <option data-i18n="topicFeedback">Feedback</option>
-            <option data-i18n="topicBug">Bug Report</option>
-            <option data-i18n="topicGame">New Game Idea</option>
-          </select><label for="message" data-i18n="messageLabel">Message</label><textarea id="message" name="message"
-            placeholder="Write your message..." required></textarea><button type="submit" class="primary-btn"
-            data-i18n="sendBtn">
-            Send Message
-          </button>
-          <div class="notice" id="formNotice" data-i18n="formNotice">
-            Thanks! The contact function is not ready yet, but we will get it online as soon as possible.
-            Sorry for the inconvenience!
-          </div>
-        </form>
-      </article>
-      <aside class="card">
-        <div class="icon">💬</div>
-        <h3 data-i18n="sideTitle">Other Ways to Connect</h3>
-        <p data-i18n="sideDesc">
-          Use this page for project feedback, class demo notes, and future
-          support links.
-        </p>
-        <div class="info-strip" style="grid-template-columns: 1fr; margin-top: 18px">
-          <div class="mini-card">
-            <div class="mini-icon">🐞</div>
-            <div>
-              <h4 data-i18n="mini1Title">Report Bugs</h4>
-              <p data-i18n="mini1Desc">
-                Tell us what broke and which page you were using.
-              </p>
-            </div>
-          </div>
-          <div class="mini-card">
-            <div class="mini-icon">💡</div>
-            <div>
-              <h4 data-i18n="mini2Title">Suggest Games</h4>
-              <p data-i18n="mini2Desc">
-                Share ideas for Sanskrit learning activities.
-              </p>
-            </div>
-          </div>
-          <div class="mini-card">
-            <div class="mini-icon">🎓</div>
-            <div>
-              <h4 data-i18n="mini3Title">Class Use</h4>
-              <p data-i18n="mini3Desc">
-                Use feedback to improve the educational experience.
-              </p>
-            </div>
-          </div>
+      .mini-card {
+        background: white;
+        border: 1px solid #eadfce;
+        border-radius: 16px;
+        padding: 18px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+      .mini-card .mini-icon {
+        font-size: 30px;
+      }
+      .mini-card h4 {
+        color: #8b4b10;
+        margin-bottom: 5px;
+        font-size: 15px;
+      }
+      .mini-card p {
+        font-size: 12px;
+        color: #24394f;
+        line-height: 1.4;
+        font-weight: 600;
+      }
+      label {
+        display: block;
+        color: #0b2b4f;
+        font-weight: 800;
+        margin-bottom: 7px;
+        font-size: 14px;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        border: 1.5px solid #eadfce;
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 14px;
+        font-size: 15px;
+        background: #fffdf8;
+        color: #09264a;
+      }
+      textarea {
+        min-height: 150px;
+        resize: vertical;
+      }
+      .notice {
+        display: none;
+        margin-top: 12px;
+        background: #fff5df;
+        border: 1px solid #f6d08c;
+        color: #7a5500;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 700;
+      }
+      @media (max-width: 1000px) {
+        nav {
+          gap: 20px;
+        }
+        .hero {
+          grid-template-columns: 1fr;
+        }
+        .grid,
+        .info-strip {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 700px) {
+        header {
+          height: auto;
+          padding: 16px;
+          flex-wrap: wrap;
+          gap: 14px;
+        }
+        nav {
+          order: 3;
+          width: 100%;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        .page {
+          padding: 24px 16px;
+        }
+        .hero {
+          padding: 26px 20px;
+        }
+        .hero h2 {
+          font-size: 38px;
+        }
+        .grid,
+        .info-strip {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a class="logo" href="index.html">
+        <div class="logo-mark">
+          <div class="circle c1"></div>
+          <div class="circle c2"></div>
+          <div class="circle c3"></div>
         </div>
-      </aside>
-    </section>
-  </main>
-  <script>
-    const pageTranslations = {
-      en: {
-        heroTitle: "Contact Us",
-        heroDesc:
-          "Have feedback, a bug report, or an idea for a new Sanskrit game? Send a message and help improve Zat.am.",
-        formTitle: "Send a Message",
-        nameLabel: "Name",
-        emailLabel: "Email",
-        topicLabel: "Topic",
-        topicFeedback: "Feedback",
-        topicBug: "Bug Report",
-        topicGame: "New Game Idea",
-        messageLabel: "Message",
-        sendBtn: "Send Message",
-        formNotice:
-          "Thanks! The contact function is not ready yet, but we will get it online as soon as possible. Sorry for the inconvenience!",
-        sideTitle: "Other Ways to Connect",
-        sideDesc:
-          "Use this page for project feedback, class demo notes, and future support links.",
-        mini1Title: "Report Bugs",
-        mini1Desc: "Tell us what broke and which page you were using.",
-        mini2Title: "Suggest Games",
-        mini2Desc: "Share ideas for Sanskrit learning activities.",
-        mini3Title: "Class Use",
-        mini3Desc: "Use feedback to improve the educational experience.",
-      },
-      sa: {
-        heroTitle: "सम्पर्कः",
-        heroDesc:
-          "प्रतिक्रिया, दोषसूचना, नूतनसंस्कृतक्रीडाविचारः वा अस्ति? सन्देशं प्रेषयित्वा Zat.am सुधारय।",
-        formTitle: "सन्देशं प्रेषय",
-        nameLabel: "नाम",
-        emailLabel: "ईमेल्",
-        topicLabel: "विषयः",
-        topicFeedback: "प्रतिक्रिया",
-        topicBug: "दोषसूचना",
-        topicGame: "नूतनक्रीडाविचारः",
-        messageLabel: "सन्देशः",
-        sendBtn: "सन्देशं प्रेषय",
-        formNotice:
-          "धन्यवादः! एतत् प्रदर्शनरूपं पत्रम् अद्य ईमेल् न प्रेषयति, किन्तु संयोजनार्थं रूपविन्यासः सिद्धः अस्ति।",
-        sideTitle: "सम्पर्कस्य अन्ये उपायाः",
-        sideDesc:
-          "परियोजना-प्रतिक्रियायै, वर्गप्रदर्शन-टिप्पण्यै, भावि-साहाय्य-सूत्रैः च एतत् पृष्ठम् उपयुज्यताम्।",
-        mini1Title: "दोषान् सूचय",
-        mini1Desc: "किं भग्नम्, कस्मिन् पृष्ठे आसीः इति वद।",
-        mini2Title: "क्रीडाविचारान् ददातु",
-        mini2Desc: "संस्कृताध्ययनक्रीडानां विचारान् साझा कुरु।",
-        mini3Title: "वर्गोपयोगः",
-        mini3Desc: "शैक्षिकानुभवं सुधारयितुं प्रतिक्रियां प्रयुञ्जीत।",
-      },
-    };
-  </script>
-  <script>
-    document.addEventListener("submit", (event) => {
-      if (event.target.id === "contactForm") {
-        event.preventDefault();
+        <div class="logo-text">
+          <h1><span>za</span><span>t</span><span>.am</span></h1>
+          <p>शब्दम् मम प्रेरणम्</p>
+        </div>
+      </a>
+      <nav>
+        <a href="index.html" data-i18n="navGames">Games</a>
+        <a href="About.html" data-i18n="navAbout">About</a>
+        <a href="Resources.html" data-i18n="navResources">Resources</a>
+        <a href="leaderboard.html" data-i18n="navLeaderboard">Leaderboard</a>
+        <a href="Contact.html" class="active" data-i18n="navContact">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <button class="lang-btn" id="langBtn">🌐 EN / SA</button>
+        <button class="login-btn" id="loginBtn" data-i18n="login">
+          ↪ Login
+        </button>
+        <div class="user-profile" id="userProfile">
+          <img
+            id="userAvatar"
+            src="https://ui-avatars.com/api/?name=User&background=ffe1a5&color=09264a"
+            alt="User Avatar"
+          /><span id="userName"></span><button id="logoutBtn">Logout</button>
+        </div>
+      </div>
+    </header>
 
-        const sendBtn = event.target.querySelector('button[type="submit"]');
-        const originalBtnText = sendBtn.innerText;
-        sendBtn.innerText = "Sending...";
-        sendBtn.disabled = true;
-
-        emailjs.sendForm('service_4arbmft', 'template_9d1f76h', event.target)
-          .then(() => {
-            const notice = document.getElementById("formNotice");
-            notice.style.display = "block";
-            notice.style.background = "#d4edda";
-            notice.style.color = "#155724";
-            notice.style.borderColor = "#c3e6cb";
-            notice.textContent = "Your message has been sent successfully!";
-            event.target.reset();
-            sendBtn.innerText = originalBtnText;
-            sendBtn.disabled = false;
-          }, (error) => {
-            const notice = document.getElementById("formNotice");
-            notice.style.display = "block";
-            notice.style.background = "#f8d7da";
-            notice.style.color = "#721c24";
-            notice.style.borderColor = "#f5c6cb";
-            notice.textContent = "Failed to send message: " + JSON.stringify(error);
-            sendBtn.innerText = originalBtnText;
-            sendBtn.disabled = false;
-          });
-      }
-    });
-  </script>
-
-  <script type="module">
-    import {
-      auth,
-      provider,
-      signInWithPopup,
-      signOut,
-      onAuthStateChanged,
-    } from "./firebase-config.js";
-    const loginBtn = document.getElementById("loginBtn");
-    const userProfile = document.getElementById("userProfile");
-    const userAvatar = document.getElementById("userAvatar");
-    const userName = document.getElementById("userName");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const langBtn = document.getElementById("langBtn");
-    let currentLanguage = localStorage.getItem("zatamLanguage") || "en";
-
-    function getDefaultAvatar(name = "User") {
-      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ffe1a5&color=09264a`;
-    }
-    function getSafeGooglePhoto(photoURL) {
-      if (!photoURL) return "";
-      return photoURL
-        .replace("=s96-c", "=s200-c")
-        .replace("=s64-c", "=s200-c")
-        .replace("=s48-c", "=s200-c");
-    }
-    function setAvatar(imgElement, user) {
-      const name = user?.displayName || "User";
-      const googlePhoto = getSafeGooglePhoto(user?.photoURL);
-      imgElement.alt = name;
-      imgElement.src = googlePhoto || getDefaultAvatar(name);
-      imgElement.onerror = () => {
-        imgElement.onerror = null;
-        imgElement.src = getDefaultAvatar(name);
+    <main class="page">
+      <section class="hero">
+        <div>
+          <h2 data-i18n="heroTitle">Contact Us</h2>
+          <div class="underline"></div>
+          <p data-i18n="heroDesc">
+            Have feedback, a bug report, or an idea for a new Sanskrit game?
+            Send a message and help improve Zat.am.
+          </p>
+        </div>
+        <div class="hero-art">
+          <div class="sun"></div>
+          <div class="mountain"></div>
+          <div class="hero-card card1">न</div>
+          <div class="hero-card card2">म</div>
+          <div class="hero-card card3">ः</div>
+        </div>
+      </section>
+      <section class="two-col">
+        <article class="card">
+          <h2 class="section-title" data-i18n="formTitle">Send a Message</h2>
+          <form id="contactForm">
+            <label for="name" data-i18n="nameLabel">Name</label
+            ><input id="name" type="text" placeholder="Your name" /><label
+              for="email"
+              data-i18n="emailLabel"
+              >Email</label
+            ><input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+            /><label for="topic" data-i18n="topicLabel">Topic</label
+            ><select id="topic">
+              <option data-i18n="topicFeedback">Feedback</option>
+              <option data-i18n="topicBug">Bug Report</option>
+              <option data-i18n="topicGame">New Game Idea</option></select
+            ><label for="message" data-i18n="messageLabel">Message</label
+            ><textarea
+              id="message"
+              placeholder="Write your message..."
+            ></textarea
+            ><button type="submit" class="primary-btn" data-i18n="sendBtn">
+              Send Message
+            </button>
+            <div class="notice" id="formNotice" data-i18n="formNotice">
+              Thanks! The contact function is not ready yet, but we will get it online as soon as possible. 
+              Sorry for the inconvenience!
+            </div>
+          </form>
+        </article>
+        <aside class="card">
+          <div class="icon">💬</div>
+          <h3 data-i18n="sideTitle">Other Ways to Connect</h3>
+          <p data-i18n="sideDesc">
+            Use this page for project feedback, class demo notes, and future
+            support links.
+          </p>
+          <div
+            class="info-strip"
+            style="grid-template-columns: 1fr; margin-top: 18px"
+          >
+            <div class="mini-card">
+              <div class="mini-icon">🐞</div>
+              <div>
+                <h4 data-i18n="mini1Title">Report Bugs</h4>
+                <p data-i18n="mini1Desc">
+                  Tell us what broke and which page you were using.
+                </p>
+              </div>
+            </div>
+            <div class="mini-card">
+              <div class="mini-icon">💡</div>
+              <div>
+                <h4 data-i18n="mini2Title">Suggest Games</h4>
+                <p data-i18n="mini2Desc">
+                  Share ideas for Sanskrit learning activities.
+                </p>
+              </div>
+            </div>
+            <div class="mini-card">
+              <div class="mini-icon">🎓</div>
+              <div>
+                <h4 data-i18n="mini3Title">Class Use</h4>
+                <p data-i18n="mini3Desc">
+                  Use feedback to improve the educational experience.
+                </p>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </main>
+    <script>
+      const pageTranslations = {
+        en: {
+          heroTitle: "Contact Us",
+          heroDesc:
+            "Have feedback, a bug report, or an idea for a new Sanskrit game? Send a message and help improve Zat.am.",
+          formTitle: "Send a Message",
+          nameLabel: "Name",
+          emailLabel: "Email",
+          topicLabel: "Topic",
+          topicFeedback: "Feedback",
+          topicBug: "Bug Report",
+          topicGame: "New Game Idea",
+          messageLabel: "Message",
+          sendBtn: "Send Message",
+          formNotice:
+            "Thanks! The contact function is not ready yet, but we will get it online as soon as possible. Sorry for the inconvenience!",
+          sideTitle: "Other Ways to Connect",
+          sideDesc:
+            "Use this page for project feedback, class demo notes, and future support links.",
+          mini1Title: "Report Bugs",
+          mini1Desc: "Tell us what broke and which page you were using.",
+          mini2Title: "Suggest Games",
+          mini2Desc: "Share ideas for Sanskrit learning activities.",
+          mini3Title: "Class Use",
+          mini3Desc: "Use feedback to improve the educational experience.",
+        },
+        sa: {
+          heroTitle: "सम्पर्कः",
+          heroDesc:
+            "प्रतिक्रिया, दोषसूचना, नूतनसंस्कृतक्रीडाविचारः वा अस्ति? सन्देशं प्रेषयित्वा Zat.am सुधारय।",
+          formTitle: "सन्देशं प्रेषय",
+          nameLabel: "नाम",
+          emailLabel: "ईमेल्",
+          topicLabel: "विषयः",
+          topicFeedback: "प्रतिक्रिया",
+          topicBug: "दोषसूचना",
+          topicGame: "नूतनक्रीडाविचारः",
+          messageLabel: "सन्देशः",
+          sendBtn: "सन्देशं प्रेषय",
+          formNotice:
+            "धन्यवादः! एतत् प्रदर्शनरूपं पत्रम् अद्य ईमेल् न प्रेषयति, किन्तु संयोजनार्थं रूपविन्यासः सिद्धः अस्ति।",
+          sideTitle: "सम्पर्कस्य अन्ये उपायाः",
+          sideDesc:
+            "परियोजना-प्रतिक्रियायै, वर्गप्रदर्शन-टिप्पण्यै, भावि-साहाय्य-सूत्रैः च एतत् पृष्ठम् उपयुज्यताम्।",
+          mini1Title: "दोषान् सूचय",
+          mini1Desc: "किं भग्नम्, कस्मिन् पृष्ठे आसीः इति वद।",
+          mini2Title: "क्रीडाविचारान् ददातु",
+          mini2Desc: "संस्कृताध्ययनक्रीडानां विचारान् साझा कुरु।",
+          mini3Title: "वर्गोपयोगः",
+          mini3Desc: "शैक्षिकानुभवं सुधारयितुं प्रतिक्रियां प्रयुञ्जीत।",
+        },
       };
-    }
-
-    const common = {
-      en: {
-        navGames: "Games",
-        navAbout: "About",
-        navResources: "Resources",
-        navLeaderboard: "Leaderboard",
-        navContact: "Contact",
-        login: "↪ Login",
-        logout: "Logout",
-        langButton: "🌐 EN / SA",
-        loginFailed: "Login failed. Please try again.",
-      },
-      sa: {
-        navGames: "क्रीडाः",
-        navAbout: "विषये",
-        navResources: "संसाधनानि",
-        navLeaderboard: "श्रेष्ठसूची",
-        navContact: "सम्पर्कः",
-        login: "↪ प्रवेशः",
-        logout: "निर्गमः",
-        langButton: "🌐 SA / EN",
-        loginFailed: "प्रवेशः असफलः। पुनः प्रयत्नं कुरु।",
-      },
-    };
-    const translations = {
-      en: { ...common.en, ...pageTranslations.en },
-      sa: { ...common.sa, ...pageTranslations.sa },
-    };
-
-    function updateLanguage() {
-      const t = translations[currentLanguage];
-      document.querySelectorAll("[data-i18n]").forEach((element) => {
-        const key = element.dataset.i18n;
-        if (t[key]) element.innerHTML = t[key];
+    </script>
+    <script>
+      document.addEventListener("submit", (event) => {
+        if (event.target.id === "contactForm") {
+          event.preventDefault();
+          const notice = document.getElementById("formNotice");
+          notice.style.display = "block";
+        }
       });
-      langBtn.innerHTML = t.langButton;
-      logoutBtn.innerHTML = t.logout;
-      localStorage.setItem("zatamLanguage", currentLanguage);
-    }
+    </script>
 
-    loginBtn.addEventListener("click", async () => {
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (error) {
-        console.error("Login error:", error);
-        alert(translations[currentLanguage].loginFailed);
+    <script type="module">
+      import {
+        auth,
+        signOut,
+        onAuthStateChanged,
+      } from "./firebase-config.js";
+      const loginBtn = document.getElementById("loginBtn");
+      const userProfile = document.getElementById("userProfile");
+      const userAvatar = document.getElementById("userAvatar");
+      const userName = document.getElementById("userName");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const langBtn = document.getElementById("langBtn");
+      let currentLanguage = localStorage.getItem("zatamLanguage") || "en";
+
+      function getDefaultAvatar(name = "User") {
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ffe1a5&color=09264a`;
       }
-    });
-    logoutBtn.addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-      } catch (error) {
-        console.error("Logout error:", error);
+      function getSafeGooglePhoto(photoURL) {
+        if (!photoURL) return "";
+        return photoURL
+          .replace("=s96-c", "=s200-c")
+          .replace("=s64-c", "=s200-c")
+          .replace("=s48-c", "=s200-c");
       }
-    });
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        loginBtn.style.display = "none";
-        userProfile.style.display = "flex";
-        setAvatar(userAvatar, user);
-        userName.textContent = user.displayName || "Player";
-        localStorage.setItem("zatamUserId", user.uid);
-        localStorage.setItem("zatamUserName", user.displayName || "Player");
-        localStorage.setItem("zatamUserEmail", user.email || "");
-        localStorage.setItem(
-          "zatamUserPhoto",
-          getSafeGooglePhoto(user.photoURL) ||
-          getDefaultAvatar(user.displayName || "Player"),
-        );
-      } else {
-        loginBtn.style.display = "flex";
-        userProfile.style.display = "none";
-        userAvatar.src = getDefaultAvatar("User");
-        userName.textContent = "";
-        localStorage.removeItem("zatamUserId");
-        localStorage.removeItem("zatamUserName");
-        localStorage.removeItem("zatamUserEmail");
-        localStorage.removeItem("zatamUserPhoto");
+      function setAvatar(imgElement, user) {
+        const name = user?.displayName || "User";
+        const googlePhoto = getSafeGooglePhoto(user?.photoURL);
+        imgElement.alt = name;
+        imgElement.src = googlePhoto || getDefaultAvatar(name);
+        imgElement.onerror = () => {
+          imgElement.onerror = null;
+          imgElement.src = getDefaultAvatar(name);
+        };
       }
+
+      const common = {
+        en: {
+          navGames: "Games",
+          navAbout: "About",
+          navResources: "Resources",
+          navLeaderboard: "Leaderboard",
+          navContact: "Contact",
+          login: "↪ Login",
+          logout: "Logout",
+          langButton: "🌐 EN / SA",
+          loginFailed: "Login failed. Please try again.",
+        },
+        sa: {
+          navGames: "क्रीडाः",
+          navAbout: "विषये",
+          navResources: "संसाधनानि",
+          navLeaderboard: "श्रेष्ठसूची",
+          navContact: "सम्पर्कः",
+          login: "↪ प्रवेशः",
+          logout: "निर्गमः",
+          langButton: "🌐 SA / EN",
+          loginFailed: "प्रवेशः असफलः। पुनः प्रयत्नं कुरु।",
+        },
+      };
+      const translations = {
+        en: { ...common.en, ...pageTranslations.en },
+        sa: { ...common.sa, ...pageTranslations.sa },
+      };
+
+      function updateLanguage() {
+        const t = translations[currentLanguage];
+        document.querySelectorAll("[data-i18n]").forEach((element) => {
+          const key = element.dataset.i18n;
+          if (t[key]) element.innerHTML = t[key];
+        });
+        langBtn.innerHTML = t.langButton;
+        logoutBtn.innerHTML = t.logout;
+        localStorage.setItem("zatamLanguage", currentLanguage);
+      }
+
+      loginBtn.addEventListener("click", () => {
+      window.location.href = "./login.html";
     });
-    langBtn.addEventListener("click", () => {
-      currentLanguage = currentLanguage === "en" ? "sa" : "en";
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          await signOut(auth);
+        } catch (error) {
+          console.error("Logout error:", error);
+        }
+      });
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          loginBtn.style.display = "none";
+          userProfile.style.display = "flex";
+          setAvatar(userAvatar, user);
+          userName.textContent = user.displayName || "Player";
+          localStorage.setItem("zatamUserId", user.uid);
+          localStorage.setItem("zatamUserName", user.displayName || "Player");
+          localStorage.setItem("zatamUserEmail", user.email || "");
+          localStorage.setItem(
+            "zatamUserPhoto",
+            getSafeGooglePhoto(user.photoURL) ||
+              getDefaultAvatar(user.displayName || "Player"),
+          );
+        } else {
+          loginBtn.style.display = "flex";
+          userProfile.style.display = "none";
+          userAvatar.src = getDefaultAvatar("User");
+          userName.textContent = "";
+          localStorage.removeItem("zatamUserId");
+          localStorage.removeItem("zatamUserName");
+          localStorage.removeItem("zatamUserEmail");
+          localStorage.removeItem("zatamUserPhoto");
+        }
+      });
+      langBtn.addEventListener("click", () => {
+        currentLanguage = currentLanguage === "en" ? "sa" : "en";
+        updateLanguage();
+      });
       updateLanguage();
-    });
-    updateLanguage();
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>

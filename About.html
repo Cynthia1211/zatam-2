@@ -663,8 +663,6 @@
     <script type="module">
       import {
         auth,
-        provider,
-        signInWithPopup,
         signOut,
         onAuthStateChanged,
       } from "./firebase-config.js";
@@ -737,14 +735,9 @@
         localStorage.setItem("zatamLanguage", currentLanguage);
       }
 
-      loginBtn.addEventListener("click", async () => {
-        try {
-          await signInWithPopup(auth, provider);
-        } catch (error) {
-          console.error("Login error:", error);
-          alert(translations[currentLanguage].loginFailed);
-        }
-      });
+      loginBtn.addEventListener("click", () => {
+      window.location.href = "./login.html";
+    });
       logoutBtn.addEventListener("click", async () => {
         try {
           await signOut(auth);

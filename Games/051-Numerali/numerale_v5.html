@@ -715,7 +715,7 @@ import{
   signInWithPopup,
   signOut,onAuthStateChanged
 }from'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
-import{getFirestore,collection,addDoc,serverTimestamp,getDocs,query,orderBy,limit}from'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+import{getFirestore,collection,doc,getDoc,setDoc,updateDoc,serverTimestamp,getDocs,query,orderBy,limit}from'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 
 const app=initializeApp({
   apiKey:'AIzaSyB6gCO3IOjDSCHJNK08C8MEw47Wlwf2_AE',
@@ -794,7 +794,7 @@ document.getElementById('lb-login-btn').addEventListener('click',doLogin);
 
 async function loadLeaderboard(){
   try{
-    const q=query(collection(db,'leaderboard'),orderBy('score','desc'),limit(100));
+    const q=query(collection(db,'leaderboard-zatamgame'),orderBy('score','desc'),limit(100));
     const snap=await getDocs(q);
     allScores=[];
     snap.forEach(d=>allScores.push({id:d.id,...d.data()}));
@@ -841,19 +841,44 @@ function updateMyRank(scores){
 
 document.getElementById('lb-view-more').addEventListener('click',()=>{lbVisible+=5;renderLeaderboard();});
 
+// Daily-best-per-user upload, per the Daily Best Score Implementation Guide:
+// one document per user per game per day, keyed by `${uid}_${gameId}_${date}`.
+// Only ever overwritten when the new score beats the existing one for today.
 async function postScore(finalScore,guessCount){
-  if(!currentUser)return false;
+  if(!currentUser)return{ok:false};
   try{
-    await addDoc(collection(db,'leaderboard'),{
-      userId:currentUser.uid,
-      playerName:currentUser.displayName||'Player',
-      email:currentUser.email||'',
-      photoURL:safePhoto(currentUser.photoURL)||'',
-      score:finalScore,gameName:GAME_NAME,gameId:GAME_ID,
-      guesses:guessCount,scoreDate:today(),createdAt:serverTimestamp()
-    });
-    return true;
-  }catch(e){console.error('Post score error:',e);return false;}
+    const recordId=`${currentUser.uid}_${GAME_ID}_${today()}`;
+    const scoreRef=doc(db,'leaderboard-zatamgame',recordId);
+    const existing=await getDoc(scoreRef);
+
+    if(!existing.exists()){
+      await setDoc(scoreRef,{
+        userId:currentUser.uid,
+        playerName:currentUser.displayName||'Player',
+        email:currentUser.email||'',
+        photoURL:safePhoto(currentUser.photoURL)||'',
+        gameId:GAME_ID,gameName:GAME_NAME,
+        score:finalScore,guesses:guessCount,
+        scoreDate:today(),
+        createdAt:serverTimestamp(),updatedAt:serverTimestamp()
+      });
+      return{ok:true,isNewBest:true};
+    }
+
+    const oldScore=Number(existing.data().score||0);
+    if(finalScore>oldScore){
+      await updateDoc(scoreRef,{
+        playerName:currentUser.displayName||'Player',
+        email:currentUser.email||'',
+        photoURL:safePhoto(currentUser.photoURL)||'',
+        score:finalScore,guesses:guessCount,
+        updatedAt:serverTimestamp()
+      });
+      return{ok:true,isNewBest:true};
+    }
+
+    return{ok:true,isNewBest:false}; // today's existing score was already higher — left untouched
+  }catch(e){console.error('Post score error:',e);return{ok:false};}
 }
 
 window._renderLeaderboard=renderLeaderboard;
@@ -865,9 +890,9 @@ window._onWin=async(finalScore,guessCount)=>{
     return;
   }
   status.textContent='Posting to leaderboard…';
-  const ok=await postScore(finalScore,guessCount);
-  if(ok){
-    status.textContent='✅ Score posted to global leaderboard!';
+  const res=await postScore(finalScore,guessCount);
+  if(res.ok){
+    status.textContent=res.isNewBest?'✅ New daily best — posted to global leaderboard!':'✔️ Today\'s best score stays on the board.';
     status.className='win-post-status ok';
     await loadLeaderboard();
   }else{

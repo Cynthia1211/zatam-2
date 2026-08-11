@@ -7,7 +7,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://zimjs.org/cdn/1.5.0/createjs.js"></script>
   <script src="https://zimjs.org/cdn/018/zim_min.js"></script>
-  <script src="../firebase-config.js"></script>
+  <!-- Firebase is loaded inline below, same self-contained pattern as Numerale —
+       no external file, no relative-path or load-order issues. -->
 
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -86,6 +87,33 @@
       font-size:12px;cursor:pointer;margin-top:10px;
       font-family:'Nunito',sans-serif;text-decoration:underline;
     }
+
+    /* ── Auth widget (top-right) ── */
+    #auth-widget{position:fixed;top:12px;right:12px;z-index:10500;font-family:'Nunito',sans-serif;}
+    #home-btn{
+      position:fixed;top:12px;left:12px;z-index:10500;
+      display:flex;align-items:center;justify-content:center;
+      width:38px;height:38px;border-radius:50%;
+      background:#fff;border:1.5px solid #d4b896;color:#09264a;
+      font-size:17px;text-decoration:none;cursor:pointer;
+      box-shadow:0 2px 10px rgba(9,38,74,.14);
+    }
+    #home-btn:hover{border-color:#f4a300;background:#fff8ec;}
+    #auth-signin-btn{
+      display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:20px;
+      border:1.5px solid #d4b896;background:#fff;color:#09264a;
+      font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(9,38,74,.14);
+    }
+    #auth-signin-btn:hover{border-color:#f4a300;}
+    #auth-signin-btn:disabled{opacity:.6;cursor:default;}
+    #auth-user-chip{
+      display:none;align-items:center;gap:8px;padding:5px 6px 5px 5px;border-radius:20px;
+      background:#fff;border:1.5px solid #d4b896;box-shadow:0 2px 10px rgba(9,38,74,.14);
+    }
+    #auth-avatar-img{width:28px;height:28px;border-radius:50%;object-fit:cover;display:block;}
+    #auth-name-span{font-size:12px;font-weight:700;color:#09264a;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    #auth-signout-btn{background:transparent;border:none;color:#6b7f96;font-size:15px;cursor:pointer;padding:2px 6px;line-height:1;}
+    #auth-signout-btn:hover{color:#e07b39;}
   /* ── Win overlay ── */
     #win-overlay{
       display:none;position:fixed;inset:0;background:rgba(9,38,74,.88);
@@ -137,6 +165,23 @@
   </style>
 </head>
 <body>
+
+<a id="home-btn" href="https://zatam-ver1.vercel.app/" title="Back to Zat.am">🏠</a>
+
+<!-- Sign-in state is shared across the whole zatam-ver1.vercel.app site (same
+     Firebase project), so if the player already signed in on the main site or
+     another game, they'll show up signed in here too. -->
+<div id="auth-widget">
+  <button id="auth-signin-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+    Sign in
+  </button>
+  <div id="auth-user-chip">
+    <img id="auth-avatar-img" alt="">
+    <span id="auth-name-span"></span>
+    <button id="auth-signout-btn" title="Sign out">⏻</button>
+  </div>
+</div>
 
 <div id="name-form">
   <div id="name-box">
@@ -192,18 +237,23 @@
 </div>
 
 <script>
+// currentUser is kept in sync by the inline Firebase module at the bottom of
+// this file (self-contained, same pattern as Numerale — no external file).
+let currentUser = null;
+window._onAuthChange = function(user){ currentUser = user; };
+
 const PLAYER_KEY = 'zatam_playerName';
 function getPlayerName(){ return localStorage.getItem(PLAYER_KEY) || ''; }
 function setPlayerName(n){ localStorage.setItem(PLAYER_KEY, n.trim()); }
 
-function submitScore({ playerName, moves, timeSecs, stars }){
+async function submitScore({ playerName, moves, timeSecs, stars }){
   const finalScore = moves * 100 + timeSecs;
   if(typeof uploadScore === 'function'){
-    uploadScore({
-      userId:'', playerName:playerName||'Anonymous', email:'', photoURL:'',
-      gameId:'memory', gameName:'Memory Match', score:finalScore,
-      createdAt:new Date(), scoreDate:new Date().toISOString(),
-    });
+    // Signed-in players are tracked by their real Firebase uid so their
+    // daily best follows their account across the whole site's leaderboard.
+    // Not signed in still works — falls back to the typed name / a
+    // per-browser anonymous id, same as guest play.
+    return await uploadScore({ playerName, score:finalScore, lowerIsBetter:true, stars });
   }
 }
 
@@ -211,21 +261,19 @@ let currentLbDiff = 'easy';
 async function fetchLeaderboard(diff){
   const body = document.getElementById('lb-body');
   body.innerHTML = '<div id="lb-loading">Loading…</div>';
-  const firestore = (typeof db !== 'undefined') ? db : null;
-  if(!firestore){ body.innerHTML = '<div id="lb-empty">Leaderboard not available</div>'; return; }
+  if(typeof fetchGameLeaderboard !== 'function'){ body.innerHTML = '<div id="lb-empty">Leaderboard not available</div>'; return; }
   try{
-    const snap = await firestore.collection('leaderboard')
-      .where('gameId','==','memory').orderBy('score','asc').limit(10).get();
+    const snap = await fetchGameLeaderboard('score','asc',10);
     if(snap.empty){ body.innerHTML = '<div id="lb-empty">No scores yet – be the first! 🎯</div>'; return; }
     const medals = ['🥇','🥈','🥉'];
     let html = '<table><thead><tr><th>#</th><th>Player</th><th>Score</th><th>⭐</th></tr></thead><tbody>';
-    snap.docs.forEach((doc,i)=>{
-      const d=doc.data(), m=medals[i]?`<span class="lb-medal">${medals[i]}</span>`:'';
-      html += `<tr><td>${m}${i+1}</td><td>${escHtml(d.playerName||'Anonymous')}</td><td>${d.score}</td><td>${'⭐'.repeat(d.stars||1)}</td></tr>`;
+    snap.forEach((d,i)=>{
+      const data=d.data(), m=medals[i]?`<span class="lb-medal">${medals[i]}</span>`:'';
+      html += `<tr><td>${m}${i+1}</td><td>${escHtml(data.playerName||'Anonymous')}</td><td>${data.score}</td><td>${'⭐'.repeat(data.stars||1)}</td></tr>`;
     });
     html += '</tbody></table>';
     body.innerHTML = html;
-  } catch(e){ body.innerHTML = '<div id="lb-empty">Error loading scores.</div>'; }
+  } catch(e){ console.error('Leaderboard error:',e); body.innerHTML = '<div id="lb-empty">Error loading scores.</div>'; }
 }
 function escHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmtTime(s){ const m=Math.floor(s/60),sec=s%60; return m>0?m+'m '+String(sec).padStart(2,'0')+'s':sec+'s'; }
@@ -496,14 +544,26 @@ frame.on("ready", ()=>{
     document.getElementById('win-pairs').textContent = finalPairs;
     document.getElementById('win-time').textContent = fmtTime(finalSecs);
     const savedName = getPlayerName();
-    document.getElementById('win-name-input').value = savedName || '';
+    const nameRow = document.getElementById('win-name-row');
+    const nameInput = document.getElementById('win-name-input');
+    if(currentUser){
+      nameInput.value = currentUser.displayName || savedName || '';
+      nameRow.querySelector('label').textContent = 'Playing as (signed in)';
+    } else {
+      nameInput.value = savedName || '';
+      nameRow.querySelector('label').textContent = 'YOUR NAME (for the leaderboard)';
+    }
     document.getElementById('win-overlay').classList.add('show');
     setTimeout(()=>document.getElementById('win-name-input').focus(), 100);
 
-    document.getElementById('win-save').onclick = ()=>{
+    document.getElementById('win-save').onclick = async ()=>{
+      const btn = document.getElementById('win-save');
       const name = document.getElementById('win-name-input').value.trim() || 'Anonymous';
       setPlayerName(name);
-      submitScore({playerName:name, moves:finalMoves, timeSecs:finalSecs, stars});
+      btn.disabled = true; btn.textContent = 'Saving…';
+      const res = await submitScore({playerName:name, moves:finalMoves, timeSecs:finalSecs, stars});
+      btn.disabled = false; btn.textContent = '💾 Save Score';
+      if(res && res.ok === false){ alert('Could not save score — check your connection and try again.'); return; }
       document.getElementById('win-overlay').classList.remove('show');
       startGame(activeDiff);
     };
@@ -599,6 +659,115 @@ frame.on("ready", ()=>{
 
   startGame("easy");
 });
+</script>
+
+<!-- ═══ FIREBASE — self-contained, same pattern as Numerale (no external
+     file, no relative path, no load-order race) ═══ -->
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
+import{getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
+import{getFirestore,collection,doc,getDoc,setDoc,updateDoc,serverTimestamp,getDocs,query,where,orderBy,limit}from'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+
+// Same project as the rest of the site (main site, Tic Tac Toe) so a
+// signed-in session carries over between games.
+const app=initializeApp({
+  apiKey:'AIzaSyC8nm8zQR6fiC_3mTQ3hURXNJPR6faKYOU',
+  authDomain:'zat-am-main.firebaseapp.com',
+  projectId:'zat-am-main',
+  storageBucket:'zat-am-main.appspot.com',
+  messagingSenderId:'1071341524876',
+  appId:'1:1071341524876:web:1908319951cd8f50b2e8a9'
+});
+const auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
+const LEADERBOARD_COLLECTION='leaderboard-zatamgame',GAME_ID='memory',GAME_NAME='Memory Match';
+
+function today(){return new Date().toISOString().split('T')[0];}
+function getAnonId(){
+  let id=localStorage.getItem('zatam_anon_id');
+  if(!id){id='anon_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2);localStorage.setItem('zatam_anon_id',id);}
+  return id;
+}
+function avatarFallback(n){return'https://ui-avatars.com/api/?name='+encodeURIComponent(n||'P')+'&background=ffe1a5&color=09264a';}
+
+let currentUser=null;
+
+function updateAuthUI(user){
+  const signinBtn=document.getElementById('auth-signin-btn');
+  const chip=document.getElementById('auth-user-chip');
+  if(!signinBtn||!chip)return;
+  if(user){
+    signinBtn.style.display='none';chip.style.display='flex';
+    const img=document.getElementById('auth-avatar-img');
+    img.src=user.photoURL||avatarFallback(user.displayName);
+    img.onerror=()=>{img.onerror=null;img.src=avatarFallback(user.displayName);};
+    document.getElementById('auth-name-span').textContent=user.displayName||user.email||'Player';
+  } else {
+    signinBtn.style.display='flex';chip.style.display='none';
+  }
+}
+
+async function doAuthSignIn(){
+  const btn=document.getElementById('auth-signin-btn');
+  btn.disabled=true;btn.textContent='Signing in…';
+  try{ await signInWithPopup(auth,provider); }
+  catch(e){ console.error('Sign-in error:',e.code,e.message); alert('Sign-in failed: '+(e.code||e.message)); }
+  finally{
+    btn.disabled=false;
+    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> Sign in';
+  }
+}
+async function doAuthSignOut(){
+  try{ await signOut(auth); }catch(e){ console.error('Sign-out error:',e); }
+}
+
+document.getElementById('auth-signin-btn').addEventListener('click',doAuthSignIn);
+document.getElementById('auth-signout-btn').addEventListener('click',doAuthSignOut);
+onAuthStateChanged(auth, user=>{
+  currentUser=user;
+  updateAuthUI(user);
+  if(typeof window._onAuthChange==='function') window._onAuthChange(user);
+});
+
+// Daily-best-per-player upload, per the Daily Best Score Implementation
+// Guide: one document per player per game per day, keyed by
+// `${userId}_${gameId}_${date}`. lowerIsBetter:true means a smaller score
+// (fewer moves + less time) is the better one, which is how this game scores.
+async function uploadScore({ playerName, score, scoreDate, lowerIsBetter=false, ...extra }){
+  try{
+    const uid = currentUser ? currentUser.uid : getAnonId();
+    const date = scoreDate ? String(scoreDate).split('T')[0] : today();
+    const recordId = `${uid}_${GAME_ID}_${date}`;
+    const scoreRef = doc(db, LEADERBOARD_COLLECTION, recordId);
+    const existing = await getDoc(scoreRef);
+
+    const base = {
+      userId: uid,
+      playerName: currentUser ? (currentUser.displayName||playerName||'Player') : (playerName||'Anonymous'),
+      email: currentUser ? (currentUser.email||'') : '',
+      photoURL: currentUser ? (currentUser.photoURL||'') : '',
+      gameId:GAME_ID, gameName:GAME_NAME, scoreDate:date,
+      ...extra
+    };
+
+    if(!existing.exists()){
+      await setDoc(scoreRef, { ...base, score, createdAt:serverTimestamp(), updatedAt:serverTimestamp() });
+      return { ok:true, isNewBest:true };
+    }
+    const oldScore = Number(existing.data().score||0);
+    const isBetter = lowerIsBetter ? score<oldScore : score>oldScore;
+    if(isBetter){
+      await updateDoc(scoreRef, { ...base, score, updatedAt:serverTimestamp() });
+      return { ok:true, isNewBest:true };
+    }
+    return { ok:true, isNewBest:false };
+  }catch(e){ console.error('Post score error:',e); return { ok:false }; }
+}
+window.uploadScore = uploadScore;
+
+window.fetchGameLeaderboard = async function(orderField, direction, limitN){
+  const q = query(collection(db, LEADERBOARD_COLLECTION), where('gameId','==',GAME_ID), orderBy(orderField, direction), limit(limitN));
+  return await getDocs(q);
+};
 </script>
 </body>
 </html>

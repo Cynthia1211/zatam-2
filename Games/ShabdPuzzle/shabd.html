@@ -625,7 +625,11 @@ function ready() {
             for (let c=0; c<3; c++) {
                 const slotIndex = r*3+c;
                 const card = cards.find(item => item.slotIndex === slotIndex);
-                if (!card || card.answerIndex !== slotIndex) wrong++;
+
+                const expected = String(noun.decl[r][c]).trim();
+                const actual = card ? String(card.label.text).trim() : "";
+
+                if (!card || expected !== actual) wrong++;
             }
         });
 

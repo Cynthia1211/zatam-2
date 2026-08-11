@@ -13,7 +13,9 @@
         auth,
         db,
         doc,
+        getDoc,
         setDoc,
+        updateDoc,
         serverTimestamp
       } from "../../firebase-config.js";
 
@@ -21,22 +23,36 @@
         const user = auth.currentUser;
         if (!user) return;
 
-        const scoreId = `${user.uid}_${entry.id || `${entry.gameId}_${entry.matchId || Date.now()}`}`;
-
-        await setDoc(doc(db, "leaderboard", scoreId), {
+        const now = new Date();
+        const today = entry.scoreDate || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+        const gameId = entry.gameId || "laddersSnakes";
+        const scoreId = `${user.uid}_${gameId}_${today}`;
+        const scoreRef = doc(db, "leaderboard-zatamgame", scoreId);
+        const scoreData = {
           userId: user.uid,
           playerName: user.displayName || entry.name || "Player",
           email: user.email || "",
           photoURL: user.photoURL || "",
-          gameId: entry.gameId,
-          gameName: entry.gameName,
+          gameId,
+          gameName: entry.gameName || "Ladders & Snakes",
           score: entry.score,
-          moves: entry.moves,
-          matchId: entry.matchId || scoreId,
-          scoreDate: entry.scoreDate,
-          updatedAt: serverTimestamp(),
-          createdAt: entry.createdAt || serverTimestamp()
-        }, { merge: true });
+          scoreDate: today,
+          updatedAt: serverTimestamp()
+        };
+
+        const existingScore = await getDoc(scoreRef);
+        if (!existingScore.exists()) {
+          await setDoc(scoreRef, {
+            ...scoreData,
+            createdAt: serverTimestamp()
+          });
+          return;
+        }
+
+        const oldScore = Number(existingScore.data()?.score || 0);
+        if (entry.score > oldScore) {
+          await updateDoc(scoreRef, scoreData);
+        }
       };
     </script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
