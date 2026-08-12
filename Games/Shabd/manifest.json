@@ -1,0 +1,16 @@
+{
+  "name": "Shabd puzzle",
+  "short_name": "Shabd",
+  "start_url": "https://pd2.github.io/shabd/",
+  "icons": [
+    {
+      "src": "shabd_icon.jpg",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#ccffcc",
+  "background_color": "#ccffcc",
+  "display": "fullscreen",
+  "orientation": "portrait"
+}

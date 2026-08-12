@@ -619,6 +619,11 @@
           <button class="tab" data-game="sanskritPuzzle">🪔 Sanskrit Puzzle</button>
           <button class="tab" data-game="laddersSnakes">Ladders & Snakes</button>
           <button class="tab" data-game="picturePuzzle">Picture Puzzle</button>
+          <button class="tab" data-game="sanskritMonopoly">🎲 Sanskrit Monopoly</button>
+          <button class="tab" data-game="contextCloze">📝 Context Cloze</button>
+          <button class="tab" data-game="meaningBridge">🌉 Meaning Bridge</button>
+          <button class="tab" data-game="passageReconstruction">📚 Passage Reconstruction</button>
+          <button class="tab" data-game="wordHunt">🔎 Word Hunt</button>
         </div>
 
         <div class="date-controls">
@@ -697,6 +702,11 @@
           <div class="filter-row" data-side-game="sanskritPuzzle"><span>Sanskrit Puzzle</span><span>All</span></div>
           <div class="filter-row" data-side-game="sudoku"><span>Sudoku</span><span>All</span></div>
           <div class="filter-row" data-side-game="picturePuzzle"><span>Picture Puzzle</span><span>All</span></div>
+          <div class="filter-row" data-side-game="sanskritMonopoly"><span>Sanskrit Monopoly</span><span>All</span></div>
+          <div class="filter-row" data-side-game="contextCloze"><span>Context Cloze</span><span>All</span></div>
+          <div class="filter-row" data-side-game="meaningBridge"><span>Meaning Bridge</span><span>All</span></div>
+          <div class="filter-row" data-side-game="passageReconstruction"><span>Passage Reconstruction</span><span>All</span></div>
+          <div class="filter-row" data-side-game="wordHunt"><span>Word Hunt</span><span>All</span></div>
         </div>
 
         <div class="side-card">
@@ -754,7 +764,9 @@
       getDocs,
       query,
       orderBy,
-      limit
+      limit,
+      doc,
+      getDoc
     } from "./firebase-config.js";
 
     const loginBtn = document.getElementById("loginBtn");
@@ -811,6 +823,11 @@
             laddersSnakes: "Ladders & Snakes",
             picturePuzzle: "Picture Puzzle",
             sanskritPuzzle: "Sanskrit Puzzle",
+            sanskritMonopoly: "🎲 Sanskrit Monopoly",
+            contextCloze: "📝 Context Cloze",
+            meaningBridge: "🌉 Meaning Bridge",
+            passageReconstruction: "📚 Passage Reconstruction",
+            wordHunt: "🔎 Word Hunt",
 
             rank: "Rank",
             player: "Player",
@@ -855,6 +872,14 @@
             maze: "🧩 पाशः",
             game2048: "🔢 २०४८",
             sudoku: "🔢 सुडोकू",
+            laddersSnakes: "Ladders & Snakes",
+            picturePuzzle: "Picture Puzzle",
+            sanskritPuzzle: "Sanskrit Puzzle",
+            sanskritMonopoly: "🎲 Sanskrit Monopoly",
+            contextCloze: "📝 Context Cloze",
+            meaningBridge: "🌉 Meaning Bridge",
+            passageReconstruction: "📚 Passage Reconstruction",
+            wordHunt: "🔎 Word Hunt",
 
             rank: "स्थानम्",
             player: "क्रीडकः",
@@ -998,7 +1023,7 @@
 
         userName.textContent = user.displayName || "Player";
         myName.textContent = user.displayName || "You";
-        myEmail.textContent = user.email || "";
+        myEmail.textContent = maskEmail(user.email || "");
 
         localStorage.setItem("zatamUserId", user.uid);
         localStorage.setItem("zatamUserName", user.displayName || "Player");
@@ -1027,26 +1052,377 @@
       await loadLeaderboard();
     });
 
+    const profileCache = new Map();
+
+    const WORD_COMPLEX_GAMES = [
+      {
+        subcollection: "contextCloze",
+        gameId: "contextCloze",
+        gameName: "Context Cloze"
+      },
+      {
+        subcollection: "meaningBridge",
+        gameId: "meaningBridge",
+        gameName: "Meaning Bridge"
+      },
+      {
+        subcollection: "passageReconstruction",
+        gameId: "passageReconstruction",
+        gameName: "Passage Reconstruction"
+      },
+      {
+        subcollection: "wordHunt",
+        gameId: "wordHunt",
+        gameName: "Word Hunt"
+      }
+    ];
+
+    function parsePackedEntry(entryKey, scoreValue, gameId, gameName) {
+      const match = String(entryKey).match(/^(\d+)_([^_]+)_(\d+(?:\.\d+)?)$/);
+
+      if (!match) {
+        console.warn("Skipping unrecognized leaderboard entry:", entryKey);
+        return null;
+      }
+
+      const timestamp = Number(match[1]);
+      const uid = match[2];
+      const timePlayedInSeconds = Number(match[3]);
+      const score = Number(scoreValue);
+
+      if (
+        !Number.isFinite(timestamp) ||
+        !uid ||
+        !Number.isFinite(timePlayedInSeconds) ||
+        !Number.isFinite(score)
+      ) {
+        console.warn("Skipping invalid leaderboard entry:", entryKey, scoreValue);
+        return null;
+      }
+
+      return {
+        id: `external_${gameId}_${entryKey}`,
+        userId: uid,
+        gameId,
+        gameName,
+        score,
+        scoreDate: getLocalDateStringFromTimestamp(timestamp),
+        createdAt: timestamp,
+        timePlayedInSeconds,
+        source: "external"
+      };
+    }
+
+    async function loadPackedScoreCollection(
+      rootCollection,
+      gameDocument,
+      scoreSubcollection,
+      gameId,
+      gameName
+    ) {
+      const monthCollectionRef = collection(
+        db,
+        rootCollection,
+        gameDocument,
+        scoreSubcollection
+      );
+
+      const monthSnapshot = await getDocs(monthCollectionRef);
+      const scores = [];
+
+      monthSnapshot.forEach((monthDoc) => {
+        const data = monthDoc.data() || {};
+        const entries = data.entries || {};
+
+        Object.entries(entries).forEach(([entryKey, scoreValue]) => {
+          const parsed = parsePackedEntry(
+            entryKey,
+            scoreValue,
+            gameId,
+            gameName
+          );
+
+          if (parsed) {
+            scores.push(parsed);
+          }
+        });
+      });
+
+      return scores;
+    }
+
+    async function loadMonopolyScores() {
+      return loadPackedScoreCollection(
+        "leaderboards-staging",
+        "sanskrit-monopoly",
+        "gameHistory",
+        "sanskritMonopoly",
+        "Sanskrit Monopoly"
+      );
+    }
+
+    async function loadWordComplexScores() {
+      const results = await Promise.allSettled(
+        WORD_COMPLEX_GAMES.map((game) =>
+          loadPackedScoreCollection(
+            "leaderboards",
+            "word-complex",
+            game.subcollection,
+            game.gameId,
+            game.gameName
+          )
+        )
+      );
+
+      const scores = [];
+
+      results.forEach((result, index) => {
+        if (result.status === "fulfilled") {
+          scores.push(...result.value);
+        } else {
+          console.error(
+            `Failed to load Word Complex ${WORD_COMPLEX_GAMES[index].gameName}:`,
+            result.reason
+          );
+        }
+      });
+
+      return scores;
+    }
+
+    function keepDailyBestScores(scores) {
+      const bestByDay = new Map();
+
+      scores.forEach((item) => {
+        const date = getScoreDate(item);
+
+        if (!item.userId || !item.gameId || !date) {
+          return;
+        }
+
+        const key = `${item.userId}__${item.gameId}__${date}`;
+        const currentBest = bestByDay.get(key);
+
+        if (
+          !currentBest ||
+          Number(item.score || 0) > Number(currentBest.score || 0)
+        ) {
+          bestByDay.set(key, item);
+        }
+      });
+
+      return [...bestByDay.values()];
+    }
+
+    function getFallbackPlayerName(uid) {
+      if (!uid) return "Player";
+      return `Player · ${uid.slice(-4).toUpperCase()}`;
+    }
+
+    async function getPublicProfile(uid) {
+      if (!uid) {
+        return {
+          playerName: "",
+          photoURL: "",
+          email: ""
+        };
+      }
+
+      if (profileCache.has(uid)) {
+        return profileCache.get(uid);
+      }
+
+      const promise = (async () => {
+        try {
+          const profileRef = doc(
+            db,
+            "users",
+            uid,
+            "public",
+            "profile"
+          );
+
+          const snapshot = await getDoc(profileRef);
+          const data = snapshot.exists() ? snapshot.data() : {};
+
+          return {
+            playerName:
+              data.username ||
+              data.displayName ||
+              data.name ||
+              "",
+            photoURL: data.photoURL || "",
+            email:
+              data.email ||
+              data.maskedEmail ||
+              ""
+          };
+        } catch (error) {
+          console.warn(`Could not load public profile for ${uid}:`, error);
+
+          return {
+            playerName: "",
+            photoURL: "",
+            email: ""
+          };
+        }
+      })();
+
+      profileCache.set(uid, promise);
+      return promise;
+    }
+
+    async function enrichExternalScores(scores) {
+      const uniqueUids = [
+        ...new Set(
+          scores
+            .map((item) => item.userId)
+            .filter(Boolean)
+        )
+      ];
+
+      const profileEntries = await Promise.all(
+        uniqueUids.map(async (uid) => {
+          const profile = await getPublicProfile(uid);
+          return [uid, profile];
+        })
+      );
+
+      const profiles = new Map(profileEntries);
+
+      return scores.map((item) => {
+        const profile = profiles.get(item.userId) || {};
+        const isCurrentUser =
+          currentUser &&
+          currentUser.uid === item.userId;
+
+        let playerName = profile.playerName || "";
+
+        if (!playerName && isCurrentUser) {
+          playerName =
+            currentUser.displayName ||
+            "";
+        }
+
+        if (!playerName) {
+          playerName =
+            getFallbackPlayerName(item.userId);
+        }
+
+        const ownEmail =
+          isCurrentUser
+            ? currentUser.email || ""
+            : "";
+
+        return {
+          ...item,
+          playerName,
+          photoURL:
+            profile.photoURL ||
+            (
+              isCurrentUser
+                ? currentUser.photoURL || ""
+                : ""
+            ),
+          email:
+            profile.email ||
+            ownEmail
+        };
+      });
+    }
+
     async function loadLeaderboard() {
+      leaderboardBody.innerHTML = `
+        <tr>
+          <td colspan="4" class="empty">Loading leaderboard...</td>
+        </tr>
+      `;
+
       try {
-        const q = query(
+        const standardQuery = query(
           collection(db, "leaderboard-zatamgame"),
           orderBy("score", "desc"),
           limit(500)
         );
 
-        const snapshot = await getDocs(q);
+        const [
+          standardResult,
+          monopolyResult,
+          wordComplexResult
+        ] = await Promise.allSettled([
+          getDocs(standardQuery),
+          loadMonopolyScores(),
+          loadWordComplexScores()
+        ]);
 
-        allScores = [];
+        const mergedScores = [];
 
-        snapshot.forEach((docSnap) => {
-          allScores.push({
-            id: docSnap.id,
-            ...docSnap.data()
+        if (standardResult.status === "fulfilled") {
+          standardResult.value.forEach((docSnap) => {
+            mergedScores.push({
+              id: docSnap.id,
+              ...docSnap.data(),
+              source: "zatam"
+            });
           });
+        } else {
+          console.error(
+            "Standard Zat.am leaderboard failed:",
+            standardResult.reason
+          );
+        }
+
+        let externalScores = [];
+
+        if (monopolyResult.status === "fulfilled") {
+          externalScores.push(...monopolyResult.value);
+        } else {
+          console.error(
+            "Sanskrit Monopoly leaderboard failed:",
+            monopolyResult.reason
+          );
+        }
+
+        if (wordComplexResult.status === "fulfilled") {
+          externalScores.push(...wordComplexResult.value);
+        } else {
+          console.error(
+            "Word Complex leaderboard failed:",
+            wordComplexResult.reason
+          );
+        }
+
+        externalScores = keepDailyBestScores(externalScores);
+        externalScores = await enrichExternalScores(externalScores);
+
+        mergedScores.push(...externalScores);
+
+        mergedScores.sort((a, b) => {
+          const scoreDifference =
+            Number(b.score || b.points || 0) -
+            Number(a.score || a.points || 0);
+
+          if (scoreDifference !== 0) {
+            return scoreDifference;
+          }
+
+          const aTime =
+            typeof a.createdAt === "number"
+              ? a.createdAt
+              : a.createdAt?.toMillis?.() || 0;
+
+          const bTime =
+            typeof b.createdAt === "number"
+              ? b.createdAt
+              : b.createdAt?.toMillis?.() || 0;
+
+          return bTime - aTime;
         });
 
+        allScores = mergedScores;
+        visibleCount = 7;
         renderLeaderboard();
+
       } catch (error) {
         console.error("Leaderboard loading error:", error);
 
@@ -1084,7 +1460,7 @@
         const medal = getRankDisplay(rank);
 
         const playerName = player.playerName || player.name || "Player";
-        const email = maskEmail(player.email || "");
+        const email = maskEmail(player.email || "") || "Private";
         const score = player.score || player.points || 0;
         const gameName = player.gameName || "Unknown Game";
         const photoURL = player.photoURL || "";
@@ -1176,6 +1552,11 @@
       if (gameName.includes("2048")) return "2048";
       if (gameName.includes("Sudoku")) return "Sudoku";
       if (gameName.includes("Picture")) return "Picture";
+      if (gameName.includes("Monopoly")) return "Monopoly";
+      if (gameName.includes("Context Cloze")) return "Context";
+      if (gameName.includes("Meaning Bridge")) return "Meaning";
+      if (gameName.includes("Passage Reconstruction")) return "Passage";
+      if (gameName.includes("Word Hunt")) return "Word Hunt";
       return gameName;
     }
 
@@ -1297,6 +1678,21 @@ sideFilterRows.forEach((row) => {
 
     document.querySelector('[data-game="picturePuzzle"]').textContent =
         t.picturePuzzle || "Picture Puzzle";
+
+    document.querySelector('[data-game="sanskritMonopoly"]').textContent =
+        t.sanskritMonopoly || "🎲 Sanskrit Monopoly";
+
+    document.querySelector('[data-game="contextCloze"]').textContent =
+        t.contextCloze || "📝 Context Cloze";
+
+    document.querySelector('[data-game="meaningBridge"]').textContent =
+        t.meaningBridge || "🌉 Meaning Bridge";
+
+    document.querySelector('[data-game="passageReconstruction"]').textContent =
+        t.passageReconstruction || "📚 Passage Reconstruction";
+
+    document.querySelector('[data-game="wordHunt"]').textContent =
+        t.wordHunt || "🔎 Word Hunt";
 
     const headers = document.querySelectorAll("th");
 
