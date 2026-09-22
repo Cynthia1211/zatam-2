@@ -1,0 +1,223 @@
+[
+  {
+    "id": "food_01",
+    "word": "Burger",
+    "category": "Food",
+    "clues": [
+      "It is fast food",
+      "It has meat inside",
+      "It has bread on top",
+      "It is held by hand",
+      "It goes with fries",
+      "It is in McDonald's",
+      "It can be beef or chicken",
+      "It has layers",
+      "It has cheese in it",
+      "It is served hot",
+      "It is popular with kids",
+      "It has high calories",
+      "It is wrapped in paper",
+      "It is the main dish",
+      "It is tasty"
+    ]
+  },
+  {
+    "id": "food_02",
+    "word": "Sandwich",
+    "category": "Food",
+    "clues": [
+      "It is fast food",
+      "It uses sliced bread",
+      "It is triangle shaped",
+      "It has ham inside",
+      "It can be eaten cold",
+      "It is fast to make",
+      "It is good for breakfast",
+      "It has no round bun",
+      "It goes with milk",
+      "It has no crust sometimes",
+      "It has mayo inside",
+      "It is in convenience stores",
+      "It is not fried",
+      "It is wrapped in plastic",
+      "It holds everything"
+    ]
+  },
+  {
+    "id": "animal_01",
+    "word": "Dog",
+    "category": "Animal",
+    "clues": [
+      "It is a common pet",
+      "It can bark",
+      "It wags its tail",
+      "It likes bones",
+      "It is loyal to humans",
+      "It needs daily walks",
+      "It has a good sense of smell",
+      "It can guard the house",
+      "It plays fetch",
+      "It wears a collar",
+      "It is man's best friend",
+      "It can be big or small",
+      "It has four legs",
+      "It likes to chase balls",
+      "It is very friendly"
+    ]
+  },
+  {
+    "id": "animal_02",
+    "word": "Cat",
+    "category": "Animal",
+    "clues": [
+      "It is a common pet",
+      "It says meow",
+      "It likes to catch mice",
+      "It sleeps a lot",
+      "It has sharp claws",
+      "It cleans itself with tongue",
+      "It can jump very high",
+      "It likes eating fish",
+      "It uses a litter box",
+      "It purrs when happy",
+      "It has soft fur",
+      "It has long whiskers",
+      "It likes cardboard boxes",
+      "It walks softly",
+      "It can see in the dark"
+    ]
+  },
+  {
+    "id": "weather_01",
+    "word": "Rain",
+    "category": "Weather",
+    "clues": [
+      "Water falls from the sky",
+      "You need an umbrella",
+      "It makes the ground wet",
+      "Clouds turn dark gray",
+      "It helps plants grow",
+      "You wear a raincoat",
+      "It can create puddles",
+      "It makes a pitter-patter sound",
+      "It can bring rainbows",
+      "It washes the streets",
+      "It makes you stay indoors",
+      "It fills up rivers",
+      "It smells fresh on dirt",
+      "It can be light or heavy",
+      "It comes from clouds"
+    ]
+  },
+  {
+    "id": "weather_02",
+    "word": "Snow",
+    "category": "Weather",
+    "clues": [
+      "It is white and cold",
+      "It falls in winter",
+      "You can build a snowman",
+      "It covers the ground like a blanket",
+      "You can play snowball fights",
+      "It melts when warm",
+      "It makes roads slippery",
+      "Each piece is a unique flake",
+      "You wear heavy coats",
+      "Children like sledding in it",
+      "It makes no sound when falling",
+      "It sits on tree branches",
+      "It freezes your fingers",
+      "Hot chocolate is good after it",
+      "It makes a white Christmas"
+    ]
+  },
+  {
+    "id": "animal_01",
+    "word": "श्वानः",
+    "category": "पशवः",
+    "clues": [
+      "एषः सामान्यः गृहपालितपशुः अस्ति",
+      "एषः भषति",
+      "एषः स्वपुच्छं चालयति",
+      "अस्मै अस्थीनि रोचन्ते",
+      "एषः मानवान् प्रति स्वामिभक्तः अस्ति",
+      "अस्मै प्रतिदिनं भ्रमणं आवश्यकम्",
+      "अस्य घ्राणशक्तिः उत्तमा अस्ति",
+      "एषः गृहस्य रक्षणं कर्तुं शक्नोति",
+      "एषः कन्दुकानयनक्रीडां क्रीडति",
+      "एषः कण्ठसूत्रं धरति",
+      "एषः मानवस्य श्रेष्ठः मित्रम् अस्ति",
+      "एषः महान् वा लघुः वा भवितुम् अर्हति",
+      "अस्य चत्वारः पादाः सन्ति",
+      "अस्मै कन्दुकस्य अनुधावनं रोचते",
+      "एषः अतीव मित्रभावपूर्णः अस्ति"
+    ]
+  },
+  {
+    "id": "animal_02",
+    "word": "मार्जारी",
+    "category": "पशवः",
+    "clues": [
+      "एषा सामान्या गृहपालिता पशुः अस्ति",
+      "एषा म्याऊँ इति करोति",
+      "एष्यै मूषकाणां ग्रहणं रोचते",
+      "एषा बहु स्वपिति",
+      "अस्याः तीक्ष्णाः नखाः सन्ति",
+      "एषा जिह्वया आत्मानं स्वच्छं करोति",
+      "एषा अतीव उच्चैः कूर्दितुं शक्नोति",
+      "एष्यै मत्स्यभक्षणं रोचते",
+      "एषा मलबॉक्स-उपयोगं करोति",
+      "एषा प्रसन्ना सती घुरघुरशब्दं करोति",
+      "अस्याः मृदु कोमलरोम अस्ति",
+      "अस्याः दीर्घाः श्मश्रवः सन्ति",
+      "एष्यै कागदपेटिकाः रोचन्ते",
+      "एषा मृदुलेन चलति",
+      "एषा अन्धकारे द्रष्टुं शक्नोति"
+    ]
+  },
+  {
+    "id": "weather_01",
+    "word": "वृष्टिः",
+    "category": "ऋतुः",
+    "clues": [
+      "आकाशात् जलं पतति",
+      "भवते छत्रम् आवश्यकम्",
+      "एषा भूमिं आर्द्रां करोति",
+      "मेघाः कृष्णवर्णाः भवन्ति",
+      "एषा वनस्पतीनां वर्धने सहायतां करोति",
+      "भवान् वर्षानुकम् धरति",
+      "एषा जलकुण्डानि रचयितुं शक्नोति",
+      "एषा पटपट-शब्दं करोति",
+      "एषा इन्द्रधनुषं आनेतुं शक्नोति",
+      "एषा मार्गान् प्रक्षालयति",
+      "एषा भवन्तं गृहे स्थापयति",
+      "एषा नदीः पूरयति",
+      "मृत्तिकायां अस्याः गन्धः मधुरः भवति",
+      "एषा मन्दा वा तीव्रा वा भवितुम् अर्हति",
+      "एषा मेघेभ्यः आगच्छति"
+    ]
+  },
+  {
+    "id": "weather_02",
+    "word": "हिमम्",
+    "category": "ऋतुः",
+    "clues": [
+      "एतत् श्वेतं शीतलं च अस्ति",
+      "एतत् शिशिरर्ताव् पतति",
+      "भवान् हिममानवस्य रचनां कर्तुं शक्नोति",
+      "एतत् कम्बल इव भूमिं आच्छादयति",
+      "भवान् हिमकन्दुकयुद्धं क्रीडितुं शक्नोति",
+      "उष्णतायां एतत् द्रवीभवति",
+      "एतत् मार्गान् पिच्छिलान् करोति",
+      "प्रत्येकं कणः अद्वितीयः अस्ति",
+      "भवान् स्थूलानि वस्त्राणि धरति",
+      "बालकाः अस्मिनः काष्ठपट्टिकाक्रीडां रोचयन्ते",
+      "पतनावसरे एतत् शब्दं न करोति",
+      "एतत् वृक्षशाखासु उपविशति",
+      "एतत् भवतः अङ्गुलीः शीतीकरोति",
+      "अस्य अनन्तरं उष्णक्षीरं सम्यक् भवति",
+      "एतत् श्वेत-क्रिसमस-पर्व करोति"
+    ]
+  }
+
+]
