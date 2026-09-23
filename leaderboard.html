@@ -1698,6 +1698,9 @@ sideFilterRows.forEach((row) => {
     document.querySelector('[data-game="wordHunt"]').textContent =
         t.wordHunt || "🔎 Word Hunt";
 
+    document.querySelector('[data-game="sanskritPronunciation"]').textContent =
+        t.sanskritPronunciation || "🎤 Sanskrit Pronunciation";
+
     const headers = document.querySelectorAll("th");
 
     headers[0].textContent = t.rank;
