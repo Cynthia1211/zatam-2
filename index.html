@@ -715,6 +715,14 @@
       transition: transform 0.24s ease;
     }
 
+    .dialogue-thumbnail {
+      overflow: hidden;
+      background-image: url("Games/SanskritDialogueGame/Dialogue-thumbnail.png");
+      background-position: top;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
     .picture-puzzle-thumbnail {
       overflow: hidden;
       background:
@@ -734,6 +742,13 @@
       background:
         linear-gradient(rgba(10, 36, 62, .04), rgba(10, 36, 62, .04)),
         url("Games/find-the-undercover/cover.png") center center / cover no-repeat;
+    }
+
+    .pronunciation-thumbnail {
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(10, 36, 62, .04), rgba(10, 36, 62, .04)),
+        url("Games/SanskritPronunciation/cover.png") center center / cover no-repeat;
     }
 
     .wordcomplex-thumbnail {
@@ -1316,6 +1331,48 @@
   </section>
 
   <main class="games" id="gamesSection">
+    
+    <article
+      class="game-card"
+      data-category="singleplayer"
+      data-title="sanskrit dialogue conversation speaking real life"
+    >
+      <div
+        class="game-image dialogue-thumbnail"
+        role="img"
+        aria-label="Sanskrit Dialogue Game"
+      >
+        <span class="new-tag" data-i18n="newTag">NEW</span>
+      </div>
+
+      <div class="game-content">
+        <h3 data-i18n="sanskritDialogueTitle">
+          Sanskrit Dialogue Game
+        </h3>
+
+        <div class="meta">
+          <span class="pill purple-pill" data-i18n="moreTag">More</span>
+
+          <span data-i18n="medium">
+            • Medium
+          </span>
+        </div>
+
+        <div class="game-bottom">
+          <p data-i18n="sanskritDialogueDesc">
+            Practice real-life Sanskrit conversations through interactive dialogue scenarios.
+          </p>
+
+          <a
+            href="Games/SanskritDialogueGame/index.html"
+            class="play-btn"
+            data-i18n="playNow"
+          >
+            Play Now ▶
+          </a>
+        </div>
+      </div>
+    </article>
 
     <article class="game-card" data-category="word" data-title="find the undercover game">
       <div class="game-image find-the-undercover">
@@ -1401,7 +1458,7 @@
       <div class="game-content">
         <h3 data-i18n="sanskritPronunciationTitle">Sanskrit Pronunciation</h3>
         <div class="meta">
-          <span class="pill" data-i18n="singleplayerTag">Single Player</span>
+          <span class="pill purple-pill" data-i18n="moreTag">More</span>
           <span data-i18n="easy">• Easy</span>
         </div>
     
@@ -1892,6 +1949,8 @@
         slideMonopoly: "Buy, trade and learn Sanskrit properties<span>Sanskrit Monopoly</span>",
         sanskritPronunciationTitle: "Sanskrit Pronunciation",
         sanskritPronunciationDesc: "Listen to Sanskrit words and practice your pronunciation!",
+        sanskritDialogueTitle: "Sanskrit Dialogue Game",
+        sanskritDialogueDesc: "Practice real-life Sanskrit conversations through interactive dialogue scenarios.", 
         singleplayerTag: "Single Player",
         multiplayerTag: "Multiplayer",
         puzzleTitle: "Classic 15 Puzzle",
@@ -1993,6 +2052,8 @@
         slideMonopoly: "संस्कृतसम्पत्तीन् क्रीणीय विक्रीणीय शिक्षस्व<span>संस्कृत एकाधिपत्यम्</span>",
         sanskritPronunciationTitle: "संस्कृत उच्चारण",
         sanskritPronunciationDesc: "संस्कृतशब्दान् शृणु, उच्चारणं च अभ्यासय!",
+       sanskritDialogueTitle:"संस्कृत संवाद क्रीडा",
+       sanskritDialogueDesc: "संवादपरिस्थितिभिः दैनन्दिनसंस्कृतसंवादस्य अभ्यासं कुरु।",
         singleplayerTag: "एकक्रीडकः",
         multiplayerTag: "बहुक्रीडकः",
         puzzleTitle: "१५ प्रहेलिका",
