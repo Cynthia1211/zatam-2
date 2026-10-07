@@ -4,7 +4,9 @@ import { createServer as createPortTester } from "node:net";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = fileURLToPath(new URL(".", import.meta.url));
+// `npm run dev` prepares a complete GitHub Pages-style build first. Serving that
+// folder means links from the Zatam homepage behave exactly as they will online.
+const root = fileURLToPath(new URL("./dist/", import.meta.url));
 const preferredPort = Number(process.env.PORT || 4173);
 
 const types = {
@@ -80,5 +82,6 @@ const port = await canUsePort(preferredPort);
 
 server.listen(port, () => {
   console.log(`Dev server running at http://localhost:${port}/`);
+  console.log(`Memory Connect: http://localhost:${port}/Games/MemoryConnect/`);
   console.log(`Snakes and Ladders: http://localhost:${port}/Games/Snakes%20%26%20Ladders/`);
 });

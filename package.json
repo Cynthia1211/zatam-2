@@ -2,7 +2,25 @@
   "name": "zatam-to-zim",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "node dev-server.mjs"
+    "predev": "npm run build:pages",
+    "dev": "node dev-server.mjs",
+    "dev:memory-connect": "vite --config Games/MemoryConnect-app/vite.config.mjs",
+    "build:memory-connect": "vite build --config Games/MemoryConnect-app/vite.config.mjs",
+    "build:pages": "node tools/prepare-pages.mjs && vite build --config Games/MemoryConnect-app/vite.config.mjs",
+    "preview:memory-connect": "vite preview --config Games/MemoryConnect-app/vite.config.mjs",
+    "extract:memory-data": "node tools/extract-memory-connect-data.mjs",
+    "download:memory-images": "node tools/download-memory-connect-images.mjs",
+    "qa:memory-connect": "node tools/qa-memory-connect.mjs",
+    "test:memory-connect": "node tools/test-memory-connect-logic.mjs"
+  },
+  "dependencies": {
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "vite": "^8.3.2"
   }
 }
