@@ -717,8 +717,33 @@
       localStorage.setItem("zatamUserPhoto", user.photoURL || "");
     }
 
+    function getPostLoginDestination() {
+      const requested = new URLSearchParams(window.location.search)
+        .get("returnTo");
+
+      if (!requested) {
+        return "./index.html";
+      }
+
+      try {
+        const destination = new URL(requested, window.location.href);
+        const siteRoot = new URL("./", window.location.href);
+
+        if (
+          destination.origin === window.location.origin &&
+          destination.pathname.startsWith(siteRoot.pathname)
+        ) {
+          return destination.href;
+        }
+      } catch (error) {
+        console.warn("Ignoring invalid post-login destination:", error);
+      }
+
+      return "./index.html";
+    }
+
     function redirectHome() {
-      window.location.href = "./index.html";
+      window.location.href = getPostLoginDestination();
     }
 
     function getFriendlyError(error) {

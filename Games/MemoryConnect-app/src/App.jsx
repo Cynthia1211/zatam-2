@@ -6,6 +6,8 @@ import {
   formatTime,
   isMatch,
 } from "./gameLogic";
+import { saveMemoryConnectDailyBest } from "./memoryConnectLeaderboard";
+import { auth, onAuthStateChanged, signOut } from "./zatamFirebase";
 
 const confettiPieces = Array.from({ length: 48 }, (_, index) => ({
   color: ["#d35c2c", "#f5a623", "#2e9a65", "#6e3aa7", "#159cba"][index % 5],
@@ -16,6 +18,49 @@ const confettiPieces = Array.from({ length: 48 }, (_, index) => ({
 }));
 
 const tutorialStorageKey = "memory-connect-tutorial-seen";
+const pendingScoreStorageKey = "memory-connect-pending-score";
+const loginUrl = "../../login.html?returnTo=Games%2FMemoryConnect%2F";
+
+function readPendingScore() {
+  try {
+    const value = sessionStorage.getItem(pendingScoreStorageKey);
+    if (!value) return null;
+
+    const pending = JSON.parse(value);
+    if (
+      !pending?.id ||
+      !Number.isFinite(Number(pending.score)) ||
+      !pending.completedAt ||
+      Number.isNaN(new Date(pending.completedAt).getTime())
+    ) {
+      sessionStorage.removeItem(pendingScoreStorageKey);
+      return null;
+    }
+
+    return pending;
+  } catch {
+    return null;
+  }
+}
+
+function writePendingScore(pending) {
+  try {
+    sessionStorage.setItem(pendingScoreStorageKey, JSON.stringify(pending));
+  } catch {
+    // The round remains playable if browser storage is unavailable.
+  }
+}
+
+function clearPendingScore(id) {
+  const pending = readPendingScore();
+  if (pending?.id === id) {
+    sessionStorage.removeItem(pendingScoreStorageKey);
+  }
+}
+
+function getPlayerName(user) {
+  return user?.displayName || user?.email?.split("@")[0] || "Player";
+}
 
 function ImageCard({ entry, selected, matched, onSelect, highlighted }) {
   const [failed, setFailed] = useState(false);
@@ -67,7 +112,12 @@ export default function App() {
   const [showTutorial, setShowTutorial] = useState(
     () => localStorage.getItem(tutorialStorageKey) !== "true",
   );
+  const [user, setUser] = useState(undefined);
+  const [authMessage, setAuthMessage] = useState("");
+  const [leaderboardMessage, setLeaderboardMessage] = useState("");
+  const [submittingScore, setSubmittingScore] = useState(false);
   const hintTimeout = useRef(null);
+  const submittingScoreId = useRef(null);
 
   useEffect(() => {
     if (phase !== "playing" || !startedAt) return undefined;
@@ -80,6 +130,14 @@ export default function App() {
   }, [phase, startedAt]);
 
   useEffect(() => () => window.clearTimeout(hintTimeout.current), []);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
+      setUser(nextUser);
+    });
+
+    return unsubscribe;
+  }, []);
 
   const matchedSet = useMemo(() => new Set(matchedIds), [matchedIds]);
   const pairCount = DIFFICULTIES[difficulty].pairs;
@@ -95,6 +153,66 @@ export default function App() {
   function dismissTutorial() {
     localStorage.setItem(tutorialStorageKey, "true");
     setShowTutorial(false);
+  }
+
+  async function submitScore(userToSave, pending) {
+    if (!userToSave || !pending || submittingScoreId.current === pending.id) {
+      return;
+    }
+
+    if (pending.userId && pending.userId !== userToSave.uid) {
+      setLeaderboardMessage(
+        "This unfinished score belongs to a different signed-in player.",
+      );
+      return;
+    }
+
+    submittingScoreId.current = pending.id;
+    setSubmittingScore(true);
+    setLeaderboardMessage("");
+
+    try {
+      const outcome = await saveMemoryConnectDailyBest(
+        userToSave,
+        pending.score,
+        new Date(pending.completedAt),
+      );
+
+      clearPendingScore(pending.id);
+      setLeaderboardMessage(
+        outcome.status === "saved"
+          ? "Score saved to the Zatam leaderboard."
+          : `Your higher score (${outcome.score}) is already on today’s leaderboard.`,
+      );
+    } catch (error) {
+      console.error("Memory Connect leaderboard update failed:", error);
+      setLeaderboardMessage(
+        "We could not save this score. Check your connection and try again.",
+      );
+    } finally {
+      submittingScoreId.current = null;
+      setSubmittingScore(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!user) return;
+
+    const pending = readPendingScore();
+    if (pending) {
+      void submitScore(user, pending);
+    }
+  }, [user]);
+
+  async function handleSignOut() {
+    setAuthMessage("");
+    try {
+      await signOut(auth);
+      setAuthMessage("You are logged out.");
+    } catch (error) {
+      console.error("Memory Connect logout failed:", error);
+      setAuthMessage("We could not log you out. Please try again.");
+    }
   }
 
   function startGame() {
@@ -131,11 +249,24 @@ export default function App() {
       setBestScore(score);
     }
 
+    const pending = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      score,
+      completedAt: new Date().toISOString(),
+      userId: user?.uid || null,
+    };
+
+    writePendingScore(pending);
     setElapsed(finalElapsed);
-    setResult({ score, isNewBest, time: finalElapsed, mistakes });
+    setLeaderboardMessage("");
+    setResult({ score, isNewBest, time: finalElapsed, mistakes, pending });
     setStartedAt(null);
     setPhase("finished");
     setMessage("उत्तमम्! All pairs are connected.");
+
+    if (user) {
+      void submitScore(user, pending);
+    }
   }
 
   function tryMatch(wordId, pictureId) {
@@ -213,10 +344,31 @@ export default function App() {
         <a className="home-button" href="../../#gamesSection">
           Back
         </a>
-        <div>
+        <div className="topbar-title">
           <h1>Memory Connect</h1>
         </div>
+        <div className="account-controls">
+          {user === undefined && <span>Checking account…</span>}
+          {user && (
+            <>
+              <span className="account-name">{getPlayerName(user)}</span>
+              <button type="button" onClick={handleSignOut}>
+                Log out
+              </button>
+            </>
+          )}
+          {user === null && (
+            <a className="login-link" href={loginUrl}>
+              Log in
+            </a>
+          )}
+        </div>
       </header>
+      {authMessage && (
+        <p className="auth-message" role="status">
+          {authMessage}
+        </p>
+      )}
 
       {phase === "welcome" && (
         <section className="welcome-card" aria-labelledby="welcome-title">
@@ -403,6 +555,35 @@ export default function App() {
               {formatTime(result.time)} · {result.mistakes} mistakes
             </p>
             {result.isNewBest && <p className="new-best">New personal best!</p>}
+            {submittingScore && (
+              <p className="leaderboard-status" role="status">
+                Saving score to the Zatam leaderboard…
+              </p>
+            )}
+            {leaderboardMessage && (
+              <p className="leaderboard-status" role="status">
+                {leaderboardMessage}
+              </p>
+            )}
+            {!user && (
+              <a className="secondary-button" href={loginUrl}>
+                Log in to save this score
+              </a>
+            )}
+            {user && !submittingScore && leaderboardMessage.includes("could not") && (
+              <button
+                className="secondary-button"
+                type="button"
+                onClick={() => submitScore(user, result.pending)}
+              >
+                Try saving again
+              </button>
+            )}
+            {user && (
+              <a className="leaderboard-link" href="../../leaderboard.html">
+                View Zatam leaderboard
+              </a>
+            )}
             <button
               className="primary-button"
               type="button"

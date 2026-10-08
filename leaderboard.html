@@ -619,6 +619,7 @@
           <button class="tab" data-game="sanskritPuzzle">🪔 Sanskrit Puzzle</button>
           <button class="tab" data-game="laddersSnakes">Ladders & Snakes</button>
           <button class="tab" data-game="picturePuzzle">Picture Puzzle</button>
+          <button class="tab" data-game="memoryc">🔗 Memory Connect</button>
           <button class="tab" data-game="sanskritMonopoly">🎲 Sanskrit Monopoly</button>
           <button class="tab" data-game="contextCloze">📝 Context Cloze</button>
           <button class="tab" data-game="meaningBridge">🌉 Meaning Bridge</button>
@@ -698,6 +699,7 @@
           <div class="filter-row" data-side-game="maze"><span>Paasha Maze</span><span>All</span></div>
           <div class="filter-row" data-side-game="ticTacToe"><span>Tic Tac Toe</span><span>All</span></div>
           <div class="filter-row" data-side-game="memory"><span>Memory Match</span><span>All</span></div>
+          <div class="filter-row" data-side-game="memoryc"><span>Memory Connect</span><span>All</span></div>
           <div class="filter-row" data-side-game="laddersSnakes"><span>Ladders & Snakes</span><span>All</span></div>
           <div class="filter-row" data-side-game="2048"><span>2048</span><span>All</span></div>
           <div class="filter-row" data-side-game="sanskritPuzzle"><span>Sanskrit Puzzle</span><span>All</span></div>
@@ -824,6 +826,7 @@
 
             laddersSnakes: "Ladders & Snakes",
             picturePuzzle: "Picture Puzzle",
+            memoryConnect: "🔗 Memory Connect",
             sanskritPuzzle: "Sanskrit Puzzle",
             sanskritMonopoly: "🎲 Sanskrit Monopoly",
             contextCloze: "📝 Context Cloze",
@@ -877,6 +880,7 @@
             sudoku: "🔢 सुडोकू",
             laddersSnakes: "Ladders & Snakes",
             picturePuzzle: "Picture Puzzle",
+            memoryConnect: "🔗 Memory Connect",
             sanskritPuzzle: "Sanskrit Puzzle",
             sanskritMonopoly: "🎲 Sanskrit Monopoly",
             contextCloze: "📝 Context Cloze",
@@ -1556,6 +1560,7 @@
       if (gameName.includes("2048")) return "2048";
       if (gameName.includes("Sudoku")) return "Sudoku";
       if (gameName.includes("Picture")) return "Picture";
+      if (gameName.includes("Memory Connect")) return "Connect";
       if (gameName.includes("Monopoly")) return "Monopoly";
       if (gameName.includes("Context Cloze")) return "Context";
       if (gameName.includes("Meaning Bridge")) return "Meaning";
@@ -1682,6 +1687,9 @@ sideFilterRows.forEach((row) => {
 
     document.querySelector('[data-game="picturePuzzle"]').textContent =
         t.picturePuzzle || "Picture Puzzle";
+
+    document.querySelector('[data-game="memoryc"]').textContent =
+        t.memoryConnect || "🔗 Memory Connect";
 
     document.querySelector('[data-game="sanskritMonopoly"]').textContent =
         t.sanskritMonopoly || "🎲 Sanskrit Monopoly";
