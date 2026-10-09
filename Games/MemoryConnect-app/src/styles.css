@@ -33,6 +33,11 @@ body { margin: 0; min-width: 320px; min-height: 100vh; }
 .eyebrow, .kicker { color: #6e3aa7; font-size: .75rem; font-weight: 800; letter-spacing: .13em; margin: 0 0 .25rem; text-transform: uppercase; }
 .home-button { background: #fff; border: 1px solid #cbd8df; border-radius: 11px; color: #102a43; font-size: .9rem; font-weight: 800; padding: .6rem .75rem; text-decoration: none; width: fit-content; }
 .home-button:hover { border-color: #6e3aa7; color: #6e3aa7; }
+.account-controls { align-items: center; display: flex; gap: .55rem; justify-self: end; min-width: 0; }
+.account-controls > span { color: #476175; font-size: .82rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-controls button, .login-link { background: #17384e; border: 1px solid #17384e; border-radius: 10px; color: #fff; cursor: pointer; font-size: .82rem; font-weight: 800; padding: .58rem .7rem; text-decoration: none; white-space: nowrap; }
+.account-controls button:hover, .login-link:hover { background: #6e3aa7; border-color: #6e3aa7; }
+.auth-message { color: #176642; font-size: .85rem; font-weight: 700; margin: -1.4rem auto 1rem; text-align: center; }
 
 .welcome-card, .board, .scoreboard, .result-card {
   background: rgba(255, 255, 255, .88);
@@ -59,7 +64,7 @@ body { margin: 0; min-width: 320px; min-height: 100vh; }
 .primary-button { background: #d35c2c; border: 0; border-radius: 13px; box-shadow: 0 7px 0 #a8411e; color: #fff; cursor: pointer; font-size: 1rem; font-weight: 800; padding: .95rem 1.5rem; }
 .primary-button:active { box-shadow: none; transform: translateY(5px); }
 
-.scoreboard { border-radius: 18px; display: grid; grid-template-columns: repeat(4, 1fr); margin: 0 auto 1rem; max-width: 920px; overflow: hidden; }
+.scoreboard { border-radius: 18px; display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 auto 1rem; max-width: 920px; overflow: hidden; }
 .scoreboard div { border-right: 1px solid #e1e8ed; padding: .8rem 1rem; text-align: center; }
 .scoreboard div:last-child { border: 0; }
 .scoreboard span { color: #60798c; display: block; font-size: .73rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
@@ -97,6 +102,9 @@ body { margin: 0; min-width: 320px; min-height: 100vh; }
 .result-card h2 { font-family: Georgia, serif; font-size: 2rem; margin: .25rem; }
 .result-score { color: #d35c2c; font-size: 3.3rem; font-weight: 900; letter-spacing: -.08em; margin: .5rem 0; }
 .new-best { color: #176642; font-weight: 800; }
+.leaderboard-status { color: #17384e; font-size: .9rem; font-weight: 700; line-height: 1.4; margin: .85rem auto; }
+.secondary-button, .leaderboard-link { background: #fff; border: 1px solid #cbd8df; border-radius: 11px; color: #17384e; cursor: pointer; display: inline-block; font-size: .88rem; font-weight: 800; margin: .25rem; padding: .7rem .85rem; text-decoration: none; }
+.secondary-button:hover, .leaderboard-link:hover { border-color: #6e3aa7; color: #6e3aa7; }
 
 .confetti { inset: 0; overflow: hidden; pointer-events: none; position: absolute; }
 .confetti span {
@@ -120,14 +128,16 @@ body { margin: 0; min-width: 320px; min-height: 100vh; }
 
 @media (max-width: 650px) {
   .game-shell { padding: 1rem .75rem 2rem; }
-  .topbar { grid-template-columns: 1fr auto; margin-bottom: 1.5rem; }
-  .topbar > div { grid-column: 1 / -1; grid-row: 1; }
+  .topbar { grid-template-columns: auto minmax(0, 1fr); margin-bottom: 1.5rem; }
+  .topbar-title { grid-column: 2; grid-row: 1; }
   .topbar h1 { text-align: right; }
   .eyebrow { text-align: right; }
   .home-button { grid-row: 1; z-index: 1; }
+  .account-controls { grid-column: 1 / -1; grid-row: 2; margin-top: .4rem; }
   .scoreboard { grid-template-columns: repeat(2, 1fr); }
-  .scoreboard div:nth-child(2) { border-right: 0; }
-  .scoreboard div:nth-child(-n+2) { border-bottom: 1px solid #e1e8ed; }
+  .scoreboard div:nth-child(2n) { border-right: 0; }
+  .scoreboard div:nth-child(-n+4) { border-bottom: 1px solid #e1e8ed; }
+  .scoreboard div:nth-child(5) { border-right: 0; grid-column: 1 / -1; }
   .board { gap: .8rem; grid-template-columns: 1fr 1fr; padding: 1rem .7rem; }
   .board-actions { flex-direction: row; grid-column: 1 / -1; grid-row: 2; }
   .card-column:last-child { grid-column: 2; grid-row: 1; }
