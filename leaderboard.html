@@ -795,7 +795,8 @@
     const leaderboardDate = document.getElementById("leaderboardDate");
 
     let currentUser = null;
-    let currentGameFilter = "all";
+    const requestedGame = new URLSearchParams(window.location.search).get("game");
+    let currentGameFilter = requestedGame === "memoryc" ? "memoryc" : "all";
     let currentDateMode = "all";
     let selectedDate = getTodayDateString();
     let allScores = [];
@@ -1222,6 +1223,31 @@
       return [...bestByDay.values()];
     }
 
+    function keepAllTimeBestScores(scores) {
+      const bestByPlayerAndGame = new Map();
+
+      scores.forEach((item) => {
+        const playerId = item.userId || item.uid;
+
+        if (!playerId || !item.gameId) {
+          return;
+        }
+
+        const key = `${playerId}__${item.gameId}`;
+        const currentBest = bestByPlayerAndGame.get(key);
+
+        if (
+          !currentBest ||
+          Number(item.score || item.points || 0) >
+            Number(currentBest.score || currentBest.points || 0)
+        ) {
+          bestByPlayerAndGame.set(key, item);
+        }
+      });
+
+      return [...bestByPlayerAndGame.values()];
+    }
+
     function getFallbackPlayerName(uid) {
       if (!uid) return "Player";
       return `Player · ${uid.slice(-4).toUpperCase()}`;
@@ -1509,7 +1535,7 @@
     }
 
     function getFilteredScores() {
-      return allScores.filter((item) => {
+      const filteredScores = allScores.filter((item) => {
         const matchesGame =
           currentGameFilter === "all" || item.gameId === currentGameFilter;
 
@@ -1518,6 +1544,10 @@
 
         return matchesGame && matchesDate;
       });
+
+      return currentDateMode === "all"
+        ? keepAllTimeBestScores(filteredScores)
+        : keepDailyBestScores(filteredScores);
     }
 
     function updateMyRank(filteredScores) {
@@ -1572,6 +1602,14 @@
 function setGameFilter(gameId) {
   currentGameFilter = gameId;
   visibleCount = 7;
+
+  const url = new URL(window.location.href);
+  if (gameId === "all") {
+    url.searchParams.delete("game");
+  } else {
+    url.searchParams.set("game", gameId);
+  }
+  window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
 
   tabButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.game === gameId);
@@ -1769,6 +1807,7 @@ sideFilterRows.forEach((row) => {
 
     leaderboardDate.value = selectedDate;
     updateLanguage();
+    setGameFilter(currentGameFilter);
 
   </script>
 </body>

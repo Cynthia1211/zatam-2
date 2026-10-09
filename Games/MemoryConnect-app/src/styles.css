@@ -64,7 +64,7 @@ body { margin: 0; min-width: 320px; min-height: 100vh; }
 .primary-button { background: #d35c2c; border: 0; border-radius: 13px; box-shadow: 0 7px 0 #a8411e; color: #fff; cursor: pointer; font-size: 1rem; font-weight: 800; padding: .95rem 1.5rem; }
 .primary-button:active { box-shadow: none; transform: translateY(5px); }
 
-.scoreboard { border-radius: 18px; display: grid; grid-template-columns: repeat(4, 1fr); margin: 0 auto 1rem; max-width: 920px; overflow: hidden; }
+.scoreboard { border-radius: 18px; display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 auto 1rem; max-width: 920px; overflow: hidden; }
 .scoreboard div { border-right: 1px solid #e1e8ed; padding: .8rem 1rem; text-align: center; }
 .scoreboard div:last-child { border: 0; }
 .scoreboard span { color: #60798c; display: block; font-size: .73rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
@@ -135,8 +135,9 @@ body { margin: 0; min-width: 320px; min-height: 100vh; }
   .home-button { grid-row: 1; z-index: 1; }
   .account-controls { grid-column: 1 / -1; grid-row: 2; margin-top: .4rem; }
   .scoreboard { grid-template-columns: repeat(2, 1fr); }
-  .scoreboard div:nth-child(2) { border-right: 0; }
-  .scoreboard div:nth-child(-n+2) { border-bottom: 1px solid #e1e8ed; }
+  .scoreboard div:nth-child(2n) { border-right: 0; }
+  .scoreboard div:nth-child(-n+4) { border-bottom: 1px solid #e1e8ed; }
+  .scoreboard div:nth-child(5) { border-right: 0; grid-column: 1 / -1; }
   .board { gap: .8rem; grid-template-columns: 1fr 1fr; padding: 1rem .7rem; }
   .board-actions { flex-direction: row; grid-column: 1 / -1; grid-row: 2; }
   .card-column:last-child { grid-column: 2; grid-row: 1; }

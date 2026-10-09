@@ -141,6 +141,11 @@ export default function App() {
 
   const matchedSet = useMemo(() => new Set(matchedIds), [matchedIds]);
   const pairCount = DIFFICULTIES[difficulty].pairs;
+  const liveScore = useMemo(
+    () => calculateScore({ elapsed, mistakes, difficulty }),
+    [difficulty, elapsed, mistakes],
+  );
+  const currentScore = phase === "finished" && result ? result.score : liveScore;
 
   function setRoundDifficulty(nextDifficulty) {
     setDifficulty(nextDifficulty);
@@ -423,6 +428,10 @@ export default function App() {
               <strong>{formatTime(elapsed)}</strong>
             </div>
             <div>
+              <span>Score</span>
+              <strong>{currentScore.toLocaleString()}</strong>
+            </div>
+            <div>
               <span>Best</span>
               <strong>{bestScore || "—"}</strong>
             </div>
@@ -580,8 +589,11 @@ export default function App() {
               </button>
             )}
             {user && (
-              <a className="leaderboard-link" href="../../leaderboard.html">
-                View Zatam leaderboard
+              <a
+                className="leaderboard-link"
+                href="../../leaderboard.html?game=memoryc"
+              >
+                View Memory Connect leaderboard
               </a>
             )}
             <button

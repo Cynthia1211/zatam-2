@@ -71,9 +71,17 @@ const leaderboardPage = readFileSync(
   new URL("../leaderboard.html", import.meta.url),
   "utf8",
 );
+const gamePage = readFileSync(
+  new URL("../Games/MemoryConnect-app/src/App.jsx", import.meta.url),
+  "utf8",
+);
 const loginPage = readFileSync(new URL("../login.html", import.meta.url), "utf8");
 assert.match(leaderboardPage, /data-game="memoryc"/);
 assert.match(leaderboardPage, /data-side-game="memoryc"/);
+assert.match(leaderboardPage, /function keepAllTimeBestScores\(scores\)/);
+assert.match(leaderboardPage, /requestedGame === "memoryc"/);
+assert.match(gamePage, /<span>Score<\/span>/);
+assert.match(gamePage, /View Memory Connect leaderboard/);
 assert.match(loginPage, /getPostLoginDestination/);
 assert.match(loginPage, /destination\.origin === window\.location\.origin/);
 
