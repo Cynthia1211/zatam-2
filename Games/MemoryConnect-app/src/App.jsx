@@ -142,8 +142,8 @@ export default function App() {
   const matchedSet = useMemo(() => new Set(matchedIds), [matchedIds]);
   const pairCount = DIFFICULTIES[difficulty].pairs;
   const liveScore = useMemo(
-    () => calculateScore({ elapsed, mistakes, difficulty }),
-    [difficulty, elapsed, mistakes],
+    () => calculateScore({ matches: matchedIds.length, mistakes, difficulty }),
+    [difficulty, matchedIds.length, mistakes],
   );
   const currentScore = phase === "finished" && result ? result.score : liveScore;
 
@@ -241,7 +241,7 @@ export default function App() {
       ? Math.floor((Date.now() - startedAt) / 1000)
       : elapsed;
     const score = calculateScore({
-      elapsed: finalElapsed,
+      matches: nextMatchedIds.length,
       mistakes,
       difficulty,
     });

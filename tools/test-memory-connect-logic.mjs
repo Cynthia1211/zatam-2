@@ -38,9 +38,12 @@ assert.equal(isMatch(fixedRound.entries[0].id, fixedRound.entries[1].id), false)
 assert.equal(isMatch(null, fixedRound.entries[0].id), false);
 assert.equal(formatTime(0), "0:00");
 assert.equal(formatTime(65), "1:05");
-assert.ok(calculateScore({ elapsed: 10, mistakes: 0, difficulty: "easy" }) >
-  calculateScore({ elapsed: 80, mistakes: 3, difficulty: "easy" }));
-assert.equal(calculateScore({ elapsed: 999_999, mistakes: 999, difficulty: "hard" }), 100);
+assert.equal(calculateScore({ matches: 0, mistakes: 0, difficulty: "easy" }), 0);
+assert.ok(calculateScore({ matches: 3, mistakes: 0, difficulty: "easy" }) >
+  calculateScore({ matches: 2, mistakes: 0, difficulty: "easy" }));
+assert.ok(calculateScore({ matches: 3, mistakes: 1, difficulty: "easy" }) <
+  calculateScore({ matches: 3, mistakes: 0, difficulty: "easy" }));
+assert.equal(calculateScore({ matches: 0, mistakes: 999, difficulty: "hard" }), 0);
 
 const completionDate = new Date("2026-10-08T16:25:00.000Z");
 const scoreData = createScoreData(

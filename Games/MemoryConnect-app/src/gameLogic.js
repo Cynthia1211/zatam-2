@@ -43,11 +43,14 @@ export function formatTime(totalSeconds) {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-export function calculateScore({ elapsed, mistakes, difficulty }) {
+export function calculateScore({ matches, mistakes, difficulty }) {
   const option = DIFFICULTIES[difficulty];
   if (!option) throw new Error(`Unknown difficulty: ${difficulty}`);
 
-  const timePoints = Math.max(0, 8000 - elapsed * 15);
-  const accuracyPoints = Math.max(0, 2000 - mistakes * 100);
-  return Math.max(100, Math.round((timePoints + accuracyPoints) * option.multiplier));
+  const correctMatches = Math.max(0, Math.floor(Number(matches) || 0));
+  const wrongAnswers = Math.max(0, Math.floor(Number(mistakes) || 0));
+  const pointsPerMatch = Math.round((10_000 * option.multiplier) / option.pairs);
+  const mistakePenalty = Math.round(300 * option.multiplier);
+
+  return Math.max(0, correctMatches * pointsPerMatch - wrongAnswers * mistakePenalty);
 }
