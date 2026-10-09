@@ -39,6 +39,8 @@ assert.equal(isMatch(null, fixedRound.entries[0].id), false);
 assert.equal(formatTime(0), "0:00");
 assert.equal(formatTime(65), "1:05");
 assert.equal(calculateScore({ matches: 0, mistakes: 0, difficulty: "easy" }), 0);
+assert.equal(calculateScore({ matches: 3, mistakes: 0, difficulty: "easy" }), 300);
+assert.equal(calculateScore({ matches: 3, mistakes: 1, difficulty: "easy" }), 275);
 assert.ok(calculateScore({ matches: 3, mistakes: 0, difficulty: "easy" }) >
   calculateScore({ matches: 2, mistakes: 0, difficulty: "easy" }));
 assert.ok(calculateScore({ matches: 3, mistakes: 1, difficulty: "easy" }) <

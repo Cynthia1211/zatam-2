@@ -49,8 +49,8 @@ export function calculateScore({ matches, mistakes, difficulty }) {
 
   const correctMatches = Math.max(0, Math.floor(Number(matches) || 0));
   const wrongAnswers = Math.max(0, Math.floor(Number(mistakes) || 0));
-  const pointsPerMatch = Math.round((10_000 * option.multiplier) / option.pairs);
-  const mistakePenalty = Math.round(300 * option.multiplier);
+  const pointsPerMatch = Math.round(100 * option.multiplier);
+  const mistakePenalty = Math.round(25 * option.multiplier);
 
   return Math.max(0, correctMatches * pointsPerMatch - wrongAnswers * mistakePenalty);
 }
