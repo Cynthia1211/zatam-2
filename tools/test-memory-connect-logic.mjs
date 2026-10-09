@@ -80,6 +80,7 @@ assert.match(leaderboardPage, /data-game="memoryc"/);
 assert.match(leaderboardPage, /data-side-game="memoryc"/);
 assert.match(leaderboardPage, /function keepAllTimeBestScores\(scores\)/);
 assert.match(leaderboardPage, /requestedGame === "memoryc"/);
+assert.match(leaderboardPage, /where\("gameId", "==", currentGameFilter\)/);
 assert.match(gamePage, /<span>Score<\/span>/);
 assert.match(gamePage, /View Memory Connect leaderboard/);
 assert.match(loginPage, /getPostLoginDestination/);

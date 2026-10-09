@@ -767,6 +767,7 @@
       collection,
       getDocs,
       query,
+      where,
       orderBy,
       limit,
       doc,
@@ -1373,11 +1374,10 @@
       `;
 
       try {
-        const standardQuery = query(
-          collection(db, "leaderboard-zatamgame"),
-          orderBy("score", "desc"),
-          limit(500)
-        );
+        const standardScoresRef = collection(db, "leaderboard-zatamgame");
+        const standardQuery = currentGameFilter === "all"
+          ? query(standardScoresRef, orderBy("score", "desc"), limit(500))
+          : query(standardScoresRef, where("gameId", "==", currentGameFilter));
 
         const [
           standardResult,
@@ -1599,6 +1599,16 @@
       return gameName;
     }
 
+function syncGameFilterUI(gameId) {
+  tabButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.game === gameId);
+  });
+
+  sideFilterRows.forEach((row) => {
+    row.classList.toggle("active", row.dataset.sideGame === gameId);
+  });
+}
+
 function setGameFilter(gameId) {
   currentGameFilter = gameId;
   visibleCount = 7;
@@ -1611,15 +1621,8 @@ function setGameFilter(gameId) {
   }
   window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
 
-  tabButtons.forEach((button) => {
-    button.classList.toggle("active", button.dataset.game === gameId);
-  });
-
-  sideFilterRows.forEach((row) => {
-    row.classList.toggle("active", row.dataset.sideGame === gameId);
-  });
-
-  renderLeaderboard();
+  syncGameFilterUI(gameId);
+  void loadLeaderboard();
 }
 
 function setDateFilter(mode, dateValue = getTodayDateString()) {
@@ -1807,7 +1810,7 @@ sideFilterRows.forEach((row) => {
 
     leaderboardDate.value = selectedDate;
     updateLanguage();
-    setGameFilter(currentGameFilter);
+    syncGameFilterUI(currentGameFilter);
 
   </script>
 </body>
