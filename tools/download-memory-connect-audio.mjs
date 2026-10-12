@@ -83,6 +83,7 @@ try {
 
     console.log(`Generating ${clip.id}.mp3…`);
     let response;
+    let rateLimitAttempts = 0;
 
     while (true) {
       response = await fetch(API_URL, {
@@ -103,6 +104,12 @@ try {
       });
 
       if (response.status !== 429) break;
+      rateLimitAttempts += 1;
+      if (rateLimitAttempts >= 5) {
+        throw new Error(
+          `YourVoic is still rate limiting ${clip.id}.mp3 after ${rateLimitAttempts} attempts. Resume later to continue from the saved recordings.`,
+        );
+      }
       const retryAfter = Number(response.headers.get("retry-after")) || 60;
       console.log(`Rate limited. Retrying ${clip.id}.mp3 in ${retryAfter} seconds.`);
       await sleep((retryAfter + 5) * 1000);
