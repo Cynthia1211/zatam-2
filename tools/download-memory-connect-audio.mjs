@@ -20,7 +20,7 @@ const isDryRun = argumentsSet.has("--dry-run") || !argumentsSet.has("--confirm")
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 async function loadEnvironmentFile() {
-  const environmentFile = path.join(projectRoot, ".env.local");
+  const environmentFile = process.env.YOURVOIC_ENV_FILE || path.join(projectRoot, ".env.local");
   const content = await readFile(environmentFile, "utf8").catch(() => "");
 
   for (const rawLine of content.split(/\r?\n/u)) {
