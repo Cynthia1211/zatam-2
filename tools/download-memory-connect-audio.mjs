@@ -13,9 +13,19 @@ const audioDirectory = path.join(
 );
 const argumentsSet = new Set(process.argv.slice(2));
 const limitArgument = process.argv.find((argument) => argument.startsWith("--limit="));
+const onlyArgument = process.argv.find((argument) => argument.startsWith("--only="));
 const requestedLimit = limitArgument
   ? Number(limitArgument.slice("--limit=".length))
   : Number.POSITIVE_INFINITY;
+const requestedIds = onlyArgument
+  ? new Set(
+      onlyArgument
+        .slice("--only=".length)
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean),
+    )
+  : null;
 const isDryRun = argumentsSet.has("--dry-run") || !argumentsSet.has("--confirm");
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -38,9 +48,11 @@ await loadEnvironmentFile();
 const apiKey = process.env.YOURVOIC_API_KEY;
 const voice = process.env.YOURVOIC_VOICE || "Deepti";
 const model = process.env.YOURVOIC_MODEL || "aura-lite";
-const clips = vocabularySets
+const allClips = vocabularySets
   .flat()
-  .map((entry) => ({ id: entry.id, text: entry.word }))
+  .map((entry) => ({ id: entry.id, text: entry.word }));
+const clips = allClips
+  .filter((clip) => !requestedIds || requestedIds.has(clip.id))
   .slice(0, requestedLimit);
 
 if (
@@ -48,6 +60,10 @@ if (
   (!Number.isSafeInteger(requestedLimit) || requestedLimit <= 0)
 ) {
   throw new Error("--limit must be a positive whole number.");
+}
+
+if (requestedIds && clips.length !== requestedIds.size) {
+  throw new Error("--only includes an unknown Memory Connect word ID.");
 }
 
 if (isDryRun) {
