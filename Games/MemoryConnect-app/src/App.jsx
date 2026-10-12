@@ -118,6 +118,7 @@ export default function App() {
   const [submittingScore, setSubmittingScore] = useState(false);
   const hintTimeout = useRef(null);
   const submittingScoreId = useRef(null);
+  const audioPlayer = useRef(null);
 
   useEffect(() => {
     if (phase !== "playing" || !startedAt) return undefined;
@@ -129,7 +130,14 @@ export default function App() {
     return () => window.clearInterval(timer);
   }, [phase, startedAt]);
 
-  useEffect(() => () => window.clearTimeout(hintTimeout.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(hintTimeout.current);
+      audioPlayer.current?.pause();
+      audioPlayer.current = null;
+    },
+    [],
+  );
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
@@ -331,16 +339,34 @@ export default function App() {
     hintTimeout.current = window.setTimeout(() => setHintId(null), 1800);
   }
 
-  function pronounce(word) {
-    if (!("speechSynthesis" in window)) {
-      setMessage("Pronunciation is not supported by this browser.");
+  function pronounce(entry) {
+    if (!entry) {
+      setMessage("Select a word first to hear it.");
       return;
     }
-    window.speechSynthesis.cancel();
-    const speech = new SpeechSynthesisUtterance(word);
-    speech.lang = "sa-IN";
-    speech.rate = 0.75;
-    window.speechSynthesis.speak(speech);
+
+    audioPlayer.current?.pause();
+    const player = new Audio(`./audio/${entry.id}.mp3`);
+    audioPlayer.current = player;
+
+    const showUnavailableMessage = () => {
+      if (audioPlayer.current === player) {
+        audioPlayer.current = null;
+        setMessage(`The recording for ${entry.word} is not available yet.`);
+      }
+    };
+
+    player.addEventListener("error", showUnavailableMessage, { once: true });
+    player.addEventListener(
+      "ended",
+      () => {
+        if (audioPlayer.current === player) audioPlayer.current = null;
+      },
+      { once: true },
+    );
+
+    setMessage(`Playing ${entry.word}.`);
+    void player.play().catch(showUnavailableMessage);
   }
 
   return (
@@ -476,7 +502,7 @@ export default function App() {
                   const selected = round.entries.find(
                     (entry) => entry.id === selectedWord,
                   );
-                  if (selected) pronounce(selected.word);
+                  if (selected) pronounce(selected);
                   else setMessage("Select a word first to hear it.");
                 }}
                 disabled={phase === "finished"}

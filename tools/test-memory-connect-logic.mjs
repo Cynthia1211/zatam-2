@@ -80,6 +80,10 @@ const gamePage = readFileSync(
   new URL("../Games/MemoryConnect-app/src/App.jsx", import.meta.url),
   "utf8",
 );
+const audioGenerator = readFileSync(
+  new URL("./download-memory-connect-audio.mjs", import.meta.url),
+  "utf8",
+);
 const loginPage = readFileSync(new URL("../login.html", import.meta.url), "utf8");
 assert.match(leaderboardPage, /data-game="memoryc"/);
 assert.match(leaderboardPage, /data-side-game="memoryc"/);
@@ -88,6 +92,10 @@ assert.match(leaderboardPage, /requestedGame === "memoryc"/);
 assert.match(leaderboardPage, /where\("gameId", "==", currentGameFilter\)/);
 assert.match(gamePage, /<span>Score<\/span>/);
 assert.match(gamePage, /View Memory Connect leaderboard/);
+assert.match(gamePage, /new Audio\(`\.\/audio\/\$\{entry\.id\}\.mp3`\)/);
+assert.match(audioGenerator, /https:\/\/yourvoic\.com\/api\/v1\/tts\/generate/);
+assert.match(audioGenerator, /"X-API-Key": apiKey/);
+assert.match(audioGenerator, /language: "sa-IN"/);
 assert.match(loginPage, /getPostLoginDestination/);
 assert.match(loginPage, /destination\.origin === window\.location\.origin/);
 
