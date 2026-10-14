@@ -80,6 +80,10 @@ const gamePage = readFileSync(
   new URL("../Games/MemoryConnect-app/src/App.jsx", import.meta.url),
   "utf8",
 );
+const assetUrlHelper = readFileSync(
+  new URL("../Games/MemoryConnect-app/src/assetUrl.js", import.meta.url),
+  "utf8",
+);
 const audioGenerator = readFileSync(
   new URL("./download-memory-connect-audio.mjs", import.meta.url),
   "utf8",
@@ -92,7 +96,10 @@ assert.match(leaderboardPage, /requestedGame === "memoryc"/);
 assert.match(leaderboardPage, /where\("gameId", "==", currentGameFilter\)/);
 assert.match(gamePage, /<span>Score<\/span>/);
 assert.match(gamePage, /View Memory Connect leaderboard/);
-assert.match(gamePage, /new Audio\(`\.\/audio\/\$\{entry\.id\}\.mp3`\)/);
+assert.match(gamePage, /getStaticAssetUrl\(`audio\/\$\{entry\.id\}\.mp3`\)/);
+assert.match(gamePage, /src=\{getStaticAssetUrl\(entry\.image\)\}/);
+assert.match(assetUrlHelper, /https:\/\/memory-connect-somya-20261014\.web\.app/);
+assert.match(assetUrlHelper, /if \(import\.meta\.env\.DEV\)/);
 assert.match(audioGenerator, /https:\/\/yourvoic\.com\/api\/v1\/tts\/generate/);
 assert.match(audioGenerator, /"X-API-Key": apiKey/);
 assert.match(audioGenerator, /language: "sa-IN"/);

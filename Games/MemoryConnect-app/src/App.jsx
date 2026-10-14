@@ -8,6 +8,7 @@ import {
 } from "./gameLogic";
 import { saveMemoryConnectDailyBest } from "./memoryConnectLeaderboard";
 import { auth, onAuthStateChanged, signOut } from "./zatamFirebase";
+import { getStaticAssetUrl } from "./assetUrl";
 
 const confettiPieces = Array.from({ length: 48 }, (_, index) => ({
   color: ["#d35c2c", "#f5a623", "#2e9a65", "#6e3aa7", "#159cba"][index % 5],
@@ -62,13 +63,20 @@ function getPlayerName(user) {
   return user?.displayName || user?.email?.split("@")[0] || "Player";
 }
 
-function ImageCard({ entry, selected, matched, onSelect, highlighted }) {
+function ImageCard({
+  entry,
+  selected,
+  matched,
+  onSelect,
+  highlighted,
+  celebrating,
+}) {
   const [failed, setFailed] = useState(false);
   const fallback = entry.symbol || entry.word;
 
   return (
     <button
-      className={`picture-card ${selected ? "is-selected" : ""} ${matched ? "is-matched" : ""} ${highlighted ? "is-hinted" : ""}`}
+      className={`picture-card ${selected ? "is-selected" : ""} ${matched ? "is-matched" : ""} ${highlighted ? "is-hinted" : ""} ${celebrating ? "is-celebrating" : ""}`}
       type="button"
       aria-label="Picture card"
       aria-pressed={selected}
@@ -80,7 +88,11 @@ function ImageCard({ entry, selected, matched, onSelect, highlighted }) {
           {fallback}
         </span>
       ) : (
-        <img src={entry.image} alt="" onError={() => setFailed(true)} />
+        <img
+          src={getStaticAssetUrl(entry.image)}
+          alt=""
+          onError={() => setFailed(true)}
+        />
       )}
       {matched && (
         <span className="match-mark" aria-hidden="true">
@@ -105,6 +117,7 @@ export default function App() {
     "Choose a word and its matching picture.",
   );
   const [hintId, setHintId] = useState(null);
+  const [celebratingMatchId, setCelebratingMatchId] = useState(null);
   const [result, setResult] = useState(null);
   const [bestScore, setBestScore] = useState(
     () => Number(localStorage.getItem("memory-connect-best-medium")) || 0,
@@ -117,6 +130,7 @@ export default function App() {
   const [leaderboardMessage, setLeaderboardMessage] = useState("");
   const [submittingScore, setSubmittingScore] = useState(false);
   const hintTimeout = useRef(null);
+  const matchTimeout = useRef(null);
   const submittingScoreId = useRef(null);
   const audioPlayer = useRef(null);
 
@@ -133,6 +147,7 @@ export default function App() {
   useEffect(
     () => () => {
       window.clearTimeout(hintTimeout.current);
+      window.clearTimeout(matchTimeout.current);
       audioPlayer.current?.pause();
       audioPlayer.current = null;
     },
@@ -231,6 +246,7 @@ export default function App() {
   function startGame() {
     dismissTutorial();
     window.clearTimeout(hintTimeout.current);
+    window.clearTimeout(matchTimeout.current);
     setRound(createRound(difficulty));
     setSelectedWord(null);
     setSelectedPicture(null);
@@ -239,6 +255,7 @@ export default function App() {
     setElapsed(0);
     setStartedAt(Date.now());
     setHintId(null);
+    setCelebratingMatchId(null);
     setResult(null);
     setMessage("Tap a word, then tap its matching picture.");
     setPhase("playing");
@@ -291,6 +308,12 @@ export default function App() {
       setSelectedWord(null);
       setSelectedPicture(null);
       setHintId(null);
+      window.clearTimeout(matchTimeout.current);
+      setCelebratingMatchId(wordId);
+      matchTimeout.current = window.setTimeout(
+        () => setCelebratingMatchId(null),
+        700,
+      );
       setMessage("Correct match — उत्कृष्टम्!");
 
       if (nextMatchedIds.length === round.entries.length) {
@@ -346,7 +369,7 @@ export default function App() {
     }
 
     audioPlayer.current?.pause();
-    const player = new Audio(`./audio/${entry.id}.mp3`);
+    const player = new Audio(getStaticAssetUrl(`audio/${entry.id}.mp3`));
     audioPlayer.current = player;
 
     const showUnavailableMessage = () => {
@@ -475,7 +498,7 @@ export default function App() {
               </div>
               {round.words.map((entry) => (
                 <button
-                  className={`word-card ${selectedWord === entry.id ? "is-selected" : ""} ${matchedSet.has(entry.id) ? "is-matched" : ""}`}
+                  className={`word-card ${selectedWord === entry.id ? "is-selected" : ""} ${matchedSet.has(entry.id) ? "is-matched" : ""} ${celebratingMatchId === entry.id ? "is-celebrating" : ""}`}
                   key={entry.id}
                   type="button"
                   aria-pressed={selectedWord === entry.id}
@@ -519,6 +542,7 @@ export default function App() {
               {round.pictures.map((entry) => (
                 <ImageCard
                   entry={entry}
+                  celebrating={celebratingMatchId === entry.id}
                   highlighted={hintId === entry.id}
                   key={entry.id}
                   matched={matchedSet.has(entry.id)}
