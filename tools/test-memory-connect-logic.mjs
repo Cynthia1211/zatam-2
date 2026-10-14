@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   calculateScore,
   createRound,
@@ -6,6 +7,15 @@ import {
   formatTime,
   isMatch
 } from "../Games/MemoryConnect-app/src/gameLogic.js";
+import {
+  createScoreData,
+  getDailyScoreId,
+  getScoreDate,
+  MEMORY_CONNECT_GAME_ID,
+  MEMORY_CONNECT_GAME_NAME,
+  normalizeScore,
+  shouldReplaceDailyBest,
+} from "../Games/MemoryConnect-app/src/leaderboardLogic.js";
 
 const fixedRandom = () => 0.4;
 
@@ -28,8 +38,81 @@ assert.equal(isMatch(fixedRound.entries[0].id, fixedRound.entries[1].id), false)
 assert.equal(isMatch(null, fixedRound.entries[0].id), false);
 assert.equal(formatTime(0), "0:00");
 assert.equal(formatTime(65), "1:05");
-assert.ok(calculateScore({ elapsed: 10, mistakes: 0, difficulty: "easy" }) >
-  calculateScore({ elapsed: 80, mistakes: 3, difficulty: "easy" }));
-assert.equal(calculateScore({ elapsed: 999_999, mistakes: 999, difficulty: "hard" }), 100);
+assert.equal(calculateScore({ matches: 0, mistakes: 0, difficulty: "easy" }), 0);
+assert.equal(calculateScore({ matches: 3, mistakes: 0, difficulty: "easy" }), 300);
+assert.equal(calculateScore({ matches: 3, mistakes: 1, difficulty: "easy" }), 275);
+assert.ok(calculateScore({ matches: 3, mistakes: 0, difficulty: "easy" }) >
+  calculateScore({ matches: 2, mistakes: 0, difficulty: "easy" }));
+assert.ok(calculateScore({ matches: 3, mistakes: 1, difficulty: "easy" }) <
+  calculateScore({ matches: 3, mistakes: 0, difficulty: "easy" }));
+assert.equal(calculateScore({ matches: 0, mistakes: 999, difficulty: "hard" }), 0);
 
-console.log("Memory Connect logic tests passed: round creation, matching, timer, and scoring.");
+const completionDate = new Date("2026-10-08T16:25:00.000Z");
+const scoreData = createScoreData(
+  {
+    uid: "player-123",
+    displayName: "Somya",
+    email: "somya@example.com",
+    photoURL: "https://example.com/avatar.png",
+  },
+  10456.8,
+  completionDate,
+);
+assert.equal(getScoreDate(completionDate), "2026-10-08");
+assert.equal(
+  getDailyScoreId("player-123", "2026-10-08"),
+  "player-123_memoryc_2026-10-08",
+);
+assert.equal(scoreData.gameId, MEMORY_CONNECT_GAME_ID);
+assert.equal(scoreData.gameName, MEMORY_CONNECT_GAME_NAME);
+assert.equal(scoreData.score, 10457);
+assert.equal(shouldReplaceDailyBest(10456, 10457), true);
+assert.equal(shouldReplaceDailyBest(10457, 10457), false);
+assert.equal(shouldReplaceDailyBest("invalid", 10457), true);
+assert.throws(() => normalizeScore(0), /positive/);
+assert.throws(() => createScoreData(null, 100, completionDate), /signed-in/);
+
+const leaderboardPage = readFileSync(
+  new URL("../leaderboard.html", import.meta.url),
+  "utf8",
+);
+const gamePage = readFileSync(
+  new URL("../Games/MemoryConnect-app/src/App.jsx", import.meta.url),
+  "utf8",
+);
+const assetUrlHelper = readFileSync(
+  new URL("../Games/MemoryConnect-app/src/assetUrl.js", import.meta.url),
+  "utf8",
+);
+const audioGenerator = readFileSync(
+  new URL("./download-memory-connect-audio.mjs", import.meta.url),
+  "utf8",
+);
+const loginPage = readFileSync(new URL("../login.html", import.meta.url), "utf8");
+assert.match(leaderboardPage, /data-game="memoryc"/);
+assert.match(leaderboardPage, /data-side-game="memoryc"/);
+assert.match(leaderboardPage, /function keepAllTimeBestScores\(scores\)/);
+assert.match(leaderboardPage, /requestedGame === "memoryc"/);
+assert.match(leaderboardPage, /where\("gameId", "==", currentGameFilter\)/);
+assert.match(gamePage, /<span>Score<\/span>/);
+assert.match(gamePage, /View Memory Connect leaderboard/);
+assert.match(gamePage, /getStaticAssetUrl\(`audio\/\$\{entry\.id\}\.mp3`\)/);
+assert.match(gamePage, /src=\{getStaticAssetUrl\(entry\.image\)\}/);
+assert.match(gamePage, /setIncorrectPair\(\{ wordId, pictureId \}\)/);
+assert.match(gamePage, /incorrectPair\?\.wordId === entry\.id/);
+assert.match(gamePage, /incorrectPair\?\.pictureId === entry\.id/);
+assert.match(gamePage, /setTimeout\(\s*\(\) => setIncorrectPair\(null\),\s*650/);
+assert.match(gamePage, /feedbackLocked=\{Boolean\(incorrectPair\)\}/);
+assert.match(
+  readFileSync(new URL("../Games/MemoryConnect-app/src/styles.css", import.meta.url), "utf8"),
+  /@keyframes incorrect-shake/,
+);
+assert.match(assetUrlHelper, /https:\/\/memory-connect-somya-20261014\.web\.app/);
+assert.match(assetUrlHelper, /if \(import\.meta\.env\.DEV\)/);
+assert.match(audioGenerator, /https:\/\/yourvoic\.com\/api\/v1\/tts\/generate/);
+assert.match(audioGenerator, /"X-API-Key": apiKey/);
+assert.match(audioGenerator, /language: "sa-IN"/);
+assert.match(loginPage, /getPostLoginDestination/);
+assert.match(loginPage, /destination\.origin === window\.location\.origin/);
+
+console.log("Memory Connect logic tests passed: rounds, matching, timer, scoring, leaderboard records, and site links.");

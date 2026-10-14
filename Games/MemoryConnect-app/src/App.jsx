@@ -6,6 +6,9 @@ import {
   formatTime,
   isMatch,
 } from "./gameLogic";
+import { saveMemoryConnectDailyBest } from "./memoryConnectLeaderboard";
+import { auth, onAuthStateChanged, signOut } from "./zatamFirebase";
+import { getStaticAssetUrl } from "./assetUrl";
 
 const confettiPieces = Array.from({ length: 48 }, (_, index) => ({
   color: ["#d35c2c", "#f5a623", "#2e9a65", "#6e3aa7", "#159cba"][index % 5],
@@ -16,18 +19,70 @@ const confettiPieces = Array.from({ length: 48 }, (_, index) => ({
 }));
 
 const tutorialStorageKey = "memory-connect-tutorial-seen";
+const pendingScoreStorageKey = "memory-connect-pending-score";
+const loginUrl = "../../login.html?returnTo=Games%2FMemoryConnect%2F";
 
-function ImageCard({ entry, selected, matched, onSelect, highlighted }) {
+function readPendingScore() {
+  try {
+    const value = sessionStorage.getItem(pendingScoreStorageKey);
+    if (!value) return null;
+
+    const pending = JSON.parse(value);
+    if (
+      !pending?.id ||
+      !Number.isFinite(Number(pending.score)) ||
+      !pending.completedAt ||
+      Number.isNaN(new Date(pending.completedAt).getTime())
+    ) {
+      sessionStorage.removeItem(pendingScoreStorageKey);
+      return null;
+    }
+
+    return pending;
+  } catch {
+    return null;
+  }
+}
+
+function writePendingScore(pending) {
+  try {
+    sessionStorage.setItem(pendingScoreStorageKey, JSON.stringify(pending));
+  } catch {
+    // The round remains playable if browser storage is unavailable.
+  }
+}
+
+function clearPendingScore(id) {
+  const pending = readPendingScore();
+  if (pending?.id === id) {
+    sessionStorage.removeItem(pendingScoreStorageKey);
+  }
+}
+
+function getPlayerName(user) {
+  return user?.displayName || user?.email?.split("@")[0] || "Player";
+}
+
+function ImageCard({
+  entry,
+  selected,
+  matched,
+  onSelect,
+  highlighted,
+  celebrating,
+  incorrect,
+  feedbackLocked,
+}) {
   const [failed, setFailed] = useState(false);
   const fallback = entry.symbol || entry.word;
 
   return (
     <button
-      className={`picture-card ${selected ? "is-selected" : ""} ${matched ? "is-matched" : ""} ${highlighted ? "is-hinted" : ""}`}
+      className={`picture-card ${selected ? "is-selected" : ""} ${matched ? "is-matched" : ""} ${highlighted ? "is-hinted" : ""} ${celebrating ? "is-celebrating" : ""} ${incorrect ? "is-incorrect" : ""}`}
       type="button"
       aria-label="Picture card"
       aria-pressed={selected}
-      disabled={matched}
+      disabled={matched || feedbackLocked}
       onClick={onSelect}
     >
       {entry.symbol || failed || !entry.image ? (
@@ -35,7 +90,11 @@ function ImageCard({ entry, selected, matched, onSelect, highlighted }) {
           {fallback}
         </span>
       ) : (
-        <img src={entry.image} alt="" onError={() => setFailed(true)} />
+        <img
+          src={getStaticAssetUrl(entry.image)}
+          alt=""
+          onError={() => setFailed(true)}
+        />
       )}
       {matched && (
         <span className="match-mark" aria-hidden="true">
@@ -60,6 +119,8 @@ export default function App() {
     "Choose a word and its matching picture.",
   );
   const [hintId, setHintId] = useState(null);
+  const [celebratingMatchId, setCelebratingMatchId] = useState(null);
+  const [incorrectPair, setIncorrectPair] = useState(null);
   const [result, setResult] = useState(null);
   const [bestScore, setBestScore] = useState(
     () => Number(localStorage.getItem("memory-connect-best-medium")) || 0,
@@ -67,7 +128,15 @@ export default function App() {
   const [showTutorial, setShowTutorial] = useState(
     () => localStorage.getItem(tutorialStorageKey) !== "true",
   );
+  const [user, setUser] = useState(undefined);
+  const [authMessage, setAuthMessage] = useState("");
+  const [leaderboardMessage, setLeaderboardMessage] = useState("");
+  const [submittingScore, setSubmittingScore] = useState(false);
   const hintTimeout = useRef(null);
+  const matchTimeout = useRef(null);
+  const incorrectTimeout = useRef(null);
+  const submittingScoreId = useRef(null);
+  const audioPlayer = useRef(null);
 
   useEffect(() => {
     if (phase !== "playing" || !startedAt) return undefined;
@@ -79,10 +148,32 @@ export default function App() {
     return () => window.clearInterval(timer);
   }, [phase, startedAt]);
 
-  useEffect(() => () => window.clearTimeout(hintTimeout.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(hintTimeout.current);
+      window.clearTimeout(matchTimeout.current);
+      window.clearTimeout(incorrectTimeout.current);
+      audioPlayer.current?.pause();
+      audioPlayer.current = null;
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
+      setUser(nextUser);
+    });
+
+    return unsubscribe;
+  }, []);
 
   const matchedSet = useMemo(() => new Set(matchedIds), [matchedIds]);
   const pairCount = DIFFICULTIES[difficulty].pairs;
+  const liveScore = useMemo(
+    () => calculateScore({ matches: matchedIds.length, mistakes, difficulty }),
+    [difficulty, matchedIds.length, mistakes],
+  );
+  const currentScore = phase === "finished" && result ? result.score : liveScore;
 
   function setRoundDifficulty(nextDifficulty) {
     setDifficulty(nextDifficulty);
@@ -97,9 +188,71 @@ export default function App() {
     setShowTutorial(false);
   }
 
+  async function submitScore(userToSave, pending) {
+    if (!userToSave || !pending || submittingScoreId.current === pending.id) {
+      return;
+    }
+
+    if (pending.userId && pending.userId !== userToSave.uid) {
+      setLeaderboardMessage(
+        "This unfinished score belongs to a different signed-in player.",
+      );
+      return;
+    }
+
+    submittingScoreId.current = pending.id;
+    setSubmittingScore(true);
+    setLeaderboardMessage("");
+
+    try {
+      const outcome = await saveMemoryConnectDailyBest(
+        userToSave,
+        pending.score,
+        new Date(pending.completedAt),
+      );
+
+      clearPendingScore(pending.id);
+      setLeaderboardMessage(
+        outcome.status === "saved"
+          ? "Score saved to the Zatam leaderboard."
+          : `Your higher score (${outcome.score}) is already on today’s leaderboard.`,
+      );
+    } catch (error) {
+      console.error("Memory Connect leaderboard update failed:", error);
+      setLeaderboardMessage(
+        "We could not save this score. Check your connection and try again.",
+      );
+    } finally {
+      submittingScoreId.current = null;
+      setSubmittingScore(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!user) return;
+
+    const pending = readPendingScore();
+    if (pending) {
+      void submitScore(user, pending);
+    }
+  }, [user]);
+
+  async function handleSignOut() {
+    setAuthMessage("");
+    try {
+      await signOut(auth);
+      setAuthMessage("You are logged out.");
+    } catch (error) {
+      console.error("Memory Connect logout failed:", error);
+      setAuthMessage("We could not log you out. Please try again.");
+    }
+  }
+
   function startGame() {
     dismissTutorial();
     window.clearTimeout(hintTimeout.current);
+    window.clearTimeout(matchTimeout.current);
+    window.clearTimeout(incorrectTimeout.current);
     setRound(createRound(difficulty));
     setSelectedWord(null);
     setSelectedPicture(null);
@@ -108,6 +261,8 @@ export default function App() {
     setElapsed(0);
     setStartedAt(Date.now());
     setHintId(null);
+    setCelebratingMatchId(null);
+    setIncorrectPair(null);
     setResult(null);
     setMessage("Tap a word, then tap its matching picture.");
     setPhase("playing");
@@ -118,7 +273,7 @@ export default function App() {
       ? Math.floor((Date.now() - startedAt) / 1000)
       : elapsed;
     const score = calculateScore({
-      elapsed: finalElapsed,
+      matches: nextMatchedIds.length,
       mistakes,
       difficulty,
     });
@@ -131,11 +286,24 @@ export default function App() {
       setBestScore(score);
     }
 
+    const pending = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      score,
+      completedAt: new Date().toISOString(),
+      userId: user?.uid || null,
+    };
+
+    writePendingScore(pending);
     setElapsed(finalElapsed);
-    setResult({ score, isNewBest, time: finalElapsed, mistakes });
+    setLeaderboardMessage("");
+    setResult({ score, isNewBest, time: finalElapsed, mistakes, pending });
     setStartedAt(null);
     setPhase("finished");
     setMessage("उत्तमम्! All pairs are connected.");
+
+    if (user) {
+      void submitScore(user, pending);
+    }
   }
 
   function tryMatch(wordId, pictureId) {
@@ -147,6 +315,13 @@ export default function App() {
       setSelectedWord(null);
       setSelectedPicture(null);
       setHintId(null);
+      setIncorrectPair(null);
+      window.clearTimeout(matchTimeout.current);
+      setCelebratingMatchId(wordId);
+      matchTimeout.current = window.setTimeout(
+        () => setCelebratingMatchId(null),
+        700,
+      );
       setMessage("Correct match — उत्कृष्टम्!");
 
       if (nextMatchedIds.length === round.entries.length) {
@@ -156,13 +331,19 @@ export default function App() {
     }
 
     setMistakes((count) => count + 1);
+    window.clearTimeout(incorrectTimeout.current);
+    setIncorrectPair({ wordId, pictureId });
     setSelectedWord(null);
     setSelectedPicture(null);
     setMessage("Not quite. Try another connection.");
+    incorrectTimeout.current = window.setTimeout(
+      () => setIncorrectPair(null),
+      650,
+    );
   }
 
   function chooseWord(id) {
-    if (phase !== "playing" || matchedSet.has(id)) return;
+    if (phase !== "playing" || matchedSet.has(id) || incorrectPair) return;
     setSelectedWord(id);
     setMessage(
       selectedPicture
@@ -173,7 +354,7 @@ export default function App() {
   }
 
   function choosePicture(id) {
-    if (phase !== "playing" || matchedSet.has(id)) return;
+    if (phase !== "playing" || matchedSet.has(id) || incorrectPair) return;
     setSelectedPicture(id);
     setMessage(
       selectedWord
@@ -195,16 +376,34 @@ export default function App() {
     hintTimeout.current = window.setTimeout(() => setHintId(null), 1800);
   }
 
-  function pronounce(word) {
-    if (!("speechSynthesis" in window)) {
-      setMessage("Pronunciation is not supported by this browser.");
+  function pronounce(entry) {
+    if (!entry) {
+      setMessage("Select a word first to hear it.");
       return;
     }
-    window.speechSynthesis.cancel();
-    const speech = new SpeechSynthesisUtterance(word);
-    speech.lang = "sa-IN";
-    speech.rate = 0.75;
-    window.speechSynthesis.speak(speech);
+
+    audioPlayer.current?.pause();
+    const player = new Audio(getStaticAssetUrl(`audio/${entry.id}.mp3`));
+    audioPlayer.current = player;
+
+    const showUnavailableMessage = () => {
+      if (audioPlayer.current === player) {
+        audioPlayer.current = null;
+        setMessage(`The recording for ${entry.word} is not available yet.`);
+      }
+    };
+
+    player.addEventListener("error", showUnavailableMessage, { once: true });
+    player.addEventListener(
+      "ended",
+      () => {
+        if (audioPlayer.current === player) audioPlayer.current = null;
+      },
+      { once: true },
+    );
+
+    setMessage(`Playing ${entry.word}.`);
+    void player.play().catch(showUnavailableMessage);
   }
 
   return (
@@ -213,10 +412,31 @@ export default function App() {
         <a className="home-button" href="../../#gamesSection">
           Back
         </a>
-        <div>
+        <div className="topbar-title">
           <h1>Memory Connect</h1>
         </div>
+        <div className="account-controls">
+          {user === undefined && <span>Checking account…</span>}
+          {user && (
+            <>
+              <span className="account-name">{getPlayerName(user)}</span>
+              <button type="button" onClick={handleSignOut}>
+                Log out
+              </button>
+            </>
+          )}
+          {user === null && (
+            <a className="login-link" href={loginUrl}>
+              Log in
+            </a>
+          )}
+        </div>
       </header>
+      {authMessage && (
+        <p className="auth-message" role="status">
+          {authMessage}
+        </p>
+      )}
 
       {phase === "welcome" && (
         <section className="welcome-card" aria-labelledby="welcome-title">
@@ -271,6 +491,10 @@ export default function App() {
               <strong>{formatTime(elapsed)}</strong>
             </div>
             <div>
+              <span>Score</span>
+              <strong>{currentScore.toLocaleString()}</strong>
+            </div>
+            <div>
               <span>Best</span>
               <strong>{bestScore || "—"}</strong>
             </div>
@@ -288,11 +512,11 @@ export default function App() {
               </div>
               {round.words.map((entry) => (
                 <button
-                  className={`word-card ${selectedWord === entry.id ? "is-selected" : ""} ${matchedSet.has(entry.id) ? "is-matched" : ""}`}
+                  className={`word-card ${selectedWord === entry.id ? "is-selected" : ""} ${matchedSet.has(entry.id) ? "is-matched" : ""} ${celebratingMatchId === entry.id ? "is-celebrating" : ""} ${incorrectPair?.wordId === entry.id ? "is-incorrect" : ""}`}
                   key={entry.id}
                   type="button"
                   aria-pressed={selectedWord === entry.id}
-                  disabled={matchedSet.has(entry.id) || phase === "finished"}
+                  disabled={matchedSet.has(entry.id) || phase === "finished" || Boolean(incorrectPair)}
                   onClick={() => chooseWord(entry.id)}
                 >
                   <span>{entry.word}</span>
@@ -315,7 +539,7 @@ export default function App() {
                   const selected = round.entries.find(
                     (entry) => entry.id === selectedWord,
                   );
-                  if (selected) pronounce(selected.word);
+                  if (selected) pronounce(selected);
                   else setMessage("Select a word first to hear it.");
                 }}
                 disabled={phase === "finished"}
@@ -332,6 +556,9 @@ export default function App() {
               {round.pictures.map((entry) => (
                 <ImageCard
                   entry={entry}
+                  celebrating={celebratingMatchId === entry.id}
+                  incorrect={incorrectPair?.pictureId === entry.id}
+                  feedbackLocked={Boolean(incorrectPair)}
                   highlighted={hintId === entry.id}
                   key={entry.id}
                   matched={matchedSet.has(entry.id)}
@@ -403,6 +630,38 @@ export default function App() {
               {formatTime(result.time)} · {result.mistakes} mistakes
             </p>
             {result.isNewBest && <p className="new-best">New personal best!</p>}
+            {submittingScore && (
+              <p className="leaderboard-status" role="status">
+                Saving score to the Zatam leaderboard…
+              </p>
+            )}
+            {leaderboardMessage && (
+              <p className="leaderboard-status" role="status">
+                {leaderboardMessage}
+              </p>
+            )}
+            {!user && (
+              <a className="secondary-button" href={loginUrl}>
+                Log in to save this score
+              </a>
+            )}
+            {user && !submittingScore && leaderboardMessage.includes("could not") && (
+              <button
+                className="secondary-button"
+                type="button"
+                onClick={() => submitScore(user, result.pending)}
+              >
+                Try saving again
+              </button>
+            )}
+            {user && (
+              <a
+                className="leaderboard-link"
+                href="../../leaderboard.html?game=memoryc"
+              >
+                View Memory Connect leaderboard
+              </a>
+            )}
             <button
               className="primary-button"
               type="button"

@@ -12,6 +12,8 @@
     "preview:memory-connect": "vite preview --config Games/MemoryConnect-app/vite.config.mjs",
     "extract:memory-data": "node tools/extract-memory-connect-data.mjs",
     "download:memory-images": "node tools/download-memory-connect-images.mjs",
+    "preview:memory-audio": "node tools/download-memory-connect-audio.mjs --dry-run",
+    "generate:memory-audio": "node tools/download-memory-connect-audio.mjs --confirm",
     "qa:memory-connect": "node tools/qa-memory-connect.mjs",
     "test:memory-connect": "node tools/test-memory-connect-logic.mjs"
   },

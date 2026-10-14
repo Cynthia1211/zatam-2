@@ -619,6 +619,7 @@
           <button class="tab" data-game="sanskritPuzzle">🪔 Sanskrit Puzzle</button>
           <button class="tab" data-game="laddersSnakes">Ladders & Snakes</button>
           <button class="tab" data-game="picturePuzzle">Picture Puzzle</button>
+          <button class="tab" data-game="memoryc">🔗 Memory Connect</button>
           <button class="tab" data-game="sanskritMonopoly">🎲 Sanskrit Monopoly</button>
           <button class="tab" data-game="contextCloze">📝 Context Cloze</button>
           <button class="tab" data-game="meaningBridge">🌉 Meaning Bridge</button>
@@ -698,6 +699,7 @@
           <div class="filter-row" data-side-game="maze"><span>Paasha Maze</span><span>All</span></div>
           <div class="filter-row" data-side-game="ticTacToe"><span>Tic Tac Toe</span><span>All</span></div>
           <div class="filter-row" data-side-game="memory"><span>Memory Match</span><span>All</span></div>
+          <div class="filter-row" data-side-game="memoryc"><span>Memory Connect</span><span>All</span></div>
           <div class="filter-row" data-side-game="laddersSnakes"><span>Ladders & Snakes</span><span>All</span></div>
           <div class="filter-row" data-side-game="2048"><span>2048</span><span>All</span></div>
           <div class="filter-row" data-side-game="sanskritPuzzle"><span>Sanskrit Puzzle</span><span>All</span></div>
@@ -765,6 +767,7 @@
       collection,
       getDocs,
       query,
+      where,
       orderBy,
       limit,
       doc,
@@ -793,7 +796,8 @@
     const leaderboardDate = document.getElementById("leaderboardDate");
 
     let currentUser = null;
-    let currentGameFilter = "all";
+    const requestedGame = new URLSearchParams(window.location.search).get("game");
+    let currentGameFilter = requestedGame === "memoryc" ? "memoryc" : "all";
     let currentDateMode = "all";
     let selectedDate = getTodayDateString();
     let allScores = [];
@@ -824,6 +828,7 @@
 
             laddersSnakes: "Ladders & Snakes",
             picturePuzzle: "Picture Puzzle",
+            memoryConnect: "🔗 Memory Connect",
             sanskritPuzzle: "Sanskrit Puzzle",
             sanskritMonopoly: "🎲 Sanskrit Monopoly",
             contextCloze: "📝 Context Cloze",
@@ -877,6 +882,7 @@
             sudoku: "🔢 सुडोकू",
             laddersSnakes: "Ladders & Snakes",
             picturePuzzle: "Picture Puzzle",
+            memoryConnect: "🔗 Memory Connect",
             sanskritPuzzle: "Sanskrit Puzzle",
             sanskritMonopoly: "🎲 Sanskrit Monopoly",
             contextCloze: "📝 Context Cloze",
@@ -1218,6 +1224,31 @@
       return [...bestByDay.values()];
     }
 
+    function keepAllTimeBestScores(scores) {
+      const bestByPlayerAndGame = new Map();
+
+      scores.forEach((item) => {
+        const playerId = item.userId || item.uid;
+
+        if (!playerId || !item.gameId) {
+          return;
+        }
+
+        const key = `${playerId}__${item.gameId}`;
+        const currentBest = bestByPlayerAndGame.get(key);
+
+        if (
+          !currentBest ||
+          Number(item.score || item.points || 0) >
+            Number(currentBest.score || currentBest.points || 0)
+        ) {
+          bestByPlayerAndGame.set(key, item);
+        }
+      });
+
+      return [...bestByPlayerAndGame.values()];
+    }
+
     function getFallbackPlayerName(uid) {
       if (!uid) return "Player";
       return `Player · ${uid.slice(-4).toUpperCase()}`;
@@ -1343,11 +1374,10 @@
       `;
 
       try {
-        const standardQuery = query(
-          collection(db, "leaderboard-zatamgame"),
-          orderBy("score", "desc"),
-          limit(500)
-        );
+        const standardScoresRef = collection(db, "leaderboard-zatamgame");
+        const standardQuery = currentGameFilter === "all"
+          ? query(standardScoresRef, orderBy("score", "desc"), limit(500))
+          : query(standardScoresRef, where("gameId", "==", currentGameFilter));
 
         const [
           standardResult,
@@ -1505,7 +1535,7 @@
     }
 
     function getFilteredScores() {
-      return allScores.filter((item) => {
+      const filteredScores = allScores.filter((item) => {
         const matchesGame =
           currentGameFilter === "all" || item.gameId === currentGameFilter;
 
@@ -1514,6 +1544,10 @@
 
         return matchesGame && matchesDate;
       });
+
+      return currentDateMode === "all"
+        ? keepAllTimeBestScores(filteredScores)
+        : keepDailyBestScores(filteredScores);
     }
 
     function updateMyRank(filteredScores) {
@@ -1556,6 +1590,7 @@
       if (gameName.includes("2048")) return "2048";
       if (gameName.includes("Sudoku")) return "Sudoku";
       if (gameName.includes("Picture")) return "Picture";
+      if (gameName.includes("Memory Connect")) return "Connect";
       if (gameName.includes("Monopoly")) return "Monopoly";
       if (gameName.includes("Context Cloze")) return "Context";
       if (gameName.includes("Meaning Bridge")) return "Meaning";
@@ -1564,10 +1599,7 @@
       return gameName;
     }
 
-function setGameFilter(gameId) {
-  currentGameFilter = gameId;
-  visibleCount = 7;
-
+function syncGameFilterUI(gameId) {
   tabButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.game === gameId);
   });
@@ -1575,8 +1607,22 @@ function setGameFilter(gameId) {
   sideFilterRows.forEach((row) => {
     row.classList.toggle("active", row.dataset.sideGame === gameId);
   });
+}
 
-  renderLeaderboard();
+function setGameFilter(gameId) {
+  currentGameFilter = gameId;
+  visibleCount = 7;
+
+  const url = new URL(window.location.href);
+  if (gameId === "all") {
+    url.searchParams.delete("game");
+  } else {
+    url.searchParams.set("game", gameId);
+  }
+  window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+
+  syncGameFilterUI(gameId);
+  void loadLeaderboard();
 }
 
 function setDateFilter(mode, dateValue = getTodayDateString()) {
@@ -1683,6 +1729,9 @@ sideFilterRows.forEach((row) => {
     document.querySelector('[data-game="picturePuzzle"]').textContent =
         t.picturePuzzle || "Picture Puzzle";
 
+    document.querySelector('[data-game="memoryc"]').textContent =
+        t.memoryConnect || "🔗 Memory Connect";
+
     document.querySelector('[data-game="sanskritMonopoly"]').textContent =
         t.sanskritMonopoly || "🎲 Sanskrit Monopoly";
 
@@ -1761,6 +1810,7 @@ sideFilterRows.forEach((row) => {
 
     leaderboardDate.value = selectedDate;
     updateLanguage();
+    syncGameFilterUI(currentGameFilter);
 
   </script>
 </body>
