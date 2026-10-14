@@ -98,6 +98,15 @@ assert.match(gamePage, /<span>Score<\/span>/);
 assert.match(gamePage, /View Memory Connect leaderboard/);
 assert.match(gamePage, /getStaticAssetUrl\(`audio\/\$\{entry\.id\}\.mp3`\)/);
 assert.match(gamePage, /src=\{getStaticAssetUrl\(entry\.image\)\}/);
+assert.match(gamePage, /setIncorrectPair\(\{ wordId, pictureId \}\)/);
+assert.match(gamePage, /incorrectPair\?\.wordId === entry\.id/);
+assert.match(gamePage, /incorrectPair\?\.pictureId === entry\.id/);
+assert.match(gamePage, /setTimeout\(\s*\(\) => setIncorrectPair\(null\),\s*650/);
+assert.match(gamePage, /feedbackLocked=\{Boolean\(incorrectPair\)\}/);
+assert.match(
+  readFileSync(new URL("../Games/MemoryConnect-app/src/styles.css", import.meta.url), "utf8"),
+  /@keyframes incorrect-shake/,
+);
 assert.match(assetUrlHelper, /https:\/\/memory-connect-somya-20261014\.web\.app/);
 assert.match(assetUrlHelper, /if \(import\.meta\.env\.DEV\)/);
 assert.match(audioGenerator, /https:\/\/yourvoic\.com\/api\/v1\/tts\/generate/);

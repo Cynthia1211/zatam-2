@@ -70,17 +70,19 @@ function ImageCard({
   onSelect,
   highlighted,
   celebrating,
+  incorrect,
+  feedbackLocked,
 }) {
   const [failed, setFailed] = useState(false);
   const fallback = entry.symbol || entry.word;
 
   return (
     <button
-      className={`picture-card ${selected ? "is-selected" : ""} ${matched ? "is-matched" : ""} ${highlighted ? "is-hinted" : ""} ${celebrating ? "is-celebrating" : ""}`}
+      className={`picture-card ${selected ? "is-selected" : ""} ${matched ? "is-matched" : ""} ${highlighted ? "is-hinted" : ""} ${celebrating ? "is-celebrating" : ""} ${incorrect ? "is-incorrect" : ""}`}
       type="button"
       aria-label="Picture card"
       aria-pressed={selected}
-      disabled={matched}
+      disabled={matched || feedbackLocked}
       onClick={onSelect}
     >
       {entry.symbol || failed || !entry.image ? (
@@ -118,6 +120,7 @@ export default function App() {
   );
   const [hintId, setHintId] = useState(null);
   const [celebratingMatchId, setCelebratingMatchId] = useState(null);
+  const [incorrectPair, setIncorrectPair] = useState(null);
   const [result, setResult] = useState(null);
   const [bestScore, setBestScore] = useState(
     () => Number(localStorage.getItem("memory-connect-best-medium")) || 0,
@@ -131,6 +134,7 @@ export default function App() {
   const [submittingScore, setSubmittingScore] = useState(false);
   const hintTimeout = useRef(null);
   const matchTimeout = useRef(null);
+  const incorrectTimeout = useRef(null);
   const submittingScoreId = useRef(null);
   const audioPlayer = useRef(null);
 
@@ -148,6 +152,7 @@ export default function App() {
     () => () => {
       window.clearTimeout(hintTimeout.current);
       window.clearTimeout(matchTimeout.current);
+      window.clearTimeout(incorrectTimeout.current);
       audioPlayer.current?.pause();
       audioPlayer.current = null;
     },
@@ -247,6 +252,7 @@ export default function App() {
     dismissTutorial();
     window.clearTimeout(hintTimeout.current);
     window.clearTimeout(matchTimeout.current);
+    window.clearTimeout(incorrectTimeout.current);
     setRound(createRound(difficulty));
     setSelectedWord(null);
     setSelectedPicture(null);
@@ -256,6 +262,7 @@ export default function App() {
     setStartedAt(Date.now());
     setHintId(null);
     setCelebratingMatchId(null);
+    setIncorrectPair(null);
     setResult(null);
     setMessage("Tap a word, then tap its matching picture.");
     setPhase("playing");
@@ -308,6 +315,7 @@ export default function App() {
       setSelectedWord(null);
       setSelectedPicture(null);
       setHintId(null);
+      setIncorrectPair(null);
       window.clearTimeout(matchTimeout.current);
       setCelebratingMatchId(wordId);
       matchTimeout.current = window.setTimeout(
@@ -323,13 +331,19 @@ export default function App() {
     }
 
     setMistakes((count) => count + 1);
+    window.clearTimeout(incorrectTimeout.current);
+    setIncorrectPair({ wordId, pictureId });
     setSelectedWord(null);
     setSelectedPicture(null);
     setMessage("Not quite. Try another connection.");
+    incorrectTimeout.current = window.setTimeout(
+      () => setIncorrectPair(null),
+      650,
+    );
   }
 
   function chooseWord(id) {
-    if (phase !== "playing" || matchedSet.has(id)) return;
+    if (phase !== "playing" || matchedSet.has(id) || incorrectPair) return;
     setSelectedWord(id);
     setMessage(
       selectedPicture
@@ -340,7 +354,7 @@ export default function App() {
   }
 
   function choosePicture(id) {
-    if (phase !== "playing" || matchedSet.has(id)) return;
+    if (phase !== "playing" || matchedSet.has(id) || incorrectPair) return;
     setSelectedPicture(id);
     setMessage(
       selectedWord
@@ -498,11 +512,11 @@ export default function App() {
               </div>
               {round.words.map((entry) => (
                 <button
-                  className={`word-card ${selectedWord === entry.id ? "is-selected" : ""} ${matchedSet.has(entry.id) ? "is-matched" : ""} ${celebratingMatchId === entry.id ? "is-celebrating" : ""}`}
+                  className={`word-card ${selectedWord === entry.id ? "is-selected" : ""} ${matchedSet.has(entry.id) ? "is-matched" : ""} ${celebratingMatchId === entry.id ? "is-celebrating" : ""} ${incorrectPair?.wordId === entry.id ? "is-incorrect" : ""}`}
                   key={entry.id}
                   type="button"
                   aria-pressed={selectedWord === entry.id}
-                  disabled={matchedSet.has(entry.id) || phase === "finished"}
+                  disabled={matchedSet.has(entry.id) || phase === "finished" || Boolean(incorrectPair)}
                   onClick={() => chooseWord(entry.id)}
                 >
                   <span>{entry.word}</span>
@@ -543,6 +557,8 @@ export default function App() {
                 <ImageCard
                   entry={entry}
                   celebrating={celebratingMatchId === entry.id}
+                  incorrect={incorrectPair?.pictureId === entry.id}
+                  feedbackLocked={Boolean(incorrectPair)}
                   highlighted={hintId === entry.id}
                   key={entry.id}
                   matched={matchedSet.has(entry.id)}
